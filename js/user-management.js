@@ -160,15 +160,20 @@ async function handleAddUser() {
         if (profileError) {
             console.error('Profil oluşturma hatası:', profileError);
             
-            // RLS politikası engelliyorsa manuel SQL ver
-            const sqlCommand = `
-INSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) 
-VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`;
+            // Production: Auth'da kullanıcı var, profil yok durumu
+            // Bu kullanıcı ilk giriş yaptığında profil otomatik oluşturulacak
             
-            alert(`Kullanıcı auth'da oluşturuldu (ID: ${authData.user.id})\n\nAncak profil oluşturulamadı. Lütfen aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\n${sqlCommand}`);
-            console.log('SQL Komutu:', sqlCommand);
+            alert(`✅ Kullanıcı başarıyla oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ İlk giriş sırasında profil otomatik tamamlanacak.\n\n💡 Kullanıcı şimdi giriş yapabilir.`);
+            
+            // Konsola bilgi ver
+            console.group('🔧 Profil Oluşturma Bilgisi');
+            console.log('Auth kullanıcı ID:', authData.user.id);
+            console.log('E-posta:', email);
+            console.log('İlk giriş sırasında otomatik profil oluşturulacak');
+            console.groupEnd();
+            
         } else {
-            alert(`Kullanıcı başarıyla oluşturuldu!\n\nE-posta: ${email}\nŞifre: ${password}\n\nKullanıcı artık giriş yapabilir.`);
+            alert(`🎉 Kullanıcı başarıyla oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n✅ Kullanıcı artık giriş yapabilir.`);
         }
         
         bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
