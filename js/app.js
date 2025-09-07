@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     setupEventListeners();
+    setupUserManagementListeners();
 });
 
 // Event listener'ları kur
@@ -69,7 +70,15 @@ function showDashboard() {
 // Kullanıcı bilgilerini güncelle
 function updateUserInfo() {
     document.getElementById('userName').textContent = currentUser.name;
-    document.getElementById('userRole').textContent = ROLE_NAMES[currentUser.role];
+    document.getElementById('userRole').textContent = getUserRoleDescription();
+    
+    // Kullanıcı yönetimi butonunu göster/gizle
+    const userMgmtBtn = document.getElementById('userManagementBtn');
+    if (canManageUsers()) {
+        userMgmtBtn.style.display = 'inline-block';
+    } else {
+        userMgmtBtn.style.display = 'none';
+    }
 }
 
 // Depo kartlarını güncelle

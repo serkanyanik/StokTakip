@@ -102,11 +102,21 @@ git push
 
 #### Adım 2: Kullanıcı Profilini Oluşturun
 1. "SQL Editor" seçin
-2. Aşağıdaki SQL komutunu çalıştırın (USER_ID'yi gerçek ID ile değiştirin):
+2. `migration_user_system.sql` dosyasının içeriğini kopyalayın ve çalıştırın
+3. Bu script mevcut sistemi yeni kullanıcı yapısına çevirecek
+4. Veya yeni kurulumda aşağıdaki SQL komutunu çalıştırın:
 
 ```sql
-INSERT INTO users (id, name, email, role) VALUES 
-('GERÇEK_USER_ID_BURAYA', 'Ana Depo Sorumlusu', 'admin@example.com', 'main_admin');
+-- Yeni sistem için kullanıcı ekleme
+INSERT INTO users (id, name, email, is_depo_admin, is_active) VALUES 
+('0fe2b9bb-bb8b-42f6-9139-38b0c93d2c2f', 'Ana Depo Sorumlusu', 'muratorun88@gmail.com', true, true)
+ON CONFLICT (id) 
+DO UPDATE SET 
+    name = EXCLUDED.name,
+    email = EXCLUDED.email,
+    is_depo_admin = EXCLUDED.is_depo_admin,
+    is_active = EXCLUDED.is_active,
+    updated_at = NOW();
 ```
 
 ### 6. Örnek Veriyi Ekleyin (Opsiyonel)
@@ -146,10 +156,25 @@ python3 -m http.server 8000
 
 ## 📋 Sonraki Adımlar
 
-1. **Daha fazla kullanıcı ekleyin**: Ara depo sorumluları için kullanıcılar oluşturun
-2. **Stok verilerini ekleyin**: Gerçek ürün verilerinizi sisteme girin
-3. **Yedekleme ayarlayın**: Supabase'de otomatik yedekleme aktifleştirin
-4. **Domain bağlayın**: İsteğe bağlı olarak kendi domain'inizi GitHub Pages'e bağlayın
+1. **Kullanıcı yönetimi**: Ana depo sorumlusu olarak sisteme giriş yapın ve "Kullanıcı Yönetimi" butonundan yeni kullanıcılar ekleyin
+2. **Yetki atamaları**: Kullanıcılara hangi depoların sorumluluğunu verebileceğinizi belirleyin (bir kullanıcı birden fazla deponun sorumlusu olabilir)
+3. **Stok verilerini ekleyin**: Gerçek ürün verilerinizi sisteme girin
+4. **Yedekleme ayarlayın**: Supabase'de otomatik yedekleme aktifleştirin
+5. **Domain bağlayın**: İsteğe bağlı olarak kendi domain'inizi GitHub Pages'e bağlayın
+
+## 🎯 Yeni Özellikler
+
+### 👥 Esnek Kullanıcı Sistemi
+- **Ana Depo Sorumlusu**: Tüm yetkiler + kullanıcı yönetimi
+- **Çoklu Depo Sorumluluğu**: Bir kullanıcı birden fazla deponun sorumlusu olabilir
+- **Dinamik Yetki Sistemi**: Boolean kolonlarla esnek yetki yönetimi
+
+### 🔧 Kullanıcı Yönetimi Özellikleri
+- Web arayüzünden yeni kullanıcı ekleme
+- Kullanıcı bilgilerini düzenleme
+- Yetki atama/kaldırma
+- Kullanıcı aktivasyonu/deaktivasyonu
+- Kullanıcı silme işlemleri
 
 ## 🆘 Sorun Giderme
 

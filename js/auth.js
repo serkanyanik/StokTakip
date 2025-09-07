@@ -23,9 +23,13 @@ async function login(email, password) {
         currentUser = {
             id: data.user.id,
             email: data.user.email,
-            role: userProfile.role,
             name: userProfile.name,
-            warehouse_access: userProfile.warehouse_access
+            is_depo_admin: userProfile.is_depo_admin,
+            is_depo_sorumlu1: userProfile.is_depo_sorumlu1,
+            is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
+            is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
+            is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+            is_active: userProfile.is_active
         };
 
         return currentUser;
@@ -82,9 +86,13 @@ async function checkSession() {
                 currentUser = {
                     id: user.id,
                     email: user.email,
-                    role: userProfile.role,
                     name: userProfile.name,
-                    warehouse_access: userProfile.warehouse_access
+                    is_depo_admin: userProfile.is_depo_admin,
+                    is_depo_sorumlu1: userProfile.is_depo_sorumlu1,
+                    is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
+                    is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
+                    is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+                    is_active: userProfile.is_active
                 };
                 return true;
             }
@@ -98,54 +106,102 @@ async function checkSession() {
 
 // Kullanıcının depo erişim yetkilerini kontrol et
 function hasWarehouseAccess(warehouseType) {
-    if (!currentUser) return false;
+    if (!currentUser || !currentUser.is_active) return false;
     
     // Ana depo sorumlusu her şeye erişebilir
-    if (currentUser.role === USER_ROLES.MAIN_ADMIN) {
+    if (currentUser.is_depo_admin) {
         return true;
     }
     
-    // Diğer kullanıcılar sadece kendi depolarına erişebilir
-    const roleToWarehouse = {
-        [USER_ROLES.SUB1_MANAGER]: WAREHOUSE_TYPES.SUB1,
-        [USER_ROLES.SUB2_MANAGER]: WAREHOUSE_TYPES.SUB2,
-        [USER_ROLES.SUB3_MANAGER]: WAREHOUSE_TYPES.SUB3,
-        [USER_ROLES.SUB4_MANAGER]: WAREHOUSE_TYPES.SUB4
-    };
-    
-    return roleToWarehouse[currentUser.role] === warehouseType;
+    // İlgili depo sorumluluğu kontrolü
+    const permissionField = WAREHOUSE_TO_PERMISSION[warehouseType];
+    return currentUser[permissionField] || false;
 }
 
 // Kullanıcının stok çıkış yetkisi var mı?
 function canRemoveStock(warehouseType) {
-    if (!currentUser) return false;
+    if (!currentUser || !currentUser.is_active) return false;
     
     // Ana depo sorumlusu her depodan stok çıkarabilir
-    if (currentUser.role === USER_ROLES.MAIN_ADMIN) {
+    if (currentUser.is_depo_admin) {
         return true;
     }
     
-    // Diğer kullanıcılar sadece kendi depolarından stok çıkarabilir
-    return hasWarehouseAccess(warehouseType);
+    // Sadece kendi sorumluluğundaki depodan stok çıkarabilir
+    const permissionField = WAREHOUSE_TO_PERMISSION[warehouseType];
+    return currentUser[permissionField] || false;
 }
 
 // Kullanıcının stok ekleme yetkisi var mı?
 function canAddStock() {
-    if (!currentUser) return false;
+    if (!currentUser || !currentUser.is_active) return false;
     
     // Sadece ana depo sorumlusu stok ekleyebilir
-    return currentUser.role === USER_ROLES.MAIN_ADMIN;
+    return currentUser.is_depo_admin;
 }
 
 // Kullanıcının diğer depoları görme yetkisi var mı?
 function canViewOtherWarehouses() {
-    if (!currentUser) return false;
+    if (!currentUser || !currentUser.is_active) return false;
     
-    // Ana depo sorumlusu tüm depoları görebilir
-    if (currentUser.role === USER_ROLES.MAIN_ADMIN) {
-        return true;
+    // Herkes tüm depoları görebilir (sadece görüntüleme)
+    return true;
+}
+
+// Kullanıcı yönetimi yetkisi var mı?
+function canManageUsers() {
+    if (!currentUser || !currentUser.is_active) return false;
+    
+    // Sadece ana depo sorumlusu kullanıcı yönetimi yapabilir
+    return currentUser.is_depo_admin;
+}
+
+// Kullanıcının hangi depolardan sorumlu olduğunu döndür
+function getUserResponsibleWarehouses() {
+    if (!currentUser || !currentUser.is_active) return [];
+    
+    const warehouses = [];
+    
+    if (currentUser.is_depo_admin) {
+        warehouses.push(WAREHOUSE_TYPES.MAIN);
+    }
+    if (currentUser.is_depo_sorumlu1) {
+        warehouses.push(WAREHOUSE_TYPES.SUB1);
+    }
+    if (currentUser.is_depo_sorumlu2) {
+        warehouses.push(WAREHOUSE_TYPES.SUB2);
+    }
+    if (currentUser.is_depo_sorumlu3) {
+        warehouses.push(WAREHOUSE_TYPES.SUB3);
+    }
+    if (currentUser.is_depo_sorumlu4) {
+        warehouses.push(WAREHOUSE_TYPES.SUB4);
     }
     
-    // Diğer kullanıcılar sadece görüntüleme yapabilir (stok çıkaramaz)
-    return true;
+    return warehouses;
+}
+
+// Kullanıcının rol açıklamasını döndür
+function getUserRoleDescription() {
+    if (!currentUser || !currentUser.is_active) return 'Aktif Değil';
+    
+    const roles = [];
+    
+    if (currentUser.is_depo_admin) {
+        roles.push('Ana Depo Sorumlusu');
+    }
+    if (currentUser.is_depo_sorumlu1) {
+        roles.push('1. Depo Sorumlusu');
+    }
+    if (currentUser.is_depo_sorumlu2) {
+        roles.push('2. Depo Sorumlusu');
+    }
+    if (currentUser.is_depo_sorumlu3) {
+        roles.push('3. Depo Sorumlusu');
+    }
+    if (currentUser.is_depo_sorumlu4) {
+        roles.push('4. Depo Sorumlusu');
+    }
+    
+    return roles.length > 0 ? roles.join(', ') : 'Yetkisiz Kullanıcı';
 }

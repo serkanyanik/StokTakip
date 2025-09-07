@@ -18,15 +18,6 @@ const WAREHOUSE_TYPES = {
     SUB4: 'sub4'
 };
 
-// Kullanıcı rolleri
-const USER_ROLES = {
-    MAIN_ADMIN: 'main_admin',
-    SUB1_MANAGER: 'sub1_manager',
-    SUB2_MANAGER: 'sub2_manager',
-    SUB3_MANAGER: 'sub3_manager',
-    SUB4_MANAGER: 'sub4_manager'
-};
-
 // Depo isimleri
 const WAREHOUSE_NAMES = {
     [WAREHOUSE_TYPES.MAIN]: 'Ana Depo',
@@ -36,13 +27,22 @@ const WAREHOUSE_NAMES = {
     [WAREHOUSE_TYPES.SUB4]: '4. Depo'
 };
 
-// Rol isimleri
-const ROLE_NAMES = {
-    [USER_ROLES.MAIN_ADMIN]: 'Ana Depo Sorumlusu',
-    [USER_ROLES.SUB1_MANAGER]: '1. Depo Sorumlusu',
-    [USER_ROLES.SUB2_MANAGER]: '2. Depo Sorumlusu',
-    [USER_ROLES.SUB3_MANAGER]: '3. Depo Sorumlusu',
-    [USER_ROLES.SUB4_MANAGER]: '4. Depo Sorumlusu'
+// Yetkiler için kolay erişim
+const USER_PERMISSIONS = {
+    ADMIN: 'is_depo_admin',
+    SUB1: 'is_depo_sorumlu1',
+    SUB2: 'is_depo_sorumlu2',
+    SUB3: 'is_depo_sorumlu3',
+    SUB4: 'is_depo_sorumlu4'
+};
+
+// Depo türü ile yetki eşleştirmesi
+const WAREHOUSE_TO_PERMISSION = {
+    [WAREHOUSE_TYPES.MAIN]: USER_PERMISSIONS.ADMIN,
+    [WAREHOUSE_TYPES.SUB1]: USER_PERMISSIONS.SUB1,
+    [WAREHOUSE_TYPES.SUB2]: USER_PERMISSIONS.SUB2,
+    [WAREHOUSE_TYPES.SUB3]: USER_PERMISSIONS.SUB3,
+    [WAREHOUSE_TYPES.SUB4]: USER_PERMISSIONS.SUB4
 };
 
 // Düşük stok uyarı seviyesi

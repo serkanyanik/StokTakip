@@ -1,19 +1,24 @@
--- Serkan Stok Veritabanı Şeması
+-- Serkan Stok Veritabanı Şeması (Güncellenmiş Versiyon)
 -- Supabase PostgreSQL için SQL komutları
 
--- 1. Kullanıcı profilleri tablosu
-CREATE TABLE users (
+-- 1. Kullanıcı profilleri tablosu (Yeni esnek sistem)
+CREATE TABLE IF NOT EXISTS users (
     id UUID REFERENCES auth.users PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('main_admin', 'sub1_manager', 'sub2_manager', 'sub3_manager', 'sub4_manager')),
-    warehouse_access TEXT[], -- Hangi depolara erişebileceği (opsiyonel)
+    is_depo_admin BOOLEAN DEFAULT FALSE, -- Ana depo sorumlusu (tüm yetkiler)
+    is_depo_sorumlu1 BOOLEAN DEFAULT FALSE, -- 1. Depo sorumlusu
+    is_depo_sorumlu2 BOOLEAN DEFAULT FALSE, -- 2. Depo sorumlusu
+    is_depo_sorumlu3 BOOLEAN DEFAULT FALSE, -- 3. Depo sorumlusu
+    is_depo_sorumlu4 BOOLEAN DEFAULT FALSE, -- 4. Depo sorumlusu
+    is_active BOOLEAN DEFAULT TRUE, -- Kullanıcı aktif mi?
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_by UUID REFERENCES users(id) -- Kim tarafından oluşturuldu
 );
 
 -- 2. Stok tablosu
-CREATE TABLE stock (
+CREATE TABLE IF NOT EXISTS stock (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     product_code VARCHAR(100) UNIQUE NOT NULL,
     product_name VARCHAR(255) NOT NULL,
@@ -30,7 +35,7 @@ CREATE TABLE stock (
 );
 
 -- 3. Stok hareketleri tablosu (log tutmak için)
-CREATE TABLE stock_movements (
+CREATE TABLE IF NOT EXISTS stock_movements (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     product_id UUID REFERENCES stock(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id),
@@ -74,24 +79,46 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stock ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;
 
--- Users tablosu politikaları
-CREATE POLICY "Users can view own profile" ON users
-    FOR SELECT USING (auth.uid() = id);
+-- Users tablosu politikaları (Güncellenmiş)
+CREATE POLICY "Users can view all profiles" ON users
+    FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "Users can update own profile" ON users
     FOR UPDATE USING (auth.uid() = id);
 
--- Stock tablosu politikaları
-CREATE POLICY "Everyone can read stock" ON stock
-    FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Only main admin can insert stock" ON stock
+-- Sadece ana depo sorumlusu yeni kullanıcı ekleyebilir
+CREATE POLICY "Only admin can insert users" ON users
     FOR INSERT TO authenticated 
     WITH CHECK (
         EXISTS (
             SELECT 1 FROM users 
             WHERE id = auth.uid() 
-            AND role = 'main_admin'
+            AND is_depo_admin = true
+        )
+    );
+
+-- Sadece ana depo sorumlusu kullanıcı silebilir
+CREATE POLICY "Only admin can delete users" ON users
+    FOR DELETE TO authenticated 
+    USING (
+        EXISTS (
+            SELECT 1 FROM users 
+            WHERE id = auth.uid() 
+            AND is_depo_admin = true
+        )
+    );
+
+-- Stock tablosu politikaları (Güncellenmiş)
+CREATE POLICY "Everyone can read stock" ON stock
+    FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Only admin can insert stock" ON stock
+    FOR INSERT TO authenticated 
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM users 
+            WHERE id = auth.uid() 
+            AND is_depo_admin = true
         )
     );
 
@@ -108,18 +135,30 @@ CREATE POLICY "Users can insert stock movements" ON stock_movements
     FOR INSERT TO authenticated 
     WITH CHECK (auth.uid() = user_id);
 
--- 8. Örnek veri ekleme (isteğe bağlı)
+-- 8. Örnek veri ekleme (yeni sistem için)
 -- Not: Bu verileri eklemeden önce Supabase Auth'da kullanıcı oluşturun
 -- ve user_id'yi gerçek UUID ile değiştirin
 
 /*
--- Örnek kullanıcılar
-INSERT INTO users (id, name, email, role) VALUES 
-('00000000-0000-0000-0000-000000000001', 'Ahmet Yılmaz', 'ahmet@serkanstok.com', 'main_admin'),
-('00000000-0000-0000-0000-000000000002', 'Mehmet Demir', 'mehmet@serkanstok.com', 'sub1_manager'),
-('00000000-0000-0000-0000-000000000003', 'Ayşe Kaya', 'ayse@serkanstok.com', 'sub2_manager'),
-('00000000-0000-0000-0000-000000000004', 'Fatma Öz', 'fatma@serkanstok.com', 'sub3_manager'),
-('00000000-0000-0000-0000-000000000005', 'Ali Çelik', 'ali@serkanstok.com', 'sub4_manager');
+-- Örnek kullanıcılar (Yeni sistem)
+INSERT INTO users (id, name, email, is_depo_admin, is_active) VALUES 
+('00000000-0000-0000-0000-000000000001', 'Ahmet Yılmaz', 'ahmet@serkanstok.com', true, true);
+
+INSERT INTO users (id, name, email, is_depo_sorumlu1, is_depo_sorumlu2, is_active) VALUES 
+('00000000-0000-0000-0000-000000000002', 'Mehmet Demir', 'mehmet@serkanstok.com', true, false, true);
+
+INSERT INTO users (id, name, email, is_depo_sorumlu2, is_active) VALUES 
+('00000000-0000-0000-0000-000000000003', 'Ayşe Kaya', 'ayse@serkanstok.com', true, true);
+
+INSERT INTO users (id, name, email, is_depo_sorumlu3, is_active) VALUES 
+('00000000-0000-0000-0000-000000000004', 'Fatma Öz', 'fatma@serkanstok.com', true, true);
+
+INSERT INTO users (id, name, email, is_depo_sorumlu4, is_active) VALUES 
+('00000000-0000-0000-0000-000000000005', 'Ali Çelik', 'ali@serkanstok.com', true, true);
+
+-- Örnek: Bir kullanıcı birden fazla deponun sorumlusu
+INSERT INTO users (id, name, email, is_depo_sorumlu1, is_depo_sorumlu3, is_active) VALUES 
+('00000000-0000-0000-0000-000000000006', 'Zeynep Ak', 'zeynep@serkanstok.com', true, true, true);*/
 
 -- Örnek stok verileri
 INSERT INTO stock (product_code, product_name, main_stock, sub1_stock, sub2_stock, sub3_stock, sub4_stock, description) VALUES
@@ -133,10 +172,9 @@ INSERT INTO stock (product_code, product_name, main_stock, sub1_stock, sub2_stoc
 ('VES008', 'Vestel Fırın Cam Kapağı', 4, 1, 1, 0, 1, 'Vestel ankastre fırın iç cam kapağı'),
 ('SAM009', 'Samsung Buzdolabı Termostat', 8, 2, 2, 1, 2, 'Samsung buzdolabı elektronik termostat'),
 ('LG010', 'LG Çamaşır Makinesi Amortisörü', 14, 4, 3, 2, 3, 'LG çamaşır makinesi arka amortisör seti');
-*/
 
--- 9. Faydalı view'lar
-CREATE VIEW stock_summary AS
+-- 9. Faydalı view'lar (Güncellenmiş)
+CREATE OR REPLACE VIEW stock_summary AS
 SELECT 
     s.*,
     (s.main_stock + s.sub1_stock + s.sub2_stock + s.sub3_stock + s.sub4_stock) as total_stock,
@@ -148,7 +186,40 @@ SELECT
 FROM stock s
 ORDER BY s.product_name;
 
--- 10. Stok hareketi log fonksiyonu
+-- Kullanıcı yetkilerini özetleyen view
+CREATE OR REPLACE VIEW user_permissions AS
+SELECT 
+    u.id,
+    u.name,
+    u.email,
+    u.is_active,
+    CASE 
+        WHEN u.is_depo_admin THEN 'Ana Depo Sorumlusu'
+        ELSE ''
+    END ||
+    CASE 
+        WHEN u.is_depo_sorumlu1 THEN CASE WHEN u.is_depo_admin THEN ', 1. Depo' ELSE '1. Depo' END
+        ELSE ''
+    END ||
+    CASE 
+        WHEN u.is_depo_sorumlu2 THEN CASE WHEN (u.is_depo_admin OR u.is_depo_sorumlu1) THEN ', 2. Depo' ELSE '2. Depo' END
+        ELSE ''
+    END ||
+    CASE 
+        WHEN u.is_depo_sorumlu3 THEN CASE WHEN (u.is_depo_admin OR u.is_depo_sorumlu1 OR u.is_depo_sorumlu2) THEN ', 3. Depo' ELSE '3. Depo' END
+        ELSE ''
+    END ||
+    CASE 
+        WHEN u.is_depo_sorumlu4 THEN CASE WHEN (u.is_depo_admin OR u.is_depo_sorumlu1 OR u.is_depo_sorumlu2 OR u.is_depo_sorumlu3) THEN ', 4. Depo' ELSE '4. Depo' END
+        ELSE ''
+    END as permissions_text,
+    u.created_at,
+    creator.name as created_by_name
+FROM users u
+LEFT JOIN users creator ON u.created_by = creator.id
+ORDER BY u.name;
+
+-- 10. Stok hareketi log fonksiyonu (Güncellenmiş)
 CREATE OR REPLACE FUNCTION log_stock_movement(
     p_product_id UUID,
     p_user_id UUID,
@@ -171,5 +242,36 @@ BEGIN
     ) RETURNING id INTO movement_id;
     
     RETURN movement_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Kullanıcı yetkilerini kontrol eden fonksiyon
+CREATE OR REPLACE FUNCTION check_user_warehouse_permission(
+    p_user_id UUID,
+    p_warehouse_type VARCHAR
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    user_rec RECORD;
+BEGIN
+    SELECT * INTO user_rec FROM users WHERE id = p_user_id AND is_active = true;
+    
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- Ana depo sorumlusu her yerde yetki sahibi
+    IF user_rec.is_depo_admin THEN
+        RETURN TRUE;
+    END IF;
+    
+    -- Diğer yetkileri kontrol et
+    CASE p_warehouse_type
+        WHEN 'sub1' THEN RETURN user_rec.is_depo_sorumlu1;
+        WHEN 'sub2' THEN RETURN user_rec.is_depo_sorumlu2;
+        WHEN 'sub3' THEN RETURN user_rec.is_depo_sorumlu3;
+        WHEN 'sub4' THEN RETURN user_rec.is_depo_sorumlu4;
+        ELSE RETURN FALSE;
+    END CASE;
 END;
 $$ LANGUAGE plpgsql;
