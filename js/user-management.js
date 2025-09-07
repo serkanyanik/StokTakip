@@ -103,7 +103,7 @@ function showAddUserModal() {
     new bootstrap.Modal(document.getElementById('addUserModal')).show();
 }
 
-// Yeni kullanıcı ekleme işlemi (Basitleştirilmiş)
+// Yeni kullanıcı ekleme işlemi (Direkt ekleme)
 async function handleAddUser() {
     const name = document.getElementById('newUserName').value;
     const email = document.getElementById('newUserEmail').value;
@@ -115,30 +115,73 @@ async function handleAddUser() {
     const is_depo_sorumlu3 = document.getElementById('newUserSub3').checked;
     const is_depo_sorumlu4 = document.getElementById('newUserSub4').checked;
     
-    // Kullanıcı bilgilerini konsola yazdır ve kopyalanabilir SQL oluştur
-    const sqlCommand = `
--- 1. Önce kullanıcı Supabase Auth panelinden eklenecek
--- Authentication > Users > "Add user" 
--- E-posta: ${email}
--- Şifre: ${password}
-
--- 2. Sonra aşağıdaki SQL komutu çalıştırılacak (USER_ID değiştirilecek):
+    try {
+        // Mevcut kullanıcının oturumunu kaydet
+        const currentSession = supabase.auth.getSession();
+        
+        // Yeni kullanıcı oluştur
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    name: name
+                }
+            }
+        });
+        
+        if (authError) {
+            throw authError;
+        }
+        
+        if (!authData.user) {
+            throw new Error('Kullanıcı oluşturulamadı');
+        }
+        
+        // Kullanıcı profilini users tablosuna ekle
+        const { error: profileError } = await supabase
+            .from('users')
+            .insert({
+                id: authData.user.id,
+                name: name,
+                email: email,
+                is_depo_admin: is_depo_admin,
+                is_depo_sorumlu1: is_depo_sorumlu1,
+                is_depo_sorumlu2: is_depo_sorumlu2,
+                is_depo_sorumlu3: is_depo_sorumlu3,
+                is_depo_sorumlu4: is_depo_sorumlu4,
+                is_active: true,
+                created_by: currentUser.id
+            });
+        
+        // Yeni kullanıcının oturumunu kapat ve eski oturumu geri yükle
+        await supabase.auth.signOut();
+        
+        if (profileError) {
+            console.error('Profil oluşturma hatası:', profileError);
+            
+            // RLS politikası engelliyorsa manuel SQL ver
+            const sqlCommand = `
 INSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) 
-VALUES ('USER_ID_BURAYA', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`;
-    
-    // SQL komutunu kopyalanabilir bir alert'te göster
-    const alertMessage = `Kullanıcı bilgileri hazırlandı!\n\nAdımlar:\n1. Supabase Dashboard > Authentication > Users > "Add user"\n2. E-posta: ${email}\n3. Şifre: ${password}\n4. Kullanıcı oluşturulduktan sonra ID'sini kopyalayın\n5. SQL Editor'da aşağıdaki komutu çalıştırın:\n\n${sqlCommand}\n\nSQL komutu konsola da yazdırıldı.`;
-    
-    console.log('=== YENİ KULLANICI EKLEME TALİMATLARI ===');
-    console.log('1. Supabase Dashboard > Authentication > Users > "Add user"');
-    console.log('2. E-posta:', email);
-    console.log('3. Şifre:', password);
-    console.log('4. SQL Komutu:');
-    console.log(sqlCommand);
-    
-    alert(alertMessage);
-    
-    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`;
+            
+            alert(`Kullanıcı auth'da oluşturuldu (ID: ${authData.user.id})\n\nAncak profil oluşturulamadı. Lütfen aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\n${sqlCommand}`);
+            console.log('SQL Komutu:', sqlCommand);
+        } else {
+            alert(`Kullanıcı başarıyla oluşturuldu!\n\nE-posta: ${email}\nŞifre: ${password}\n\nKullanıcı artık giriş yapabilir.`);
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+        await loadAllUsers();
+        updateUsersTable();
+        
+        // Ana kullanıcının oturumunu yeniden başlat
+        window.location.reload(); // Sayfayı yenile ki mevcut kullanıcı tekrar giriş yapsın
+        
+    } catch (error) {
+        console.error('Kullanıcı oluşturma hatası:', error);
+        alert('Kullanıcı oluşturulurken bir hata oluştu: ' + error.message);
+    }
 }
 
 // Kullanıcı düzenleme modalını göster
