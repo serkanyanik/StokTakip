@@ -239,7 +239,7 @@ function createWarehouseCard(warehouseType) {
             ${editButton}
             ${transferButton}
             <div class="text-center">
-                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-building'} fa-2x mb-2"></i>
+                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck'} fa-2x mb-2"></i>
                 <h6 class="mb-1">${WAREHOUSE_NAMES[warehouseType]}</h6>
                 <small class="stock-summary" id="summary-${warehouseType}">
                     Yükleniyor...
@@ -311,9 +311,17 @@ function updateButtonVisibility() {
         addBtn.style.display = 'none';
     }
     
-    // Stok çıkarma butonu yetkili olduğu depolar için
+    // Stok çıkarma/transfer butonu yetkili olduğu depolar için
     if (canRemoveStock(currentWarehouse)) {
         removeBtn.style.display = 'inline-block';
+        
+        // Buton yazısını kullanıcı türüne göre güncelle
+        const btnText = removeBtn.querySelector('.btn-text') || removeBtn;
+        if (currentUser.is_depo_admin) {
+            removeBtn.innerHTML = '<i class="fas fa-exchange-alt me-1"></i>Stok İşlemleri';
+        } else {
+            removeBtn.innerHTML = '<i class="fas fa-arrow-left me-1"></i>Ana Depoya Gönder';
+        }
     } else {
         removeBtn.style.display = 'none';
     }
@@ -684,6 +692,18 @@ async function handleAddStock() {
 
 // Stok çıkarma modalını göster
 function showRemoveStockModal() {
+    // Modal başlığını depo türüne ve kullanıcı yetkisine göre ayarla
+    const modalTitle = document.getElementById('removeStockModalTitle');
+    if (modalTitle) {
+        if (currentWarehouse === WAREHOUSE_TYPES.MAIN && currentUser.is_depo_admin) {
+            modalTitle.textContent = 'Stok İşlemleri';
+        } else if (currentWarehouse !== WAREHOUSE_TYPES.MAIN) {
+            modalTitle.textContent = 'Araç Stok Yönetimi';
+        } else {
+            modalTitle.textContent = 'Stok Transfer/Çıkar';
+        }
+    }
+    
     populateProductOptions();
     populateWarehouseOptions();
     new bootstrap.Modal(document.getElementById('removeStockModal')).show();
@@ -725,6 +745,14 @@ function populateWarehouseOptions() {
     
     // Ana depo sorumlusu için - tüm depolar arası transfer
     if (currentUser.is_depo_admin) {
+        // Ana depodaysa kendine ürün alma seçeneği ekle
+        if (currentWarehouse === WAREHOUSE_TYPES.MAIN) {
+            const addToMainOption = document.createElement('option');
+            addToMainOption.value = 'add_to_main';
+            addToMainOption.textContent = 'Ana Depoya Ürün Ekle (Sisteme Giriş)';
+            select.appendChild(addToMainOption);
+        }
+        
         // Kaynak depo dışındaki tüm depolara transfer edebilir
         Object.entries(WAREHOUSE_TYPES).forEach(([key, warehouseType]) => {
             if (warehouseType !== currentWarehouse) {
@@ -739,6 +767,19 @@ function populateWarehouseOptions() {
         const externalOption = document.createElement('option');
         externalOption.value = 'external';
         externalOption.textContent = 'Dış Kullanım (Çıkış)';
+        select.appendChild(externalOption);
+    } 
+    // Araç sorumluları için - sadece ana depoya geri gönderebilir
+    else if (currentWarehouse !== WAREHOUSE_TYPES.MAIN) {
+        const mainOption = document.createElement('option');
+        mainOption.value = WAREHOUSE_TYPES.MAIN;
+        mainOption.textContent = 'Ana Depoya Geri Gönder';
+        select.appendChild(mainOption);
+        
+        // Dış kullanım seçeneği (araçlar da kullanabilir)
+        const externalOption = document.createElement('option');
+        externalOption.value = 'external';
+        externalOption.textContent = 'Kullanıldı (Çıkış)';
         select.appendChild(externalOption);
     }
 }
@@ -788,13 +829,19 @@ async function handleRemoveStock() {
         // Stok güncelleme objesi oluştur
         const updates = {};
         const sourceField = `${currentWarehouse}_stock`;
-        updates[sourceField] = currentStock - quantity;
         
-        // Eğer başka bir depoya transfer ediyorsa
-        if (targetWarehouse !== 'external') {
-            const targetField = `${targetWarehouse}_stock`;
-            const targetStock = getCurrentWarehouseStock(item, targetWarehouse);
-            updates[targetField] = targetStock + quantity;
+        // Ana depoya ürün ekleme (sisteme giriş)
+        if (targetWarehouse === 'add_to_main') {
+            updates[sourceField] = currentStock + quantity;
+        } else {
+            updates[sourceField] = currentStock - quantity;
+            
+            // Eğer başka bir depoya transfer ediyorsa
+            if (targetWarehouse !== 'external') {
+                const targetField = `${targetWarehouse}_stock`;
+                const targetStock = getCurrentWarehouseStock(item, targetWarehouse);
+                updates[targetField] = targetStock + quantity;
+            }
         }
         
         const { error } = await supabase
@@ -807,7 +854,9 @@ async function handleRemoveStock() {
         bootstrap.Modal.getInstance(document.getElementById('removeStockModal')).hide();
         await loadStockData();
         
-        if (targetWarehouse === 'external') {
+        if (targetWarehouse === 'add_to_main') {
+            alert(`${item.product_name} ürününe ${quantity} adet başarıyla eklendi (Sisteme Giriş)!`);
+        } else if (targetWarehouse === 'external') {
             alert(`${item.product_name} ürününden ${quantity} adet başarıyla çıkarıldı!`);
         } else {
             alert(`${item.product_name} ürününden ${quantity} adet başarıyla ${WAREHOUSE_NAMES[targetWarehouse]}'ya transfer edildi!`);

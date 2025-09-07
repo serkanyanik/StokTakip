@@ -137,9 +137,15 @@ function hasWarehouseAccess(warehouseType) {
     }
 }
 
-// Stok çıkarma yetkisi - sadece ana depo sorumlusu
+// Stok çıkarma/transfer yetkisi - ana depo sorumlusu veya kendi aracından transfer
 function canRemoveStock(warehouseType) {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    if (!currentUser || !currentUser.is_active) return false;
+    
+    // Ana depo sorumlusu her yerden transfer yapabilir
+    if (currentUser.is_depo_admin) return true;
+    
+    // Araç sorumluları kendi araçlarından transfer yapabilir
+    return hasWarehouseAccess(warehouseType);
 }
 
 // Stok ekleme yetkisi - sadece ana depo sorumlusu
@@ -170,10 +176,10 @@ function getUserRoleDescription() {
 
     const roles = [];
     if (currentUser.is_depo_admin) roles.push('Ana Depo');
-    if (currentUser.is_depo_sorumlu1) roles.push('1. Depo');
-    if (currentUser.is_depo_sorumlu2) roles.push('2. Depo');
-    if (currentUser.is_depo_sorumlu3) roles.push('3. Depo');
-    if (currentUser.is_depo_sorumlu4) roles.push('4. Depo');
+    if (currentUser.is_depo_sorumlu1) roles.push('1. Araç');
+    if (currentUser.is_depo_sorumlu2) roles.push('2. Araç');
+    if (currentUser.is_depo_sorumlu3) roles.push('3. Araç');
+    if (currentUser.is_depo_sorumlu4) roles.push('4. Araç');
 
     return roles.length > 0 ? roles.join(', ') : 'Yetkisiz';
 }

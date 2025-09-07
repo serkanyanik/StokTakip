@@ -32,7 +32,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
 }
 
-/* Depo Kartları */
+/* Depo ve Araç Kartları */
 .warehouse-card {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
@@ -52,8 +52,8 @@ body {
 }
 
 .warehouse-card.sub-warehouse {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    color: #333;
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    color: white;
 }
 
 .warehouse-card.active {

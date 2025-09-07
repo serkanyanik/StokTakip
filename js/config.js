@@ -21,10 +21,10 @@ const WAREHOUSE_TYPES = {
 // Depo isimleri (düzenlenebilir)
 let WAREHOUSE_NAMES = {
     [WAREHOUSE_TYPES.MAIN]: 'Ana Depo',
-    [WAREHOUSE_TYPES.SUB1]: '1. Depo',
-    [WAREHOUSE_TYPES.SUB2]: '2. Depo',
-    [WAREHOUSE_TYPES.SUB3]: '3. Depo',
-    [WAREHOUSE_TYPES.SUB4]: '4. Depo'
+    [WAREHOUSE_TYPES.SUB1]: '1. Araç',
+    [WAREHOUSE_TYPES.SUB2]: '2. Araç',
+    [WAREHOUSE_TYPES.SUB3]: '3. Araç',
+    [WAREHOUSE_TYPES.SUB4]: '4. Araç'
 };
 
 // Yetkiler için kolay erişim
