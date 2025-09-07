@@ -166,6 +166,11 @@ function canManageUsers() {
     return currentUser && currentUser.is_depo_admin && currentUser.is_active;
 }
 
+// Diğer depoları görüntüleme yetkisi
+function canViewOtherWarehouses() {
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+}
+
 // Kullanıcı rolü açıklaması
 function getUserRoleDescription() {
     if (!currentUser) return 'Yetkisiz';
