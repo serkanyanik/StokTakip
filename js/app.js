@@ -262,7 +262,7 @@ function createWarehouseCard(warehouseType) {
     const transferButton = currentUser && currentUser.is_depo_admin && !isMainWarehouse ?
         `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-1" 
                 onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
-                title="${WAREHOUSE_NAMES[warehouseType]}'na Transfer">
+                title="${WAREHOUSE_NAMES[warehouseType]} Aracına Transfer">
             <i class="fas fa-exchange-alt"></i>
         </button>` : '';
 
@@ -273,7 +273,7 @@ function createWarehouseCard(warehouseType) {
             ${editButton}
             ${transferButton}
             <div class="text-center">
-                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-shuttle-van'} fa-2x mb-2"></i>
+                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck-pickup'} fa-2x mb-2"></i>
                 <h6 class="mb-1">${WAREHOUSE_NAMES[warehouseType]}</h6>
                 <small class="stock-summary" id="summary-${warehouseType}">
                     Yükleniyor...
@@ -1059,6 +1059,147 @@ async function handleRemoveStock() {
 }
 
 // Stok ekleme yetkisi kontrol et - auth.js'te tanımlı
+
+// Düşük stoklu ürünler modalını göster
+function showLowStockModal() {
+    const modal = new bootstrap.Modal(document.getElementById('lowStockModal'));
+    modal.show();
+    loadLowStockProducts();
+}
+
+// Düşük stoklu ürünleri yükle ve göster
+function loadLowStockProducts() {
+    const content = document.getElementById('lowStockContent');
+    
+    // Yükleme animasyonu göster
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <p class="mt-2">Düşük stoklu ürünler kontrol ediliyor...</p>
+        </div>
+    `;
+
+    // Kısa bir delay ile veriler yüklendiği hissini ver
+    setTimeout(() => {
+        const lowStockProducts = getLowStockProducts();
+        displayLowStockProducts(lowStockProducts);
+    }, 500);
+}
+
+// Düşük stoklu ürünleri filtrele ve sırala
+function getLowStockProducts() {
+    return stockData
+        .map(item => {
+            const totalStock = (item.main_stock || 0) +
+                (item.sub1_stock || 0) +
+                (item.sub2_stock || 0) +
+                (item.sub3_stock || 0) +
+                (item.sub4_stock || 0);
+            
+            return {
+                ...item,
+                totalStock: totalStock
+            };
+        })
+        .filter(item => item.totalStock < LOW_STOCK_THRESHOLD && item.totalStock >= 0)
+        .sort((a, b) => a.totalStock - b.totalStock); // En düşük stok en üstte
+}
+
+// Düşük stoklu ürünleri modal içinde göster
+function displayLowStockProducts(lowStockProducts) {
+    const content = document.getElementById('lowStockContent');
+    
+    if (lowStockProducts.length === 0) {
+        content.innerHTML = `
+            <div class="text-center text-success">
+                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                <h5>Harika! 🎉</h5>
+                <p class="mb-0">Hiçbir ürünün stoğu kritik seviyede değil.</p>
+                <small class="text-muted">Tüm ürünler ${LOW_STOCK_THRESHOLD} adet veya daha fazla stoka sahip.</small>
+            </div>
+        `;
+        return;
+    }
+
+    let html = `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>${lowStockProducts.length} ürün</strong> kritik stok seviyesinde (${LOW_STOCK_THRESHOLD} adetten az)
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Ürün Kodu</th>
+                        <th>Ürün Adı</th>
+                        <th class="text-center">Toplam</th>
+                        <th class="text-center">Ana Depo</th>
+                        <th class="text-center">Araç 1</th>
+                        <th class="text-center">Araç 2</th>
+                        <th class="text-center">Araç 3</th>
+                        <th class="text-center">Araç 4</th>
+                        <th class="text-center">Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    lowStockProducts.forEach((item, index) => {
+        const isZeroStock = item.totalStock === 0;
+        const rowClass = isZeroStock ? 'table-danger' : 'table-warning';
+        const statusIcon = isZeroStock ? 
+            '<i class="fas fa-times-circle text-danger" title="Stok tükendi"></i>' : 
+            '<i class="fas fa-exclamation-triangle text-warning" title="Düşük stok"></i>';
+
+        html += `
+            <tr class="${rowClass}">
+                <td>
+                    <strong>${item.product_code}</strong>
+                    ${index === 0 ? '<span class="badge bg-danger ms-1">EN DÜŞÜK</span>' : ''}
+                </td>
+                <td>${item.product_name}</td>
+                <td class="text-center">
+                    <span class="badge ${isZeroStock ? 'bg-danger' : 'bg-warning text-dark'} fs-6">
+                        ${item.totalStock}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span>
+                </td>
+                <td class="text-center">
+                    <span class="stock-count ${getStockClass(item.sub1_stock)}">${item.sub1_stock || 0}</span>
+                </td>
+                <td class="text-center">
+                    <span class="stock-count ${getStockClass(item.sub2_stock)}">${item.sub2_stock || 0}</span>
+                </td>
+                <td class="text-center">
+                    <span class="stock-count ${getStockClass(item.sub3_stock)}">${item.sub3_stock || 0}</span>
+                </td>
+                <td class="text-center">
+                    <span class="stock-count ${getStockClass(item.sub4_stock)}">${item.sub4_stock || 0}</span>
+                </td>
+                <td class="text-center">${statusIcon}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Kritik seviye: ${LOW_STOCK_THRESHOLD} adet altı • 
+                Tabloda ürünler en düşük stoktan yükseğe doğru sıralanmıştır
+            </small>
+        </div>
+    `;
+
+    content.innerHTML = html;
+}
 
 // Transfer to warehouse modal
 function showTransferToWarehouseModal(targetWarehouse) {

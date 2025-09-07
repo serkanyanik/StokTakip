@@ -48,11 +48,11 @@ body {
 }
 
 .warehouse-card.main-warehouse {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
 .warehouse-card.sub-warehouse {
-    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
 }
 
@@ -238,6 +238,50 @@ body {
         background-color: #2d3748;
         border-bottom-color: #4a5568;
     }
+}
+
+/* Düşük Stoklu Ürünler Butonu */
+button#lowStockProducts {
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: none !important;
+    background: none !important;
+}
+
+button#lowStockProducts:hover {
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+    color: #f57c00 !important;
+}
+
+button#lowStockProducts:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Düşük Stok Modal Stilleri */
+#lowStockModal .table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#lowStockModal .badge.bg-danger.fs-6 {
+    font-size: 0.9rem !important;
+    padding: 0.4rem 0.6rem;
+}
+
+#lowStockModal .badge.bg-warning.fs-6 {
+    font-size: 0.9rem !important;
+    padding: 0.4rem 0.6rem;
+}
+
+#lowStockModal .table-danger {
+    --bs-table-bg: rgba(220, 53, 69, 0.1);
+}
+
+#lowStockModal .table-warning {
+    --bs-table-bg: rgba(255, 193, 7, 0.1);
 }
 
 /* Transfer Butonları */

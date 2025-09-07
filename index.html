@@ -171,9 +171,14 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between align-items-center">
                                         <span>Düşük Stoklu Ürünler:</span>
-                                        <strong class="text-warning" id="lowStockProducts">0</strong>
+                                        <button class="btn btn-link p-0 text-warning text-decoration-none fw-bold" 
+                                                id="lowStockProducts" 
+                                                onclick="showLowStockModal()"
+                                                title="Düşük stoklu ürünleri görüntüle">
+                                            0
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -494,6 +499,34 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="button" class="btn btn-primary" id="saveWarehouseNameBtn">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Düşük Stoklu Ürünler Modal -->
+    <div class="modal fade" id="lowStockModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Düşük Stoklu Ürünler (5 Adetten Az)
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="lowStockContent">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <p class="mt-2">Düşük stoklu ürünler kontrol ediliyor...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
                 </div>
             </div>
         </div>
