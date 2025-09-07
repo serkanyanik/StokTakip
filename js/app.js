@@ -444,3 +444,8 @@ async function handleRemoveStock() {
         alert('Stok çıkarılırken bir hata oluştu: ' + error.message);
     }
 }
+
+// Stok ekleme yetkisi kontrol et
+function canAddStock() {
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+}
