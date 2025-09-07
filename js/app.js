@@ -200,14 +200,40 @@ function createStockRow(item) {
                   (item.sub3_stock || 0) + 
                   (item.sub4_stock || 0);
     
+    // Ana depodan transfer için buton oluşturma fonksiyonu
+    const createTransferButton = (targetWarehouse, targetStockField) => {
+        if (!currentUser.is_depo_admin || (item.main_stock || 0) <= 0 || targetWarehouse === 'main') {
+            return '';
+        }
+        return `<button class="btn btn-primary btn-sm ms-1" 
+                        onclick="quickTransfer('${item.id}', 'main', '${targetWarehouse}')" 
+                        title="Ana depodan ${WAREHOUSE_NAMES[targetWarehouse]}'ya 1 adet transfer et">
+                    <i class="fas fa-arrow-right"></i>
+                </button>`;
+    };
+    
     row.innerHTML = `
         <td>${item.product_code}</td>
         <td>${item.product_name}</td>
-        <td><span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span></td>
-        <td><span class="stock-count ${getStockClass(item.sub1_stock)}">${item.sub1_stock || 0}</span></td>
-        <td><span class="stock-count ${getStockClass(item.sub2_stock)}">${item.sub2_stock || 0}</span></td>
-        <td><span class="stock-count ${getStockClass(item.sub3_stock)}">${item.sub3_stock || 0}</span></td>
-        <td><span class="stock-count ${getStockClass(item.sub4_stock)}">${item.sub4_stock || 0}</span></td>
+        <td>
+            <span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span>
+        </td>
+        <td>
+            <span class="stock-count ${getStockClass(item.sub1_stock)}">${item.sub1_stock || 0}</span>
+            ${createTransferButton('sub1', 'sub1_stock')}
+        </td>
+        <td>
+            <span class="stock-count ${getStockClass(item.sub2_stock)}">${item.sub2_stock || 0}</span>
+            ${createTransferButton('sub2', 'sub2_stock')}
+        </td>
+        <td>
+            <span class="stock-count ${getStockClass(item.sub3_stock)}">${item.sub3_stock || 0}</span>
+            ${createTransferButton('sub3', 'sub3_stock')}
+        </td>
+        <td>
+            <span class="stock-count ${getStockClass(item.sub4_stock)}">${item.sub4_stock || 0}</span>
+            ${createTransferButton('sub4', 'sub4_stock')}
+        </td>
         <td><strong>${total}</strong></td>
         <td>
             ${canRemoveStock(currentWarehouse) ? 
@@ -237,6 +263,74 @@ function quickRemoveStock(stockId) {
     document.getElementById('selectProduct').value = stockId;
     populateWarehouseOptions();
     showRemoveStockModal();
+}
+
+// Hızlı transfer işlemi
+async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
+    try {
+        const item = stockData.find(s => s.id === stockId);
+        if (!item) {
+            alert('Ürün bulunamadı!');
+            return;
+        }
+        
+        // Yetki kontrolü
+        if (!currentUser.is_depo_admin) {
+            alert('Bu işlem için yetkiniz yok!');
+            return;
+        }
+        
+        const sourceField = `${sourceWarehouse}_stock`;
+        const targetField = `${targetWarehouse}_stock`;
+        
+        const sourceStock = item[sourceField] || 0;
+        const targetStock = item[targetField] || 0;
+        
+        if (sourceStock <= 0) {
+            alert(`${WAREHOUSE_NAMES[sourceWarehouse]}'da yeterli stok yok!`);
+            return;
+        }
+        
+        // Onay isteme
+        const confirmed = confirm(
+            `${item.product_name} (${item.product_code})\n\n` +
+            `1 adet transfer edilecek:\n` +
+            `${WAREHOUSE_NAMES[sourceWarehouse]} (${sourceStock}) → ${WAREHOUSE_NAMES[targetWarehouse]} (${targetStock})\n\n` +
+            `Onaylıyor musunuz?`
+        );
+        
+        if (!confirmed) return;
+        
+        // Stok güncelleme
+        const updates = {
+            [sourceField]: sourceStock - 1,
+            [targetField]: targetStock + 1
+        };
+        
+        const { error } = await supabase
+            .from('stock')
+            .update(updates)
+            .eq('id', stockId);
+            
+        if (error) throw error;
+        
+        // Tabloyu güncelle
+        await loadStockData();
+        
+        // Başarı mesajı
+        const toastMsg = `✅ ${item.product_name}: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]} (1 adet)`;
+        
+        // Toast bildirimi göster (eğer yoksa alert)
+        if (typeof showToast === 'function') {
+            showToast(toastMsg, 'success');
+        } else {
+            alert(toastMsg);
+        }
+        
+    } catch (error) {
+        console.error('Hızlı transfer hatası:', error);
+        alert('Transfer sırasında bir hata oluştu: ' + error.message);
+    }
 }
 
 // İstatistikleri güncelle

@@ -239,3 +239,53 @@ body {
         border-bottom-color: #4a5568;
     }
 }
+
+/* Transfer Butonları */
+.btn-sm .fa-arrow-right {
+    font-size: 0.75rem;
+}
+
+#stockTable td {
+    vertical-align: middle;
+    position: relative;
+}
+
+.stock-count {
+    display: inline-block;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Transfer butonu hover efekti */
+button[onclick*="quickTransfer"]:hover {
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
+}
+
+/* Transfer butonları için özel stil */
+button[onclick*="quickTransfer"] {
+    opacity: 0.8;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+button[onclick*="quickTransfer"]:hover {
+    opacity: 1;
+}
+
+/* Responsive tablo için */
+@media (max-width: 768px) {
+    button[onclick*="quickTransfer"] {
+        padding: 2px 4px;
+        font-size: 0.6rem;
+    }
+    
+    .btn-sm .fa-arrow-right {
+        font-size: 0.55rem;
+    }
+    
+    .stock-count {
+        min-width: 25px;
+    }
+}

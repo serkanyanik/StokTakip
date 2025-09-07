@@ -1,5 +1,46 @@
 # SerkanStok - Değişiklik Notları
 
+## v2.2.1 - HTML Hatası Düzeltmesi
+
+### 🔧 Düzeltilen Hata
+- ✅ HTML dosyasındaki meta charset hatası düzeltildi
+- ✅ Navbar kodlarının head kısmına karışması sorunu çözüldü
+- ✅ Sayfa üstündeki `-="UTF-8">` görünümü temizlendi
+- ✅ HTML dosyası doğru yapıya kavuşturuldu
+
+## v2.2 - Hızlı Transfer Özelliği
+
+### 🚀 Yeni Özellik: Hızlı Transfer Butonları
+
+- ✅ Ana ekrandaki stok tablosunda her depo sütununa transfer butonu eklendi
+- ✅ Ana depo sorumlusu için ana depodan alt depolara tek tıkla 1 adet transfer
+- ✅ Transfer butonları sadece ana depoda stok varsa görünür
+- ✅ Gerçek zamanlı stok güncelleme
+- ✅ Transfer onay sistemi
+- ✅ Responsive tasarım için optimize edildi
+
+### 📋 Transfer Sistemi Detayları
+
+**Koşullar:**
+- Sadece ana depo sorumlusu görebilir
+- Ana depoda stok > 0 olmalı
+- Tek tıkla 1 adet transfer
+- Onay penceresi ile güvenlik
+
+**Görünüm:**
+- Mavi renkli → oklu butonlar
+- Hover efekti ile animasyon
+- Responsive tasarımda küçültülmüş butonlar
+- Tooltips ile açıklama
+
+### 🎯 Kullanım
+
+1. Ana depo sorumlusu olarak giriş yapın
+2. Ana sayfadaki stok tablosunu görüntüleyin
+3. İstediğiniz ürünün alt depo sütunundaki → butonuna tıklayın
+4. Transfer onayını verin
+5. Stok otomatik olarak güncellenir
+
 ## v2.1 - Stok İşlemleri ve Şifre Yönetimi Güncellemesi
 
 ### 🔧 Düzeltilen Sorunlar
