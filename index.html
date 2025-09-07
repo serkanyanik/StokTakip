@@ -390,8 +390,42 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-warning" id="changePasswordBtn">Şifre Değiştir</button>
                     <button type="button" class="btn btn-primary" id="updateUserBtn">Güncelle</button>
                     <button type="button" class="btn btn-danger" id="deleteUserBtn">Sil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Şifre Değişikliği Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Şifre Değişikliği</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Mevcut Şifre</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Yeni Şifre</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                            <div class="form-text">En az 6 karakter olmalıdır.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Yeni Şifre (Tekrar)</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" id="savePasswordBtn">Şifreyi Değiştir</button>
                 </div>
             </div>
         </div>

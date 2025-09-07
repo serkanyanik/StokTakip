@@ -10,6 +10,17 @@ function setupUserManagementListeners() {
     document.getElementById('saveUserBtn')?.addEventListener('click', handleAddUser);
     document.getElementById('updateUserBtn')?.addEventListener('click', handleUpdateUser);
     document.getElementById('deleteUserBtn')?.addEventListener('click', handleDeleteUser);
+    
+    // Şifre değişikliği butonuna tıklandığında
+    document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+        editModal.hide();
+        const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        changePasswordModal.show();
+    });
+
+    // Şifre kaydet butonuna tıklandığında
+    document.getElementById('savePasswordBtn')?.addEventListener('click', handleChangePassword);
 }
 
 // Kullanıcı yönetimi modalını göster
@@ -353,4 +364,66 @@ function showAddUserError(message) {
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+}
+
+// Şifre değişikliği işlemi
+async function handleChangePassword() {
+    try {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // Validasyon kontrolleri
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Lütfen tüm alanları doldurun!');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert('Yeni şifre en az 6 karakter olmalıdır!');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('Yeni şifreler eşleşmiyor!');
+            return;
+        }
+
+        // Mevcut kullanıcıyı al
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+            throw new Error('Kullanıcı bilgileri alınamadı');
+        }
+
+        // Mevcut şifreyi doğrula (yeniden giriş yaparak)
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: currentPassword
+        });
+
+        if (signInError) {
+            alert('Mevcut şifre hatalı!');
+            return;
+        }
+
+        // Şifreyi güncelle
+        const { data, error } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        // Formu temizle ve modalı kapat
+        document.getElementById('changePasswordForm').reset();
+        bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+        
+        alert('Şifreniz başarıyla değiştirildi!');
+
+    } catch (error) {
+        console.error('Şifre değişikliği hatası:', error);
+        alert('Şifre değiştirilirken bir hata oluştu: ' + error.message);
+    }
 }
