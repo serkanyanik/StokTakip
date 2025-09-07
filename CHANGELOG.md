@@ -1,5 +1,56 @@
 # SerkanStok - Değişiklik Notları
 
+## v3.0.1 - Kritik Hata Düzeltmeleri
+
+### 🔧 Düzeltilen Sorunlar
+
+1. **"Yükleniyor..." Sorunu**
+   - ✅ Depo kartlarında sürekli "Yükleniyor..." görünme sorunu çözüldü
+   - ✅ Depo seçimi sonrası stok özetleri doğru güncelleniyor
+   - ✅ Boş depolarda "Bu depoda stok bulunmuyor" mesajı gösteriliyor
+
+2. **Çift Fonksiyon Tanımı**
+   - ✅ showEditWarehouseNameModal fonksiyonunun çift tanımı kaldırıldı
+   - ✅ JavaScript hataları temizlendi
+   - ✅ Kod performansı iyileştirildi
+
+3. **Stok Tablosu İyileştirmeleri**
+   - ✅ Stok verisi yüklenirken kullanıcı bilgilendirmesi
+   - ✅ Boş depo durumunda net mesaj
+   - ✅ Gerçek zamanlı stok özetleri
+
+### 📋 Önceden Eklenen Özellikler (Doğrulandı)
+
+1. **✅ Sadece Ana Depo Sorumlusu Yetkilendirme**
+   - Alt depo sorumluları sadece görüntüleme yapabilir
+   - Tüm stok işlemleri ana depo sorumlusu kontrolünde
+
+2. **✅ Gelişmiş Arama Sistemi**
+   - Ürün kodu ve ürün adı ile arama
+   - Gerçek zamanlı filtreleme
+   - Responsive tasarım
+
+3. **✅ Tam Depolar Arası Transfer**
+   - Örnek: 2. Depo → 4. Depo transfer mümkün
+   - Ana depo sorumlusu herhangi bir depodan herhangi bir depoya transfer
+   - Kaynak depo dışındaki tüm seçenekler
+
+4. **✅ Düzenlenebilir Depo Adları**
+   - "1. Depo" → "İstanbul Depo" 
+   - "2. Depo" → "Ahmet Bey Depo"
+   - localStorage'da kalıcı saklama
+   - Gerçek zamanlı güncelleme
+
+### 🚀 Sistem Durumu
+
+- ✅ Login sistemi çalışıyor
+- ✅ Stok yönetimi aktif
+- ✅ Depo filtreleme çalışıyor
+- ✅ Arama sistemi aktif
+- ✅ Transfer sistemi çalışıyor
+- ✅ Depo adı düzenleme aktif
+- ✅ JavaScript hataları temizlendi
+
 ## v3.0 - Büyük Sistem Güncellemesi
 
 ### 🔧 Ana Değişiklikler

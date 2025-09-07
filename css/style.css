@@ -289,3 +289,51 @@ button[onclick*="quickTransfer"]:hover {
         min-width: 25px;
     }
 }
+
+/* Depo Kartı Butonları */
+.warehouse-card {
+    position: relative;
+}
+
+.warehouse-card .btn {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.warehouse-card:hover .btn {
+    opacity: 1;
+}
+
+.warehouse-card .btn-outline-light {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.warehouse-card .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.warehouse-card .btn-primary {
+    background: rgba(13, 110, 253, 0.8);
+    border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+.warehouse-card .btn-primary:hover {
+    background: rgba(13, 110, 253, 1);
+    border-color: rgba(13, 110, 253, 0.5);
+}
+
+/* Buton pozisyonları */
+.warehouse-card .position-absolute.top-0.end-0 {
+    top: 8px !important;
+    right: 8px !important;
+}
+
+.warehouse-card .position-absolute.bottom-0.end-0 {
+    bottom: 8px !important;
+    right: 8px !important;
+}

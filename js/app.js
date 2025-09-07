@@ -67,6 +67,20 @@ function showEditWarehouseNameModal() {
     modal.show();
 }
 
+// Karttan depo adı düzenleme modalını göster
+function editWarehouseName(warehouseType) {
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok!');
+        return;
+    }
+    
+    document.getElementById('warehouseName').value = WAREHOUSE_NAMES[warehouseType];
+    document.getElementById('editingWarehouseType').value = warehouseType;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editWarehouseNameModal'));
+    modal.show();
+}
+
 // Depo adını kaydet
 async function handleSaveWarehouseName() {
     try {
@@ -125,21 +139,6 @@ function loadWarehouseNamesFromStorage() {
     }
 }
 
-// Depo adı düzenleme modalını göster
-function showEditWarehouseNameModal() {
-    if (!currentUser.is_depo_admin) {
-        alert('Bu işlem için yetkiniz yok!');
-        return;
-    }
-    
-    document.getElementById('warehouseName').value = WAREHOUSE_NAMES[currentWarehouse];
-    document.getElementById('editingWarehouseType').value = currentWarehouse;
-    
-    const modal = new bootstrap.Modal(document.getElementById('editWarehouseNameModal'));
-    modal.show();
-}
-
-// Depo adını kaydet
 async function handleSaveWarehouseName() {
     document.getElementById('searchInput').addEventListener('input', applySearchFilter);
     
@@ -217,10 +216,28 @@ function createWarehouseCard(warehouseType) {
     const isActive = warehouseType === currentWarehouse;
     const canAccess = hasWarehouseAccess(warehouseType) || canViewOtherWarehouses();
     
+    // Edit butonu sadece ana depo sorumlusu için
+    const editButton = currentUser && currentUser.is_depo_admin ? 
+        `<button class="btn btn-outline-light btn-sm position-absolute top-0 end-0 m-1" 
+                onclick="event.stopPropagation(); editWarehouseName('${warehouseType}')" 
+                title="Depo Adını Düzenle">
+            <i class="fas fa-edit"></i>
+        </button>` : '';
+    
+    // Transfer butonu sadece ana depo sorumlusu ve ana depo değilse
+    const transferButton = currentUser && currentUser.is_depo_admin && !isMainWarehouse ? 
+        `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-1" 
+                onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
+                title="${WAREHOUSE_NAMES[warehouseType]}'ya Transfer">
+            <i class="fas fa-arrow-right"></i>
+        </button>` : '';
+    
     col.innerHTML = `
         <div class="warehouse-card ${isMainWarehouse ? 'main-warehouse' : 'sub-warehouse'} ${isActive ? 'active' : ''}" 
              onclick="${canAccess ? `selectWarehouse('${warehouseType}')` : ''}"
-             style="${!canAccess ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+             style="${!canAccess ? 'opacity: 0.5; cursor: not-allowed;' : ''} position: relative;">
+            ${editButton}
+            ${transferButton}
             <div class="text-center">
                 <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-building'} fa-2x mb-2"></i>
                 <h6 class="mb-1">${WAREHOUSE_NAMES[warehouseType]}</h6>
@@ -245,6 +262,7 @@ function selectWarehouse(warehouseType) {
     updateButtonVisibility();
     updateCurrentWarehouseDisplay();
     updateStockTable();
+    updateWarehouseSummaries(); // Depo özetlerini güncelle
 }
 
 // Mevcut depo bilgisini güncelle
@@ -327,10 +345,27 @@ async function loadStockData() {
 // Stok tablosunu güncelle
 function updateStockTable() {
     const tbody = document.querySelector('#stockTable tbody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
+    
+    // Stok verisi yoksa yükleme mesajı
+    if (!stockData || stockData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="9" class="text-center text-muted">Stok verileri yükleniyor...</td>';
+        tbody.appendChild(row);
+        return;
+    }
     
     // Seçili depoya göre filtrele
     const filteredData = getFilteredStockData();
+    
+    if (filteredData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="9" class="text-center text-muted">Bu depoda stok bulunmuyor</td>';
+        tbody.appendChild(row);
+        return;
+    }
     
     filteredData.forEach(item => {
         const row = createStockRow(item);
@@ -790,3 +825,141 @@ async function handleRemoveStock() {
 }
 
 // Stok ekleme yetkisi kontrol et - auth.js'te tanımlı
+
+// Transfer to warehouse modal
+function showTransferToWarehouseModal(targetWarehouse) {
+    const modal = document.getElementById('transferToWarehouseModal');
+    if (!modal) {
+        console.error('Transfer modal bulunamadı');
+        return;
+    }
+    
+    // Modal başlığını güncelle
+    const modalTitle = modal.querySelector('.modal-title');
+    if (modalTitle) {
+        modalTitle.textContent = `${WAREHOUSE_NAMES[targetWarehouse]}'ya Stok Transfer`;
+    }
+    
+    // Hedef depoyu modal'a kaydet
+    modal.setAttribute('data-target-warehouse', targetWarehouse);
+    
+    // Kaynak depo seçeneklerini güncelle
+    updateSourceWarehouseOptions(targetWarehouse);
+    
+    // Ürün listesini temizle
+    const productSelect = document.getElementById('transferProductSelect');
+    productSelect.innerHTML = '<option value="">Önce kaynak depo seçin</option>';
+    
+    // Modal'ı göster
+    new bootstrap.Modal(modal).show();
+}
+
+function updateSourceWarehouseOptions(targetWarehouse) {
+    const sourceSelect = document.getElementById('transferSourceWarehouse');
+    if (!sourceSelect) return;
+    
+    sourceSelect.innerHTML = '<option value="">Kaynak Depo Seçin</option>';
+    
+    // Tüm depoları listele (hedef depo hariç)
+    Object.keys(WAREHOUSE_TYPES).forEach(key => {
+        const warehouseType = WAREHOUSE_TYPES[key];
+        if (warehouseType !== targetWarehouse) {
+            const option = document.createElement('option');
+            option.value = warehouseType;
+            option.textContent = WAREHOUSE_NAMES[warehouseType];
+            sourceSelect.appendChild(option);
+        }
+    });
+    
+    // Kaynak depo değiştiğinde ürün listesini güncelle
+    sourceSelect.addEventListener('change', function() {
+        updateTransferProductOptions(this.value);
+    });
+}
+
+function updateTransferProductOptions(sourceWarehouse) {
+    const productSelect = document.getElementById('transferProductSelect');
+    if (!productSelect) return;
+    
+    productSelect.innerHTML = '<option value="">Ürün Seçin</option>';
+    
+    if (!sourceWarehouse || !stockData) return;
+    
+    // Kaynak depoda stoku olan ürünleri listele
+    stockData
+        .filter(item => getCurrentWarehouseStock(item, sourceWarehouse) > 0)
+        .forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            const stock = getCurrentWarehouseStock(item, sourceWarehouse);
+            option.textContent = `${item.product_name} (Stok: ${stock})`;
+            productSelect.appendChild(option);
+        });
+}
+
+async function executeWarehouseTransfer() {
+    const modal = document.getElementById('transferToWarehouseModal');
+    const targetWarehouse = modal.getAttribute('data-target-warehouse');
+    const sourceWarehouse = document.getElementById('transferSourceWarehouse').value;
+    const productId = document.getElementById('transferProductSelect').value;
+    const quantity = parseInt(document.getElementById('transferQuantity').value);
+    
+    if (!sourceWarehouse) {
+        alert('Lütfen kaynak depo seçin!');
+        return;
+    }
+    
+    if (!productId) {
+        alert('Lütfen ürün seçin!');
+        return;
+    }
+    
+    if (!quantity || quantity <= 0) {
+        alert('Lütfen geçerli bir miktar girin!');
+        return;
+    }
+    
+    try {
+        const item = stockData.find(s => s.id === productId);
+        if (!item) {
+            alert('Ürün bulunamadı!');
+            return;
+        }
+        
+        const sourceStock = getCurrentWarehouseStock(item, sourceWarehouse);
+        
+        if (quantity > sourceStock) {
+            alert(`Yetersiz stok! ${WAREHOUSE_NAMES[sourceWarehouse]}'da mevcut stok: ${sourceStock} adet`);
+            return;
+        }
+        
+        // Stok güncelleme
+        const updates = {};
+        const sourceField = `${sourceWarehouse}_stock`;
+        const targetField = `${targetWarehouse}_stock`;
+        
+        updates[sourceField] = sourceStock - quantity;
+        updates[targetField] = getCurrentWarehouseStock(item, targetWarehouse) + quantity;
+        
+        const { error } = await supabase
+            .from('stock')
+            .update(updates)
+            .eq('id', productId);
+            
+        if (error) throw error;
+        
+        bootstrap.Modal.getInstance(modal).hide();
+        await loadStockData();
+        
+        alert(`${item.product_name} ürününden ${quantity} adet başarıyla ${WAREHOUSE_NAMES[sourceWarehouse]}'dan ${WAREHOUSE_NAMES[targetWarehouse]}'ya transfer edildi!`);
+        
+        // Formu temizle
+        document.getElementById('transferSourceWarehouse').value = '';
+        document.getElementById('transferProductSelect').value = '';
+        document.getElementById('transferQuantity').value = '';
+        
+    } catch (error) {
+        console.error('Transfer hatası:', error);
+        alert('İşlem sırasında bir hata oluştu: ' + error.message);
+    }
+}
