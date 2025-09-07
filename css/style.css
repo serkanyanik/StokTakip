@@ -281,7 +281,9 @@ button[onclick*="quickTransfer"]:hover {
         font-size: 0.6rem;
     }
     
-    .btn-sm .fa-arrow-right {
+    .btn-sm .fa-arrow-right,
+    .btn-sm .fa-shipping-fast,
+    .btn-sm .fa-exchange-alt {
         font-size: 0.55rem;
     }
     
