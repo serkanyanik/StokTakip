@@ -156,9 +156,19 @@ function hasWarehouseAccess(warehouseType) {
     }
 }
 
-// Stok çıkarma yetkisi
+// Stok çıkarma yetkisi - sadece ana depo sorumlusu
 function canRemoveStock(warehouseType) {
-    return hasWarehouseAccess(warehouseType);
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+}
+
+// Stok ekleme yetkisi - sadece ana depo sorumlusu
+function canAddStock() {
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+}
+
+// Transfer yetkisi - sadece ana depo sorumlusu
+function canTransferStock() {
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
 }
 
 // Kullanıcı yönetimi yetkisi

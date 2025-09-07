@@ -1,5 +1,65 @@
 # SerkanStok - Değişiklik Notları
 
+## v3.0 - Büyük Sistem Güncellemesi
+
+### 🔧 Ana Değişiklikler
+
+1. **Stok Yetkilendirme Sistemi**
+   - ✅ Sadece ana depo sorumlusu stok işlemleri yapabilir
+   - ✅ Alt depo sorumluları sadece görüntüleme yetkisi
+   - ✅ Tüm stok ekleme/çıkarma/transfer ana depo sorumlusu kontrolünde
+
+2. **Akıllı Depo Görünümü**
+   - ✅ Depolara tıklandığında o deponun stoku filtrelenir
+   - ✅ Ana depoda tüm stoklar görünür
+   - ✅ Alt depolarda sadece o depodaki stoklar görünür
+   - ✅ Mevcut depo bilgisi görsel olarak gösterilir
+
+3. **Gelişmiş Arama Sistemi**
+   - ✅ Ürün kodu ile arama
+   - ✅ Ürün adı ile arama
+   - ✅ Gerçek zamanlı filtreleme
+   - ✅ Responsive arama çubuğu
+
+4. **Tam Depolar Arası Transfer**
+   - ✅ Ana depo sorumlusu herhangi bir depodan herhangi bir depoya transfer
+   - ✅ Örnek: 2. Depo → 4. Depo transfer imkanı
+   - ✅ Kaynak depo dışındaki tüm depolar hedef olabilir
+   - ✅ Dış kullanım seçeneği
+
+5. **Düzenlenebilir Depo Adları**
+   - ✅ Ana depo sorumlusu depo adlarını düzenleyebilir
+   - ✅ Örnekler: "İstanbul Depo", "Ahmet Bey Depo", "Ankara Şube"
+   - ✅ localStorage'da kalıcı saklama
+   - ✅ Gerçek zamanlı görünüm güncellemesi
+
+### 🎯 Yeni Kullanıcı Deneyimi
+
+**Ana Depo Sorumlusu:**
+- Tüm depo ve stok işlemleri
+- Depo adlarını düzenleme
+- Depolar arası her türlü transfer
+- Arama ve filtreleme
+
+**Alt Depo Sorumluları:**
+- Sadece görüntüleme
+- Kendi depolarının stok durumunu izleme
+- Arama ve filtreleme
+
+### 📱 Arayüz İyileştirmeleri
+
+- **Responsive Arama**: Mobil uyumlu arama çubuğu
+- **Depo Bilgisi**: Hangi depoya bakıldığı net görünüm
+- **Düzenleme Butonu**: Depo adı düzenleme kolay erişim
+- **Akıllı Filtreleme**: Gerçek zamanlı arama sonuçları
+
+### 🔄 Transfer Sistemi
+
+- **Kaynak**: Herhangi bir depo
+- **Hedef**: Kaynak dışındaki tüm depolar + Dış kullanım
+- **Yetki**: Sadece ana depo sorumlusu
+- **Onay**: Her transfer için onay penceresi
+
 ## v2.2.1 - HTML Hatası Düzeltmesi
 
 ### 🔧 Düzeltilen Hata

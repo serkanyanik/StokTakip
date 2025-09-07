@@ -18,8 +18,8 @@ const WAREHOUSE_TYPES = {
     SUB4: 'sub4'
 };
 
-// Depo isimleri
-const WAREHOUSE_NAMES = {
+// Depo isimleri (düzenlenebilir)
+let WAREHOUSE_NAMES = {
     [WAREHOUSE_TYPES.MAIN]: 'Ana Depo',
     [WAREHOUSE_TYPES.SUB1]: '1. Depo',
     [WAREHOUSE_TYPES.SUB2]: '2. Depo',
