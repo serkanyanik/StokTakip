@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Depo adlarını yükle
     loadWarehouseNamesFromStorage();
 
+    // Tablo başlıklarını güncelle (depo adları yüklendikten sonra)
+    updateTableHeaders();
+
     // Oturum kontrolü yap
     const hasSession = await checkSession();
 
@@ -137,6 +140,7 @@ async function handleSaveWarehouseName() {
 
         // Görünümü güncelle
         updateWarehouseCards();
+        updateTableHeaders(); // Tablo başlıklarını güncelle
         updateCurrentWarehouseDisplay();
         updateStockTable(); // Transfer butonlarındaki tooltipleri güncellemek için
 
@@ -211,6 +215,7 @@ function showDashboard() {
 
     updateUserInfo();
     updateWarehouseCards();
+    updateTableHeaders(); // Tablo başlıklarını güncelle
     updateCurrentWarehouseDisplay();
     loadStockData();
     updateButtonVisibility();
@@ -228,6 +233,21 @@ function updateUserInfo() {
     } else {
         userMgmtBtn.style.display = 'none';
     }
+}
+
+// Tablo başlıklarını güncelle
+function updateTableHeaders() {
+    const mainHeader = document.getElementById('mainWarehouseHeader');
+    const sub1Header = document.getElementById('sub1WarehouseHeader');
+    const sub2Header = document.getElementById('sub2WarehouseHeader');
+    const sub3Header = document.getElementById('sub3WarehouseHeader');
+    const sub4Header = document.getElementById('sub4WarehouseHeader');
+
+    if (mainHeader) mainHeader.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.MAIN];
+    if (sub1Header) sub1Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1];
+    if (sub2Header) sub2Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2];
+    if (sub3Header) sub3Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3];
+    if (sub4Header) sub4Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4];
 }
 
 // Depo kartlarını güncelle
@@ -258,11 +278,11 @@ function createWarehouseCard(warehouseType) {
             <i class="fas fa-edit"></i>
         </button>` : '';
 
-    // Transfer butonu sadece ana depo sorumlusu ve ana depo değilse
-    const transferButton = currentUser && currentUser.is_depo_admin && !isMainWarehouse ?
+    // Transfer butonu sadece ana depo sorumlusu için (tüm depolar için)
+    const transferButton = currentUser && currentUser.is_depo_admin ?
         `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-1" 
                 onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
-                title="${WAREHOUSE_NAMES[warehouseType]} Aracına Transfer">
+                title="${WAREHOUSE_NAMES[warehouseType]}${isMainWarehouse ? ' için Transfer İşlemleri' : ' Aracına Transfer'}">
             <i class="fas fa-exchange-alt"></i>
         </button>` : '';
 
@@ -273,7 +293,7 @@ function createWarehouseCard(warehouseType) {
             ${editButton}
             ${transferButton}
             <div class="text-center">
-                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck-pickup'} fa-2x mb-2"></i>
+                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck-moving'} fa-2x mb-2"></i>
                 <h6 class="mb-1">${WAREHOUSE_NAMES[warehouseType]}</h6>
                 <small class="stock-summary" id="summary-${warehouseType}">
                     Yükleniyor...
@@ -1135,11 +1155,11 @@ function displayLowStockProducts(lowStockProducts) {
                         <th>Ürün Kodu</th>
                         <th>Ürün Adı</th>
                         <th class="text-center">Toplam</th>
-                        <th class="text-center">Ana Depo</th>
-                        <th class="text-center">Araç 1</th>
-                        <th class="text-center">Araç 2</th>
-                        <th class="text-center">Araç 3</th>
-                        <th class="text-center">Araç 4</th>
+                        <th class="text-center">${WAREHOUSE_NAMES[WAREHOUSE_TYPES.MAIN]}</th>
+                        <th class="text-center">${WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1]}</th>
+                        <th class="text-center">${WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2]}</th>
+                        <th class="text-center">${WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3]}</th>
+                        <th class="text-center">${WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4]}</th>
                         <th class="text-center">Durum</th>
                     </tr>
                 </thead>
@@ -1212,7 +1232,11 @@ function showTransferToWarehouseModal(targetWarehouse) {
     // Modal başlığını güncelle
     const modalTitle = modal.querySelector('.modal-title');
     if (modalTitle) {
-        modalTitle.textContent = `${WAREHOUSE_NAMES[targetWarehouse]}'ya Stok Transfer`;
+        if (targetWarehouse === WAREHOUSE_TYPES.MAIN) {
+            modalTitle.textContent = `Ana Depo Transfer İşlemleri`;
+        } else {
+            modalTitle.textContent = `${WAREHOUSE_NAMES[targetWarehouse]}'ya Stok Transfer`;
+        }
     }
 
     // Hedef depoyu modal'a kaydet
