@@ -103,7 +103,7 @@ function showAddUserModal() {
     new bootstrap.Modal(document.getElementById('addUserModal')).show();
 }
 
-// Yeni kullanıcı ekleme işlemi
+// Yeni kullanıcı ekleme işlemi (Basitleştirilmiş)
 async function handleAddUser() {
     const name = document.getElementById('newUserName').value;
     const email = document.getElementById('newUserEmail').value;
@@ -115,47 +115,30 @@ async function handleAddUser() {
     const is_depo_sorumlu3 = document.getElementById('newUserSub3').checked;
     const is_depo_sorumlu4 = document.getElementById('newUserSub4').checked;
     
-    try {
-        // Önce Supabase Auth'da kullanıcı oluştur
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true
-        });
-        
-        if (authError) {
-            throw authError;
-        }
-        
-        // Sonra users tablosunda profil oluştur
-        const { error: profileError } = await supabase
-            .from('users')
-            .insert({
-                id: authData.user.id,
-                name: name,
-                email: email,
-                is_depo_admin: is_depo_admin,
-                is_depo_sorumlu1: is_depo_sorumlu1,
-                is_depo_sorumlu2: is_depo_sorumlu2,
-                is_depo_sorumlu3: is_depo_sorumlu3,
-                is_depo_sorumlu4: is_depo_sorumlu4,
-                is_active: true,
-                created_by: currentUser.id
-            });
-            
-        if (profileError) {
-            throw profileError;
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
-        alert('Kullanıcı başarıyla oluşturuldu!');
-        await loadAllUsers();
-        updateUsersTable();
-        
-    } catch (error) {
-        console.error('Kullanıcı oluşturma hatası:', error);
-        alert('Kullanıcı oluşturulurken bir hata oluştu: ' + error.message);
-    }
+    // Kullanıcı bilgilerini konsola yazdır ve kopyalanabilir SQL oluştur
+    const sqlCommand = `
+-- 1. Önce kullanıcı Supabase Auth panelinden eklenecek
+-- Authentication > Users > "Add user" 
+-- E-posta: ${email}
+-- Şifre: ${password}
+
+-- 2. Sonra aşağıdaki SQL komutu çalıştırılacak (USER_ID değiştirilecek):
+INSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) 
+VALUES ('USER_ID_BURAYA', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`;
+    
+    // SQL komutunu kopyalanabilir bir alert'te göster
+    const alertMessage = `Kullanıcı bilgileri hazırlandı!\n\nAdımlar:\n1. Supabase Dashboard > Authentication > Users > "Add user"\n2. E-posta: ${email}\n3. Şifre: ${password}\n4. Kullanıcı oluşturulduktan sonra ID'sini kopyalayın\n5. SQL Editor'da aşağıdaki komutu çalıştırın:\n\n${sqlCommand}\n\nSQL komutu konsola da yazdırıldı.`;
+    
+    console.log('=== YENİ KULLANICI EKLEME TALİMATLARI ===');
+    console.log('1. Supabase Dashboard > Authentication > Users > "Add user"');
+    console.log('2. E-posta:', email);
+    console.log('3. Şifre:', password);
+    console.log('4. SQL Komutu:');
+    console.log(sqlCommand);
+    
+    alert(alertMessage);
+    
+    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
 }
 
 // Kullanıcı düzenleme modalını göster
