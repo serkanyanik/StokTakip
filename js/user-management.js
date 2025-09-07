@@ -117,7 +117,9 @@ async function handleAddUser() {
     
     try {
         // Mevcut kullanıcının oturumunu kaydet
-        const currentSession = supabase.auth.getSession();
+        // Mevcut kullanıcının session'ını sakla
+        const { data: currentSession } = await supabase.auth.getSession();
+        console.log('Current session saved:', currentSession?.session?.user?.id);
         
         // Yeni kullanıcı oluştur
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -132,6 +134,18 @@ async function handleAddUser() {
         
         if (authError) {
             throw authError;
+        }
+        
+        if (!authData.user) {
+            throw new Error('Kullanıcı oluşturulamadı');
+        }
+        
+        console.log('New user created:', authData.user.id);
+        
+        // Hemen mevcut admin oturumunu geri yükle
+        if (currentSession?.session) {
+            await supabase.auth.setSession(currentSession.session);
+            console.log('Admin session restored');
         }
         
         if (!authData.user) {
@@ -154,23 +168,12 @@ async function handleAddUser() {
                 created_by: currentUser.id
             });
         
-        // Yeni kullanıcının oturumunu kapat ve eski oturumu geri yükle
-        await supabase.auth.signOut();
+        // NOT: Yeni kullanıcının auth oturumunu kapatmıyoruz - admin oturumda kalmalı
         
         if (profileError) {
             console.error('Profil oluşturma hatası:', profileError);
             
-            // Production: Auth'da kullanıcı var, profil yok durumu
-            // Bu kullanıcı ilk giriş yaptığında profil otomatik oluşturulacak
-            
-            alert(`✅ Kullanıcı başarıyla oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ İlk giriş sırasında profil otomatik tamamlanacak.\n\n💡 Kullanıcı şimdi giriş yapabilir.`);
-            
-            // Konsola bilgi ver
-            console.group('🔧 Profil Oluşturma Bilgisi');
-            console.log('Auth kullanıcı ID:', authData.user.id);
-            console.log('E-posta:', email);
-            console.log('İlk giriş sırasında otomatik profil oluşturulacak');
-            console.groupEnd();
+            alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`);
             
         } else {
             alert(`🎉 Kullanıcı başarıyla oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n✅ Kullanıcı artık giriş yapabilir.`);
@@ -180,8 +183,8 @@ async function handleAddUser() {
         await loadAllUsers();
         updateUsersTable();
         
-        // Ana kullanıcının oturumunu yeniden başlat
-        window.location.reload(); // Sayfayı yenile ki mevcut kullanıcı tekrar giriş yapsın
+        // Form'u temizle
+        clearAddUserForm();
         
     } catch (error) {
         console.error('Kullanıcı oluşturma hatası:', error);
