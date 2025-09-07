@@ -2,8 +2,8 @@
 // Bu dosyayı düzenleyerek kendi Supabase proje bilgilerinizi ekleyin
 
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL', // Supabase proje URL'inizi buraya yazın
-    anonKey: 'YOUR_SUPABASE_ANON_KEY' // Supabase anon key'inizi buraya yazın
+    url: 'https://vkeyoaoabhobmrgawsuc.supabase.co', // Supabase proje URL
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZXlvYW9hYmhvYm1yZ2F3c3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTA3NDEsImV4cCI6MjA3MjgyNjc0MX0.q7oqevdF_R7Qwg5HNmkI9WmGQjiBkr-YhmyzJajqWQ4' // Supabase anon key
 };
 
 // Supabase client oluştur
@@ -12,7 +12,7 @@ const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONF
 // Depo türleri
 const WAREHOUSE_TYPES = {
     MAIN: 'main',
-    SUB1: 'sub1', 
+    SUB1: 'sub1',
     SUB2: 'sub2',
     SUB3: 'sub3',
     SUB4: 'sub4'
@@ -22,7 +22,7 @@ const WAREHOUSE_TYPES = {
 const USER_ROLES = {
     MAIN_ADMIN: 'main_admin',
     SUB1_MANAGER: 'sub1_manager',
-    SUB2_MANAGER: 'sub2_manager', 
+    SUB2_MANAGER: 'sub2_manager',
     SUB3_MANAGER: 'sub3_manager',
     SUB4_MANAGER: 'sub4_manager'
 };
