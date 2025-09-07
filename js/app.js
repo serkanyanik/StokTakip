@@ -125,23 +125,22 @@ function loadWarehouseNamesFromStorage() {
     }
 }
 
-// Stok ekleme yetkisi kontrol etlogout);
+// Depo adı düzenleme modalını göster
+function showEditWarehouseNameModal() {
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok!');
+        return;
+    }
     
-    // Şifre değişikliği butonu
-    document.getElementById('changeMyPasswordBtn').addEventListener('click', () => {
-        const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-        changePasswordModal.show();
-    });
+    document.getElementById('warehouseName').value = WAREHOUSE_NAMES[currentWarehouse];
+    document.getElementById('editingWarehouseType').value = currentWarehouse;
     
-    // Stok ekleme
-    document.getElementById('addStockBtn').addEventListener('click', showAddStockModal);
-    document.getElementById('saveStockBtn').addEventListener('click', handleAddStock);
-    
-    // Stok çıkarma
-    document.getElementById('removeStockBtn').addEventListener('click', showRemoveStockModal);
-    document.getElementById('confirmRemoveBtn').addEventListener('click', handleRemoveStock);
-    
-    // Arama çubuğu
+    const modal = new bootstrap.Modal(document.getElementById('editWarehouseNameModal'));
+    modal.show();
+}
+
+// Depo adını kaydet
+async function handleSaveWarehouseName() {
     document.getElementById('searchInput').addEventListener('input', applySearchFilter);
     
     // Depo adı düzenleme
@@ -790,7 +789,4 @@ async function handleRemoveStock() {
     }
 }
 
-// Stok ekleme yetkisi kontrol et
-function canAddStock() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
-}
+// Stok ekleme yetkisi kontrol et - auth.js'te tanımlı

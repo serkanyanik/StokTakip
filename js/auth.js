@@ -5,23 +5,17 @@ let currentUser = null;
 // Giriş yapma
 async function login(email, password) {
     try {
-        console.log('Login attempt:', email);
-
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (error) {
-            console.error('Auth error:', error);
             throw error;
         }
 
-        console.log('Auth success, user ID:', data.user.id);
-
         // Kullanıcı bilgilerini al
         const userProfile = await getUserProfile(data.user.id);
-        console.log('User profile:', userProfile);
 
         if (!userProfile) {
             throw new Error('Kullanıcı profili bulunamadı');
@@ -39,7 +33,6 @@ async function login(email, password) {
             is_active: userProfile.is_active
         };
 
-        console.log('Current user set:', currentUser);
         return currentUser;
 
     } catch (error) {
@@ -51,8 +44,6 @@ async function login(email, password) {
 // Kullanıcı profilini getir
 async function getUserProfile(userId) {
     try {
-        console.log('Getting profile for user ID:', userId);
-
         const { data, error } = await supabase
             .from('users')
             .select('*')
@@ -60,11 +51,9 @@ async function getUserProfile(userId) {
             .single();
 
         if (error) {
-            console.error('Profile fetch error:', error);
             throw error;
         }
 
-        console.log('Profile data:', data);
         return data;
 
     } catch (error) {
@@ -94,18 +83,13 @@ async function logout() {
 // Oturum kontrolü
 async function checkSession() {
     try {
-        console.log('Checking session...');
-
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-            console.error('Session check error:', error);
             throw error;
         }
 
         if (session) {
-            console.log('Session found, user ID:', session.user.id);
-
             const userProfile = await getUserProfile(session.user.id);
             if (userProfile) {
                 currentUser = {
@@ -120,11 +104,8 @@ async function checkSession() {
                     is_active: userProfile.is_active
                 };
 
-                console.log('Session restored, current user:', currentUser);
                 return currentUser;
             }
-        } else {
-            console.log('No session found');
         }
 
         return null;
