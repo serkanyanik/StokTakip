@@ -54,12 +54,6 @@ function setupEventListeners() {
 
     // Depo adı kaydetme
     document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
-
-    // Raporlar butonu
-    document.getElementById('reportsBtn').addEventListener('click', showReportsModal);
-
-    // Raf yönetimi butonu
-    document.getElementById('shelfManagementBtn').addEventListener('click', showShelfManagementModal);
 }
 
 // Depo/araç adı düzenleme modalını göster
@@ -239,14 +233,6 @@ function updateUserInfo() {
     } else {
         userMgmtBtn.style.display = 'none';
     }
-
-    // Raf yönetimi butonunu göster/gizle (sadece ana depo sorumlusu)
-    const shelfMgmtBtn = document.getElementById('shelfManagementBtn');
-    if (currentUser.is_depo_admin) {
-        shelfMgmtBtn.style.display = 'inline-block';
-    } else {
-        shelfMgmtBtn.style.display = 'none';
-    }
 }
 
 // Tablo başlıklarını güncelle
@@ -350,7 +336,7 @@ function updateCurrentWarehouseDisplay() {
     }
 }
 
-// Arama filtresini uygula (ürün kodu, adı ve raf adresi dahil)
+// Arama filtresini uygula
 function applySearchFilter() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
     const rows = document.querySelectorAll('#stockTable tbody tr');
@@ -358,9 +344,8 @@ function applySearchFilter() {
     rows.forEach(row => {
         const productCode = row.cells[0].textContent.toLowerCase();
         const productName = row.cells[1].textContent.toLowerCase();
-        const shelfAddress = row.cells[2].textContent.toLowerCase();
 
-        if (productCode.includes(searchTerm) || productName.includes(searchTerm) || shelfAddress.includes(searchTerm)) {
+        if (productCode.includes(searchTerm) || productName.includes(searchTerm)) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
@@ -491,12 +476,6 @@ function createStockRow(item) {
         <td>${item.product_code}</td>
         <td>${item.product_name}</td>
         <td>
-            <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${item.product_code}', '${item.product_name}', '${item.shelf_address || ''}')" 
-                  title="Raf adresini düzenle">
-                ${item.shelf_address ? `<i class="fas fa-map-marker-alt text-success me-1"></i>${item.shelf_address}` : '<i class="fas fa-plus text-muted"></i> Raf Ekle'}
-            </span>
-        </td>
-        <td>
             <span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span>
         </td>
         <td>
@@ -594,18 +573,6 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
             .eq('id', stockId);
 
         if (error) throw error;
-
-        // Hareket kaydı oluştur
-        await createStockMovement(
-            stockId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            1, 
-            `Hızlı transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
-        );
 
         // Tabloyu güncelle
         await loadStockData();
@@ -743,18 +710,6 @@ async function handleAddStock() {
 
             if (error) throw error;
 
-            // Hareket kaydı oluştur
-            await createStockMovement(
-                existingProduct.id, 
-                existingProduct.product_code, 
-                existingProduct.product_name, 
-                'in', 
-                null, 
-                targetWarehouse, 
-                quantity, 
-                'Mevcut ürüne stok ekleme'
-            );
-
             alert(`${existingProduct.product_name} ürününe ${quantity} adet eklendi (${WAREHOUSE_NAMES[targetWarehouse]})`);
         } else {
             // Yeni ürün ekle
@@ -776,27 +731,6 @@ async function handleAddStock() {
                 .insert(newProduct);
 
             if (error) throw error;
-
-            // Yeni eklenen ürünün ID'sini al
-            const { data: newProductData } = await supabase
-                .from('stock')
-                .select('id')
-                .eq('product_code', productCode.toUpperCase())
-                .single();
-
-            if (newProductData) {
-                // Hareket kaydı oluştur
-                await createStockMovement(
-                    newProductData.id, 
-                    productCode.toUpperCase(), 
-                    productName, 
-                    'in', 
-                    null, 
-                    targetWarehouse, 
-                    quantity, 
-                    'Yeni ürün ekleme'
-                );
-            }
 
             alert(`Yeni ürün "${productName}" başarıyla ${WAREHOUSE_NAMES[targetWarehouse]}'ya eklendi!`);
         }
@@ -1119,22 +1053,6 @@ async function handleRemoveStock() {
 
         if (error) throw error;
 
-        // Hareket kaydı oluştur
-        let movementType, notes;
-        if (targetWarehouse === 'add_to_main' && sourceWarehouse === WAREHOUSE_TYPES.MAIN) {
-            movementType = 'in';
-            notes = 'Sisteme giriş (stok artışı)';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, null, sourceWarehouse, quantity, notes);
-        } else if (targetWarehouse === 'external') {
-            movementType = 'out';
-            notes = 'Dış kullanım';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, 'external', quantity, notes);
-        } else {
-            movementType = 'transfer';
-            notes = `${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`;
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, targetWarehouse, quantity, notes);
-        }
-
         bootstrap.Modal.getInstance(document.getElementById('removeStockModal')).hide();
         await loadStockData();
 
@@ -1429,18 +1347,6 @@ async function executeWarehouseTransfer() {
 
         if (error) throw error;
 
-        // Hareket kaydı oluştur
-        await createStockMovement(
-            productId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            quantity, 
-            `Depo arası transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
-        );
-
         bootstrap.Modal.getInstance(modal).hide();
         await loadStockData();
 
@@ -1454,366 +1360,5 @@ async function executeWarehouseTransfer() {
     } catch (error) {
         console.error('Transfer hatası:', error);
         alert('İşlem sırasında bir hata oluştu: ' + error.message);
-    }
-}
-
-// ==================== YENİ ÖZELLİKLER ====================
-
-// Raporlar modalını göster
-function showReportsModal() {
-    const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
-    
-    // Varsayılan tarih aralığını bu ay olarak ayarla
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
-    document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
-    document.getElementById('reportEndDate').value = lastDay.toISOString().split('T')[0];
-    
-    // Depo seçeneklerini doldur
-    populateReportWarehouseOptions();
-    
-    modal.show();
-}
-
-// Rapor için depo seçeneklerini doldur
-function populateReportWarehouseOptions() {
-    const select = document.getElementById('reportWarehouse');
-    select.innerHTML = '<option value="all">Tüm Depolar</option>';
-    
-    Object.entries(WAREHOUSE_TYPES).forEach(([key, warehouseType]) => {
-        const option = document.createElement('option');
-        option.value = warehouseType;
-        option.textContent = WAREHOUSE_NAMES[warehouseType];
-        select.appendChild(option);
-    });
-}
-
-// Stok hareket kaydı oluştur
-async function createStockMovement(productId, productCode, productName, movementType, sourceWarehouse, targetWarehouse, quantity, notes = '') {
-    try {
-        const { error } = await supabase
-            .from('stock_movements')
-            .insert({
-                product_id: productId,
-                product_code: productCode,
-                product_name: productName,
-                movement_type: movementType,
-                source_warehouse: sourceWarehouse,
-                target_warehouse: targetWarehouse,
-                quantity: quantity,
-                user_id: currentUser.id,
-                user_name: currentUser.name,
-                notes: notes
-            });
-
-        if (error) throw error;
-    } catch (error) {
-        console.error('Stok hareket kaydı oluşturma hatası:', error);
-    }
-}
-
-// Rapor oluştur
-async function generateReport() {
-    const startDate = document.getElementById('reportStartDate').value;
-    const endDate = document.getElementById('reportEndDate').value;
-    const warehouse = document.getElementById('reportWarehouse').value;
-    
-    if (!startDate || !endDate) {
-        alert('Lütfen başlangıç ve bitiş tarihlerini seçin!');
-        return;
-    }
-    
-    if (new Date(startDate) > new Date(endDate)) {
-        alert('Başlangıç tarihi bitiş tarihinden büyük olamaz!');
-        return;
-    }
-    
-    const content = document.getElementById('reportContent');
-    content.innerHTML = `
-        <div class="text-center py-3">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Rapor oluşturuluyor...</span>
-            </div>
-            <p class="mt-2">Rapor hazırlanıyor...</p>
-        </div>
-    `;
-    
-    try {
-        let query = supabase
-            .from('stock_movements')
-            .select('*')
-            .gte('movement_date', startDate)
-            .lte('movement_date', endDate + ' 23:59:59')
-            .order('movement_date', { ascending: false });
-            
-        if (warehouse !== 'all') {
-            query = query.or(`source_warehouse.eq.${warehouse},target_warehouse.eq.${warehouse}`);
-        }
-        
-        const { data: movements, error } = await query;
-        
-        if (error) throw error;
-        
-        displayReport(movements, startDate, endDate, warehouse);
-        
-    } catch (error) {
-        console.error('Rapor oluşturma hatası:', error);
-        content.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Rapor oluşturulurken bir hata oluştu: ${error.message}
-            </div>
-        `;
-    }
-}
-
-// Raporu görüntüle
-function displayReport(movements, startDate, endDate, warehouse) {
-    const content = document.getElementById('reportContent');
-    const exportBtn = document.getElementById('exportReportBtn');
-    
-    if (!movements || movements.length === 0) {
-        content.innerHTML = `
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle fa-2x mb-3"></i>
-                <h5>Veri Bulunamadı</h5>
-                <p>Seçilen tarih aralığında ve depoda hiç hareket kaydı bulunmuyor.</p>
-            </div>
-        `;
-        exportBtn.style.display = 'none';
-        return;
-    }
-    
-    let html = `
-        <div class="mb-3">
-            <h6>
-                <i class="fas fa-calendar me-2"></i>
-                ${formatDate(startDate)} - ${formatDate(endDate)} 
-                ${warehouse !== 'all' ? `(${WAREHOUSE_NAMES[warehouse]})` : '(Tüm Depolar)'}
-            </h6>
-            <small class="text-muted">Toplam ${movements.length} hareket</small>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Tarih</th>
-                        <th>Ürün</th>
-                        <th>İşlem</th>
-                        <th>Kaynak</th>
-                        <th>Hedef</th>
-                        <th>Miktar</th>
-                        <th>Kullanıcı</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    movements.forEach(movement => {
-        const movementTypeText = {
-            'in': 'Giriş',
-            'out': 'Çıkış',
-            'transfer': 'Transfer'
-        }[movement.movement_type] || movement.movement_type;
-        
-        const sourceText = movement.source_warehouse ? 
-            WAREHOUSE_NAMES[movement.source_warehouse] || movement.source_warehouse : '-';
-        const targetText = movement.target_warehouse === 'external' ? 'Dış Kullanım' :
-            (movement.target_warehouse ? WAREHOUSE_NAMES[movement.target_warehouse] || movement.target_warehouse : '-');
-            
-        html += `
-            <tr>
-                <td>${formatDateTime(movement.movement_date)}</td>
-                <td>
-                    <strong>${movement.product_code}</strong><br>
-                    <small class="text-muted">${movement.product_name}</small>
-                </td>
-                <td>
-                    <span class="badge bg-${getMovementTypeBadgeColor(movement.movement_type)}">
-                        ${movementTypeText}
-                    </span>
-                </td>
-                <td>${sourceText}</td>
-                <td>${targetText}</td>
-                <td><strong>${movement.quantity}</strong></td>
-                <td>${movement.user_name}</td>
-            </tr>
-        `;
-    });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    content.innerHTML = html;
-    exportBtn.style.display = 'inline-block';
-}
-
-// Hareket tipi için badge rengini getir
-function getMovementTypeBadgeColor(type) {
-    switch (type) {
-        case 'in': return 'success';
-        case 'out': return 'danger';
-        case 'transfer': return 'primary';
-        default: return 'secondary';
-    }
-}
-
-// Raf yönetimi modalını göster
-function showShelfManagementModal() {
-    const modal = new bootstrap.Modal(document.getElementById('shelfManagementModal'));
-    modal.show();
-}
-
-// Raf için ürün ara
-function searchProductsForShelf() {
-    const searchTerm = document.getElementById('shelfProductSearch').value.trim();
-    
-    if (!searchTerm) {
-        alert('Lütfen arama terimi girin!');
-        return;
-    }
-    
-    const filteredProducts = stockData.filter(item => 
-        item.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.shelf_address && item.shelf_address.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    
-    displayShelfProducts(filteredProducts);
-}
-
-// Raf ürünlerini görüntüle
-function displayShelfProducts(products) {
-    const container = document.getElementById('shelfProductsList');
-    
-    if (products.length === 0) {
-        container.innerHTML = `
-            <div class="alert alert-warning text-center">
-                <i class="fas fa-search fa-2x mb-2"></i>
-                <p>Arama kriterlerine uygun ürün bulunamadı.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '<div class="list-group">';
-    
-    products.forEach(product => {
-        html += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">${product.product_code} - ${product.product_name}</h6>
-                        <small class="text-muted">
-                            Ana Depo: ${product.main_stock || 0} adet
-                            ${product.shelf_address ? 
-                                `<span class="badge bg-success ms-2"><i class="fas fa-map-marker-alt"></i> ${product.shelf_address}</span>` : 
-                                '<span class="badge bg-secondary ms-2">Raf adresi yok</span>'
-                            }
-                        </small>
-                    </div>
-                    <button class="btn btn-primary btn-sm" 
-                            onclick="editShelfAddress('${product.id}', '${product.product_code}', '${product.product_name}', '${product.shelf_address || ''}')">
-                        <i class="fas fa-edit"></i> Düzenle
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-// Raf adresi düzenleme modalını aç
-function editShelfAddress(productId, productCode, productName, currentAddress) {
-    const modal = new bootstrap.Modal(document.getElementById('editShelfModal'));
-    
-    document.getElementById('shelfProductInfo').innerHTML = `
-        <strong>${productCode}</strong> - ${productName}
-    `;
-    document.getElementById('shelfAddress').value = currentAddress;
-    
-    // Modal'a product ID'yi kaydet
-    modal._element.setAttribute('data-product-id', productId);
-    
-    modal.show();
-}
-
-// Raf adresini kaydet
-async function saveShelfAddress() {
-    const modal = document.getElementById('editShelfModal');
-    const productId = modal.getAttribute('data-product-id');
-    const shelfAddress = document.getElementById('shelfAddress').value.trim();
-    
-    try {
-        const { error } = await supabase
-            .from('stock')
-            .update({ shelf_address: shelfAddress || null })
-            .eq('id', productId);
-            
-        if (error) throw error;
-        
-        // Stok verilerini yenile
-        await loadStockData();
-        
-        // Modal'ı kapat
-        bootstrap.Modal.getInstance(modal).hide();
-        
-        alert('Raf adresi başarıyla güncellendi!');
-        
-        // Raf yönetimi modalındaki listeyi güncelle
-        if (document.getElementById('shelfProductSearch').value.trim()) {
-            searchProductsForShelf();
-        }
-        
-    } catch (error) {
-        console.error('Raf adresi kaydetme hatası:', error);
-        alert('Raf adresi kaydedilirken bir hata oluştu: ' + error.message);
-    }
-}
-
-// Tarih formatlama fonksiyonları
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('tr-TR');
-}
-
-function formatDateTime(dateString) {
-    return new Date(dateString).toLocaleString('tr-TR');
-}
-
-// Excel export (basit CSV olarak)
-function exportReport() {
-    const table = document.querySelector('#reportContent table');
-    if (!table) return;
-    
-    let csv = '';
-    const rows = table.querySelectorAll('tr');
-    
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('th, td');
-        const csvRow = Array.from(cols).map(col => 
-            '"' + col.textContent.replace(/"/g, '""') + '"'
-        ).join(',');
-        csv += csvRow + '\n';
-    });
-    
-    // CSV dosyası oluştur ve indir
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'stok-raporu.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 }
