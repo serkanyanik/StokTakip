@@ -624,6 +624,68 @@ button[onclick*="quickTransfer"]:hover {
     transform: translateX(4px);
 }
 
+/* Inline düzenleme stilleri */
+.editable-field {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    background: rgba(0, 123, 255, 0.05);
+    border: 1px solid transparent;
+    display: inline-block;
+    min-width: 40px;
+    text-align: center;
+}
+
+.editable-field:hover {
+    background: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.3);
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.editable-field:active {
+    transform: scale(0.98);
+}
+
+/* Ürün görseli modal stilleri */
+#productImagePreview {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+#productImagePreview:hover {
+    transform: scale(1.02);
+}
+
+/* Silme modal stilleri */
+#deleteProductModal .modal-content {
+    border: none;
+    box-shadow: 0 10px 40px rgba(220, 53, 69, 0.3);
+}
+
+#deleteProductModal .card {
+    border-left: 4px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+}
+
+#deleteConfirmText:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Tablo hücre stilleri */
+td .btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+td .btn-sm {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+}
+
 /* Responsive iyileştirmeler */
 @media (max-width: 768px) {
     .shelf-address {
@@ -633,5 +695,15 @@ button[onclick*="quickTransfer"]:hover {
     
     #reportContent .table {
         font-size: 0.85rem;
+    }
+    
+    .editable-field {
+        font-size: 0.85rem;
+        padding: 2px 6px;
+    }
+    
+    td .btn-sm {
+        padding: 0.2rem 0.3rem;
+        font-size: 0.7rem;
     }
 }

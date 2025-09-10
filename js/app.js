@@ -378,7 +378,7 @@ function updateCurrentWarehouseDisplay() {
     }
 }
 
-// Arama filtresini uygula (ürün kodu, adı ve raf adresi dahil)
+// Arama filtresini uygula (ürün kodu, adı, fiyat ve raf adresi dahil)
 function applySearchFilter() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
     const rows = document.querySelectorAll('#stockTable tbody tr');
@@ -386,9 +386,13 @@ function applySearchFilter() {
     rows.forEach(row => {
         const productCode = row.cells[0].textContent.toLowerCase();
         const productName = row.cells[1].textContent.toLowerCase();
-        const shelfAddress = row.cells[2].textContent.toLowerCase();
+        const productPrice = row.cells[2].textContent.toLowerCase();
+        const shelfAddress = row.cells[4].textContent.toLowerCase(); // Raf adresi sütunu kaydı
 
-        if (productCode.includes(searchTerm) || productName.includes(searchTerm) || shelfAddress.includes(searchTerm)) {
+        if (productCode.includes(searchTerm) || 
+            productName.includes(searchTerm) || 
+            productPrice.includes(searchTerm) ||
+            shelfAddress.includes(searchTerm)) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
@@ -515,9 +519,48 @@ function createStockRow(item) {
                 </button>`;
     };
 
+    // Inline edit fonksiyonu
+    const createEditableField = (fieldName, value, displayValue = null) => {
+        if (!currentUser.is_depo_admin) {
+            return displayValue || value || '-';
+        }
+        return `<span class="editable-field" 
+                      onclick="editField('${item.id}', '${fieldName}', '${(value || '').replace(/'/g, '&#39;')}', this)" 
+                      title="Düzenlemek için tıklayın">
+                    ${displayValue || value || '<i class="fas fa-plus text-muted"></i> Ekle'}
+                </span>`;
+    };
+
+    // Ürün görseli için özel buton
+    const createImageButton = (imageUrl) => {
+        if (!imageUrl) {
+            return currentUser.is_depo_admin ? 
+                `<button class="btn btn-outline-secondary btn-sm" onclick="editField('${item.id}', 'product_image_url', '', this)" title="Görsel ekle">
+                    <i class="fas fa-plus"></i>
+                </button>` : 
+                '<span class="text-muted">-</span>';
+        }
+        return `<button class="btn btn-primary btn-sm" onclick="showProductImage('${imageUrl.replace(/'/g, '&#39;')}', '${item.product_name.replace(/'/g, '&#39;')}')" title="Görseli görüntüle">
+                    <i class="fas fa-image"></i>
+                </button>
+                ${currentUser.is_depo_admin ? 
+                    `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${(imageUrl || '').replace(/'/g, '&#39;')}', this)" title="Görsel URL'ini düzenle">
+                        <i class="fas fa-edit"></i>
+                    </button>` : ''
+                }`;
+    };
+
+    // Fiyat formatı
+    const formatPrice = (price) => {
+        if (!price) return null;
+        return parseFloat(price).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+    };
+
     row.innerHTML = `
-        <td>${item.product_code}</td>
-        <td>${item.product_name}</td>
+        <td>${createEditableField('product_code', item.product_code)}</td>
+        <td>${createEditableField('product_name', item.product_name)}</td>
+        <td>${createEditableField('product_price', item.product_price, formatPrice(item.product_price))}</td>
+        <td>${createImageButton(item.product_image_url)}</td>
         <td>
             <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${item.product_code}', '${item.product_name}', '${item.shelf_address || ''}')" 
                   title="Raf adresini düzenle">
@@ -546,11 +589,18 @@ function createStockRow(item) {
         <td><strong>${total}</strong></td>
         <td>
             ${canRemoveStock(currentWarehouse) ?
-            `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')">
+                `<button class="btn btn-warning btn-sm me-1" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
                     <i class="fas fa-minus"></i>
-                </button>` :
-            '<span class="text-muted">-</span>'
-        }
+                </button>` : ''
+            }
+            ${currentUser.is_depo_admin ?
+                `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
+                    <i class="fas fa-trash"></i>
+                </button>` : ''
+            }
+            ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin ? 
+                '<span class="text-muted">-</span>' : ''
+            }
         </td>
     `;
 
@@ -562,6 +612,162 @@ function getStockClass(stock) {
     if (!stock || stock === 0) return 'zero';
     if (stock <= LOW_STOCK_THRESHOLD) return 'low';
     return 'good';
+}
+
+// Inline alan düzenleme
+async function editField(productId, fieldName, currentValue, element) {
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok!');
+        return;
+    }
+
+    const fieldLabels = {
+        'product_code': 'Ürün Kodu',
+        'product_name': 'Ürün Adı',
+        'product_price': 'Fiyat (TL)',
+        'product_image_url': 'Görsel URL'
+    };
+
+    const fieldLabel = fieldLabels[fieldName] || fieldName;
+    let inputType = 'text';
+    let step = null;
+
+    if (fieldName === 'product_price') {
+        inputType = 'number';
+        step = '0.01';
+    } else if (fieldName === 'product_image_url') {
+        inputType = 'url';
+    }
+
+    const newValue = prompt(
+        `${fieldLabel} düzenleyin:`, 
+        currentValue || ''
+    );
+
+    if (newValue === null) return; // İptal edildi
+
+    // Validation
+    if (fieldName === 'product_code' && newValue.trim() === '') {
+        alert('Ürün kodu boş olamaz!');
+        return;
+    }
+
+    if (fieldName === 'product_name' && newValue.trim() === '') {
+        alert('Ürün adı boş olamaz!');
+        return;
+    }
+
+    if (fieldName === 'product_price' && newValue && isNaN(parseFloat(newValue))) {
+        alert('Geçerli bir fiyat girin!');
+        return;
+    }
+
+    if (fieldName === 'product_image_url' && newValue) {
+        try {
+            new URL(newValue);
+        } catch (e) {
+            alert('Geçerli bir URL girin!');
+            return;
+        }
+    }
+
+    try {
+        const updateData = {};
+        if (fieldName === 'product_price') {
+            updateData[fieldName] = newValue ? parseFloat(newValue) : null;
+        } else {
+            updateData[fieldName] = newValue.trim() || null;
+        }
+
+        const { error } = await supabase
+            .from('stock')
+            .update(updateData)
+            .eq('id', productId);
+
+        if (error) throw error;
+
+        // Tabloyu yeniden yükle
+        await loadStockData();
+        
+        // Başarı mesajı
+        alert(`${fieldLabel} başarıyla güncellendi!`);
+
+    } catch (error) {
+        console.error('Alan güncelleme hatası:', error);
+        alert('Güncelleme sırasında bir hata oluştu: ' + error.message);
+    }
+}
+
+// Ürün görseli gösterme
+function showProductImage(imageUrl, productName) {
+    document.getElementById('productImageModalTitle').textContent = productName;
+    document.getElementById('productImagePreview').src = imageUrl;
+    document.getElementById('productImagePreview').alt = productName;
+    
+    new bootstrap.Modal(document.getElementById('productImageModal')).show();
+}
+
+// Ürün silme modalını göster
+function showDeleteProductModal(productId) {
+    const item = stockData.find(s => s.id === productId);
+    if (!item) {
+        alert('Ürün bulunamadı!');
+        return;
+    }
+
+    const total = (item.main_stock || 0) +
+        (item.sub1_stock || 0) +
+        (item.sub2_stock || 0) +
+        (item.sub3_stock || 0) +
+        (item.sub4_stock || 0);
+
+    document.getElementById('deleteProductName').textContent = item.product_name;
+    document.getElementById('deleteProductCode').textContent = item.product_code;
+    document.getElementById('deleteProductTotalStock').textContent = total;
+    document.getElementById('deleteConfirmText').value = '';
+    
+    // Silme butonunu deaktif et
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    
+    // Onay metni kontrolü
+    const confirmInput = document.getElementById('deleteConfirmText');
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    confirmInput.oninput = function() {
+        deleteBtn.disabled = this.value.toUpperCase() !== 'SİL';
+    };
+    
+    // Modal açarken productId'yi sakla
+    window.currentDeleteProductId = productId;
+    
+    new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
+}
+
+// Ürün silmeyi onayla
+async function confirmDeleteProduct() {
+    const productId = window.currentDeleteProductId;
+    if (!productId) return;
+
+    try {
+        const { error } = await supabase
+            .from('stock')
+            .delete()
+            .eq('id', productId);
+
+        if (error) throw error;
+
+        // Modal'ı kapat
+        bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
+        
+        // Tabloyu yeniden yükle
+        await loadStockData();
+        
+        alert('Ürün başarıyla silindi!');
+
+    } catch (error) {
+        console.error('Ürün silme hatası:', error);
+        alert('Ürün silinirken bir hata oluştu: ' + error.message);
+    }
 }
 
 // Hızlı stok çıkarma
@@ -729,6 +935,8 @@ function populateAddStockWarehouseOptions() {
 async function handleAddStock() {
     const productCode = document.getElementById('productCode').value.trim();
     const productName = document.getElementById('productName').value.trim();
+    const productPrice = document.getElementById('productPrice').value.trim();
+    const productImageUrl = document.getElementById('productImageUrl').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value);
     const targetWarehouse = document.getElementById('addStockWarehouse')?.value || WAREHOUSE_TYPES.MAIN;
 
@@ -749,6 +957,22 @@ async function handleAddStock() {
         return;
     }
 
+    // Fiyat kontrolü
+    if (productPrice && isNaN(parseFloat(productPrice))) {
+        alert('Geçerli bir fiyat girin!');
+        return;
+    }
+
+    // URL kontrolü
+    if (productImageUrl) {
+        try {
+            new URL(productImageUrl);
+        } catch (e) {
+            alert('Geçerli bir görsel URL girin!');
+            return;
+        }
+    }
+
     try {
         // Ürün zaten var mı kontrol et
         const existingProduct = stockData.find(item =>
@@ -763,6 +987,14 @@ async function handleAddStock() {
             const updates = {
                 [targetField]: currentStock + quantity
             };
+
+            // Fiyat ve görsel bilgisi varsa güncelle
+            if (productPrice) {
+                updates.product_price = parseFloat(productPrice);
+            }
+            if (productImageUrl) {
+                updates.product_image_url = productImageUrl;
+            }
 
             const { error } = await supabase
                 .from('stock')
@@ -789,6 +1021,8 @@ async function handleAddStock() {
             const newProduct = {
                 product_code: productCode.toUpperCase(),
                 product_name: productName,
+                product_price: productPrice ? parseFloat(productPrice) : null,
+                product_image_url: productImageUrl || null,
                 main_stock: 0,
                 sub1_stock: 0,
                 sub2_stock: 0,
