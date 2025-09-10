@@ -3,6 +3,28 @@
 let currentWarehouse = WAREHOUSE_TYPES.MAIN;
 let stockData = [];
 
+// Database setup kontrol fonksiyonu
+async function ensureDatabaseSetup() {
+    try {
+        // Stock_movements tablosunun varlığını kontrol et
+        const { data, error } = await supabase
+            .from('stock_movements')
+            .select('id')
+            .limit(1);
+        
+        if (error && error.code === 'PGRST106') {
+            console.log('Stock_movements tablosu bulunamadı. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
+            alert('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Database setup kontrol hatası:', error);
+        return false;
+    }
+}
+
 // Sayfa yüklendiğinde çalışacak
 document.addEventListener('DOMContentLoaded', async function () {
     // Depo adlarını yükle
@@ -215,9 +237,15 @@ function showLoginScreen() {
 }
 
 // Dashboard'u göster
-function showDashboard() {
+async function showDashboard() {
     document.getElementById('loginScreen').classList.add('d-none');
     document.getElementById('dashboard').classList.remove('d-none');
+
+    // Database setup kontrol et
+    const dbSetupOk = await ensureDatabaseSetup();
+    if (!dbSetupOk) {
+        console.log('Database setup gerekiyor.');
+    }
 
     updateUserInfo();
     updateWarehouseCards();
@@ -1493,6 +1521,17 @@ function populateReportWarehouseOptions() {
 // Stok hareket kaydı oluştur
 async function createStockMovement(productId, productCode, productName, movementType, sourceWarehouse, targetWarehouse, quantity, notes = '') {
     try {
+        // Önce tabloyu kontrol et
+        const { data: tableCheck, error: checkError } = await supabase
+            .from('stock_movements')
+            .select('*')
+            .limit(1);
+        
+        if (checkError) {
+            console.error('Tablo kontrol hatası:', checkError);
+            return;
+        }
+
         const { error } = await supabase
             .from('stock_movements')
             .insert({
@@ -1509,6 +1548,11 @@ async function createStockMovement(productId, productCode, productName, movement
             });
 
         if (error) throw error;
+        
+        // Başarılı kayıt (sadece development için)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log(`Stok hareketi kaydedildi: ${movementType} - ${productCode} (${quantity} adet)`);
+        }
     } catch (error) {
         console.error('Stok hareket kaydı oluşturma hatası:', error);
     }
