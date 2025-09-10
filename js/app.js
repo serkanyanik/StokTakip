@@ -1544,9 +1544,9 @@ async function generateReport() {
         let query = supabase
             .from('stock_movements')
             .select('*')
-            .gte('movement_date', startDate)
-            .lte('movement_date', endDate + ' 23:59:59')
-            .order('movement_date', { ascending: false });
+            .gte('created_at', startDate)
+            .lte('created_at', endDate + ' 23:59:59')
+            .order('created_at', { ascending: false });
             
         if (warehouse !== 'all') {
             query = query.or(`source_warehouse.eq.${warehouse},target_warehouse.eq.${warehouse}`);
@@ -1626,7 +1626,7 @@ function displayReport(movements, startDate, endDate, warehouse) {
             
         html += `
             <tr>
-                <td>${formatDateTime(movement.movement_date)}</td>
+                <td>${formatDateTime(movement.movement_date || movement.created_at)}</td>
                 <td>
                     <strong>${movement.product_code}</strong><br>
                     <small class="text-muted">${movement.product_name}</small>
