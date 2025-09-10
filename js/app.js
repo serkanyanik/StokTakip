@@ -524,8 +524,12 @@ function createStockRow(item) {
         if (!currentUser.is_depo_admin) {
             return displayValue || value || '-';
         }
+        
+        // value'yu string'e çevir ve güvenli hale getir
+        const safeValue = String(value || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        
         return `<span class="editable-field" 
-                      onclick="editField('${item.id}', '${fieldName}', '${(value || '').replace(/'/g, '&#39;')}', this)" 
+                      onclick="editField('${item.id}', '${fieldName}', '${safeValue}', this)" 
                       title="Düzenlemek için tıklayın">
                     ${displayValue || value || '<i class="fas fa-plus text-muted"></i> Ekle'}
                 </span>`;
@@ -540,11 +544,15 @@ function createStockRow(item) {
                 </button>` : 
                 '<span class="text-muted">-</span>';
         }
-        return `<button class="btn btn-primary btn-sm" onclick="showProductImage('${imageUrl.replace(/'/g, '&#39;')}', '${item.product_name.replace(/'/g, '&#39;')}')" title="Görseli görüntüle">
+        // Güvenli string dönüşümü
+        const safeImageUrl = String(imageUrl || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const safeProductName = String(item.product_name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        
+        return `<button class="btn btn-primary btn-sm" onclick="showProductImage('${safeImageUrl}', '${safeProductName}')" title="Görseli görüntüle">
                     <i class="fas fa-image"></i>
                 </button>
                 ${currentUser.is_depo_admin ? 
-                    `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${(imageUrl || '').replace(/'/g, '&#39;')}', this)" title="Görsel URL'ini düzenle">
+                    `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${safeImageUrl}', this)" title="Görsel URL'ini düzenle">
                         <i class="fas fa-edit"></i>
                     </button>` : ''
                 }`;
@@ -562,7 +570,7 @@ function createStockRow(item) {
         <td>${createEditableField('product_price', item.product_price, formatPrice(item.product_price))}</td>
         <td>${createImageButton(item.product_image_url)}</td>
         <td>
-            <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${item.product_code}', '${item.product_name}', '${item.shelf_address || ''}')" 
+            <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')" 
                   title="Raf adresini düzenle">
                 ${item.shelf_address ? `<i class="fas fa-map-marker-alt text-success me-1"></i>${item.shelf_address}` : '<i class="fas fa-plus text-muted"></i> Raf Ekle'}
             </span>

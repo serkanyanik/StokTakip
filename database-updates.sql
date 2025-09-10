@@ -1,22 +1,26 @@
--- Stock tablosuna raf adresi alanı ekleme
+-- Stock tablosuna yeni alanlar ekleme
 ALTER TABLE stock ADD COLUMN IF NOT EXISTS shelf_address VARCHAR(20);
+ALTER TABLE stock ADD COLUMN IF NOT EXISTS product_price DECIMAL(10,2);
+ALTER TABLE stock ADD COLUMN IF NOT EXISTS product_image_url TEXT;
 
--- Stok hareketleri tablosu oluşturma
+-- Stok hareketleri tablosu güvenli oluşturma ve eksik kolonları ekleme
 CREATE TABLE IF NOT EXISTS stock_movements (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    product_id UUID REFERENCES stock(id) ON DELETE CASCADE,
-    product_code VARCHAR(50) NOT NULL,
-    product_name VARCHAR(255) NOT NULL,
-    movement_type VARCHAR(20) NOT NULL, -- 'in', 'out', 'transfer'
-    source_warehouse VARCHAR(10), -- 'main', 'sub1', 'sub2', 'sub3', 'sub4'
-    target_warehouse VARCHAR(10), -- 'main', 'sub1', 'sub2', 'sub3', 'sub4', 'external'
-    quantity INTEGER NOT NULL,
-    user_id UUID REFERENCES users(id),
-    user_name VARCHAR(100),
-    movement_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Eksik kolonları tek tek güvenli bir şekilde ekle
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES stock(id) ON DELETE CASCADE;
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS product_code VARCHAR(50);
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS product_name VARCHAR(255);
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS movement_type VARCHAR(20); -- 'in', 'out', 'transfer'
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS source_warehouse VARCHAR(10); -- 'main', 'sub1', 'sub2', 'sub3', 'sub4'
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS target_warehouse VARCHAR(10); -- 'main', 'sub1', 'sub2', 'sub3', 'sub4', 'external'
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS quantity INTEGER;
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id);
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS user_name VARCHAR(100);
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS movement_date TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS notes TEXT;
 
 -- RLS politikaları
 ALTER TABLE stock_movements ENABLE ROW LEVEL SECURITY;
