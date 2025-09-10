@@ -1766,8 +1766,6 @@ async function saveShelfAddress() {
         // Modal'ı kapat
         bootstrap.Modal.getInstance(modal).hide();
         
-        alert('Raf adresi başarıyla güncellendi!');
-        
         // Raf yönetimi modalındaki listeyi güncelle
         if (document.getElementById('shelfProductSearch').value.trim()) {
             searchProductsForShelf();
