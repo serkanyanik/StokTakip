@@ -317,6 +317,7 @@
                                 <option value="">İşlem türü seçiniz...</option>
                                 <option value="add">Stok Girişi</option>
                                 <option value="transfer">Stok Transfer/Çıkış</option>
+                                <option value="customer_sale">Müşteri Satış (Çıkış)</option>
                             </select>
                         </div>
                         <div class="mb-3" id="sourceWarehouseContainer" style="display: none;">
@@ -336,6 +337,10 @@
                         <div class="mb-3">
                             <label for="removeQuantity" class="form-label" id="quantityLabel">Miktar</label>
                             <input type="number" class="form-control" id="removeQuantity" min="1" required>
+                        </div>
+                        <div class="mb-3" id="salePriceContainer" style="display: none;">
+                            <label for="salePrice" class="form-label">Satış Fiyatı (₺)</label>
+                            <input type="number" class="form-control" id="salePrice" min="0" step="0.01" placeholder="Birim satış fiyatı">
                         </div>
                         <div class="mb-3" id="targetWarehouseContainer">
                             <label for="targetWarehouse" class="form-label" id="targetWarehouseLabel">Hedef Depo</label>
