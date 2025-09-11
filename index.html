@@ -311,6 +311,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="removeStockForm">
+                        <div class="mb-3">
+                            <label for="operationType" class="form-label">İşlem Türü</label>
+                            <select class="form-select" id="operationType" required>
+                                <option value="">İşlem türü seçiniz...</option>
+                                <option value="add">Stok Girişi</option>
+                                <option value="transfer">Stok Transfer/Çıkış</option>
+                            </select>
+                        </div>
                         <div class="mb-3" id="sourceWarehouseContainer" style="display: none;">
                             <label for="sourceWarehouse" class="form-label">Kaynak Depo</label>
                             <select class="form-select" id="sourceWarehouse" required>
@@ -323,12 +331,13 @@
                                 <option value="">Ürün seçiniz...</option>
                             </select>
                         </div>
+                        <div id="selectedProductInfo" style="display: none;"></div>
                         <div class="mb-3">
-                            <label for="removeQuantity" class="form-label">Transfer Miktarı</label>
+                            <label for="removeQuantity" class="form-label" id="quantityLabel">Miktar</label>
                             <input type="number" class="form-control" id="removeQuantity" min="1" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="targetWarehouse" class="form-label">Hedef Depo</label>
+                        <div class="mb-3" id="targetWarehouseContainer">
+                            <label for="targetWarehouse" class="form-label" id="targetWarehouseLabel">Hedef Depo</label>
                             <select class="form-select" id="targetWarehouse" required>
                                 <option value="">Depo seçiniz...</option>
                             </select>
@@ -337,7 +346,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-warning" id="confirmRemoveBtn">Stok Çıkar</button>
+                    <button type="button" class="btn btn-primary" id="confirmRemoveBtn">İşlemi Gerçekleştir</button>
                 </div>
             </div>
         </div>

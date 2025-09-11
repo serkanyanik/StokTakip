@@ -65,7 +65,19 @@ function setupEventListeners() {
     document.getElementById('saveStockBtn').addEventListener('click', handleAddStock);
 
     // Stok çıkarma
-    document.getElementById('removeStockBtn').addEventListener('click', showRemoveStockModal);
+    document.getElementById('removeStockBtn').addEventListener('click', function() {
+        // Normal modal açılımında ürün seçici aktif olmalı
+        const productSelect = document.getElementById('selectProduct');
+        const productInfo = document.getElementById('selectedProductInfo');
+        
+        productSelect.disabled = false;
+        productSelect.value = '';
+        if (productInfo) {
+            productInfo.style.display = 'none';
+        }
+        
+        showRemoveStockModal();
+    });
     document.getElementById('confirmRemoveBtn').addEventListener('click', handleRemoveStock);
 
     // Arama çubuğu
@@ -79,6 +91,29 @@ function setupEventListeners() {
 
     // Raporlar butonu
     document.getElementById('reportsBtn').addEventListener('click', showReportsModal);
+
+    // İşlem türü değiştiğinde arayüzü güncelle
+    document.getElementById('operationType').addEventListener('change', handleOperationTypeChange);
+
+    // Modal kapandığında ürün seçici durumunu sıfırla
+    document.getElementById('removeStockModal').addEventListener('hidden.bs.modal', function() {
+        const productSelect = document.getElementById('selectProduct');
+        const productInfo = document.getElementById('selectedProductInfo');
+        
+        productSelect.disabled = false;
+        productSelect.value = '';
+        document.getElementById('operationType').value = '';
+        document.getElementById('removeQuantity').value = '';
+        document.getElementById('targetWarehouse').value = '';
+        
+        if (productInfo) {
+            productInfo.style.display = 'none';
+        }
+        
+        // Hedef depo container'ını gizle
+        document.getElementById('targetWarehouseContainer').style.display = 'none';
+        document.getElementById('sourceWarehouseContainer').style.display = 'none';
+    });
 
     // Raf yönetimi butonu
     document.getElementById('shelfManagementBtn').addEventListener('click', showShelfManagementModal);
@@ -836,8 +871,26 @@ function quickRemoveStock(stockId) {
     const item = stockData.find(s => s.id === stockId);
     if (!item) return;
 
-    document.getElementById('selectProduct').value = stockId;
-    populateWarehouseOptions();
+    // Ürünü seç ve alanı devre dışı bırak
+    const productSelect = document.getElementById('selectProduct');
+    productSelect.value = stockId;
+    productSelect.disabled = true;
+    
+    // Transfer işlemini varsayılan olarak seç
+    document.getElementById('operationType').value = 'transfer';
+    handleOperationTypeChange();
+    
+    // Ürün bilgisini görsel olarak göster
+    const productInfo = document.getElementById('selectedProductInfo');
+    if (productInfo) {
+        productInfo.innerHTML = `
+            <div class="alert alert-info mb-3">
+                <strong>Seçili Ürün:</strong> ${item.product_name} (${item.product_code})
+            </div>
+        `;
+        productInfo.style.display = 'block';
+    }
+
     showRemoveStockModal();
 }
 
@@ -1132,6 +1185,75 @@ async function handleAddStock() {
     }
 }
 
+// İşlem türü değiştiğinde arayüzü güncelle
+function handleOperationTypeChange() {
+    const operationType = document.getElementById('operationType').value;
+    const quantityLabel = document.getElementById('quantityLabel');
+    const targetWarehouseContainer = document.getElementById('targetWarehouseContainer');
+    const targetWarehouseLabel = document.getElementById('targetWarehouseLabel');
+    const confirmBtn = document.getElementById('confirmRemoveBtn');
+    const sourceContainer = document.getElementById('sourceWarehouseContainer');
+
+    if (operationType === 'add') {
+        // Stok girişi modu
+        quantityLabel.textContent = 'Giriş Miktarı';
+        targetWarehouseLabel.textContent = 'Giriş Yapılacak Depo';
+        confirmBtn.textContent = 'Stok Girişi Yap';
+        confirmBtn.className = 'btn btn-success';
+        
+        // Kaynak depo gizle (stok girişinde kaynak yok)
+        if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
+            sourceContainer.style.display = 'none';
+        }
+        
+        populateWarehouseOptionsForEntry();
+        
+    } else if (operationType === 'transfer') {
+        // Transfer/çıkış modu
+        quantityLabel.textContent = 'Transfer Miktarı';
+        targetWarehouseLabel.textContent = 'Hedef Depo';
+        confirmBtn.textContent = 'Transfer/Çıkış Yap';
+        confirmBtn.className = 'btn btn-warning';
+        
+        // Kaynak depo göster (ana depo admin için)
+        if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
+            sourceContainer.style.display = 'block';
+            populateSourceWarehouseOptions();
+            setupSourceWarehouseListener();
+        }
+        
+        populateWarehouseOptions();
+    } else {
+        // Hiçbir işlem seçilmemiş
+        targetWarehouseContainer.style.display = 'none';
+        confirmBtn.textContent = 'İşlemi Gerçekleştir';
+        confirmBtn.className = 'btn btn-primary';
+    }
+}
+
+// Stok girişi için depo seçenekleri (sadece mevcut depolara giriş)
+function populateWarehouseOptionsForEntry() {
+    const select = document.getElementById('targetWarehouse');
+    select.innerHTML = '<option value="">Giriş yapılacak depo seçiniz...</option>';
+
+    // Mevcut kullanıcının yetkisine göre depolar
+    if (currentUser.is_depo_admin) {
+        // Ana depo admin - tüm depolara giriş yapabilir
+        Object.entries(WAREHOUSE_NAMES).forEach(([key, name]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+    } else {
+        // Normal kullanıcı - sadece kendi deposuna giriş
+        const option = document.createElement('option');
+        option.value = currentWarehouse;
+        option.textContent = WAREHOUSE_NAMES[currentWarehouse];
+        select.appendChild(option);
+    }
+}
+
 // Stok çıkarma modalını göster
 function showRemoveStockModal() {
     // Modal başlığını depo türüne ve kullanıcı yetkisine göre ayarla
@@ -1146,18 +1268,26 @@ function showRemoveStockModal() {
         }
     }
 
-    // Ana depo sorumlusu ve ana depo seçiliyse kaynak depo seçimini göster
-    const sourceContainer = document.getElementById('sourceWarehouseContainer');
-    if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
-        sourceContainer.style.display = 'block';
-        populateSourceWarehouseOptions();
-        setupSourceWarehouseListener();
-    } else {
-        sourceContainer.style.display = 'none';
-        populateProductOptions();
+    // İşlem türü sıfırla
+    document.getElementById('operationType').value = '';
+    document.getElementById('targetWarehouseContainer').style.display = 'none';
+
+    // Ürün seçici alanını aktif hale getir (normal modal açılımında)
+    const productSelect = document.getElementById('selectProduct');
+    const productInfo = document.getElementById('selectedProductInfo');
+    
+    if (productSelect && !productSelect.disabled) {
+        // Normal modal açılımı - ürün seçici aktif
+        if (productInfo) {
+            productInfo.style.display = 'none';
+        }
     }
 
-    populateWarehouseOptions();
+    // Ana depo sorumlusu ve ana depo seçiliyse kaynak depo seçimini gizle (başlangıçta)
+    const sourceContainer = document.getElementById('sourceWarehouseContainer');
+    sourceContainer.style.display = 'none';
+    
+    populateProductOptions();
     new bootstrap.Modal(document.getElementById('removeStockModal')).show();
 }
 
@@ -1344,10 +1474,10 @@ function populateWarehouseOptions() {
             });
         }
 
-        // Dış kullanım seçeneği
+        // Müşteri satış seçeneği
         const externalOption = document.createElement('option');
         externalOption.value = 'external';
-        externalOption.textContent = 'Dış Kullanım (Çıkış)';
+        externalOption.textContent = 'Müşteri Satış (Çıkış)';
         select.appendChild(externalOption);
     }
     // Araç sorumluları için - sadece ana depoya geri gönderebilir
@@ -1357,10 +1487,10 @@ function populateWarehouseOptions() {
         mainOption.textContent = 'Ana Depoya Geri Gönder';
         select.appendChild(mainOption);
 
-        // Dış kullanım seçeneği (araçlar da kullanabilir)
+        // Müşteri satış seçeneği (araçlar da kullanabilir)
         const externalOption = document.createElement('option');
         externalOption.value = 'external';
-        externalOption.textContent = 'Kullanıldı (Çıkış)';
+        externalOption.textContent = 'Müşteri Satış (Çıkış)';
         select.appendChild(externalOption);
     }
 }
@@ -1379,20 +1509,17 @@ async function handleRemoveStock() {
         return;
     }
 
+    const operationType = document.getElementById('operationType').value;
     const productId = document.getElementById('selectProduct').value;
     const quantity = parseInt(document.getElementById('removeQuantity').value);
     const targetWarehouse = document.getElementById('targetWarehouse').value;
 
-    // Ana depo sorumlusu ve ana depo seçiliyse kaynak depo kontrolü
-    let sourceWarehouse = currentWarehouse;
-    if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
-        const selectedSource = document.getElementById('sourceWarehouse').value;
-        if (selectedSource) {
-            sourceWarehouse = selectedSource;
-        }
+    // Validation
+    if (!operationType) {
+        alert('Lütfen işlem türü seçin!');
+        return;
     }
 
-    // Validation
     if (!productId) {
         alert('Lütfen ürün seçin!');
         return;
@@ -1404,7 +1531,7 @@ async function handleRemoveStock() {
     }
 
     if (!targetWarehouse) {
-        alert('Lütfen hedef seçin!');
+        alert('Lütfen depo seçin!');
         return;
     }
 
@@ -1415,71 +1542,116 @@ async function handleRemoveStock() {
             return;
         }
 
-        const sourceStock = getCurrentWarehouseStock(item, sourceWarehouse);
-
-        if (quantity > sourceStock) {
-            alert(`Yetersiz stok! ${WAREHOUSE_NAMES[sourceWarehouse]}'da mevcut stok: ${sourceStock} adet`);
-            return;
+        if (operationType === 'add') {
+            // Stok girişi işlemi
+            await handleStockEntry(item, targetWarehouse, quantity);
+        } else if (operationType === 'transfer') {
+            // Transfer/çıkış işlemi
+            await handleStockTransfer(item, targetWarehouse, quantity);
         }
 
-        // Stok güncelleme objesi oluştur
-        const updates = {};
-        const sourceField = `${sourceWarehouse}_stock`;
-
-        // Ana depoya ürün ekleme (sisteme giriş) - sadece ana depodayken
-        if (targetWarehouse === 'add_to_main' && sourceWarehouse === WAREHOUSE_TYPES.MAIN) {
-            updates[sourceField] = sourceStock + quantity;
-        } else {
-            updates[sourceField] = sourceStock - quantity;
-
-            // Eğer başka bir depoya transfer ediyorsa
-            if (targetWarehouse !== 'external') {
-                const targetField = `${targetWarehouse}_stock`;
-                const targetStock = getCurrentWarehouseStock(item, targetWarehouse);
-                updates[targetField] = targetStock + quantity;
-            }
-        }
-
-        const { error } = await supabase
-            .from('stock')
-            .update(updates)
-            .eq('id', productId);
-
-        if (error) throw error;
-
-        // Hareket kaydı oluştur
-        let movementType, notes;
-        if (targetWarehouse === 'add_to_main' && sourceWarehouse === WAREHOUSE_TYPES.MAIN) {
-            movementType = 'in';
-            notes = 'Sisteme giriş (stok artışı)';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, null, sourceWarehouse, quantity, notes);
-        } else if (targetWarehouse === 'external') {
-            movementType = 'out';
-            notes = 'Dış kullanım';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, 'external', quantity, notes);
-        } else {
-            movementType = 'transfer';
-            notes = `${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`;
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, targetWarehouse, quantity, notes);
-        }
-
+        // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('removeStockModal')).hide();
-        await loadStockData();
 
-        // Stok işlemleri başarılı - sessizce işle
+        // Stok verilerini yeniden yükle
+        await loadStockData();
 
         // Formu temizle
         document.getElementById('removeQuantity').value = '';
         document.getElementById('selectProduct').value = '';
         document.getElementById('targetWarehouse').value = '';
+        document.getElementById('operationType').value = '';
         if (document.getElementById('sourceWarehouse')) {
             document.getElementById('sourceWarehouse').value = '';
         }
 
     } catch (error) {
-        console.error('Stok çıkarma hatası:', error);
-        alert('İşlem sırasında bir hata oluştu: ' + error.message);
+        console.error('Stok işlemi hatası:', error);
+        alert('İşlem gerçekleştirilirken bir hata oluştu: ' + error.message);
     }
+}
+
+// Stok girişi işlemi
+async function handleStockEntry(item, targetWarehouse, quantity) {
+    const targetField = `${targetWarehouse}_stock`;
+    const currentStock = getCurrentWarehouseStock(item, targetWarehouse);
+    
+    const updates = {
+        [targetField]: currentStock + quantity
+    };
+
+    const { error } = await supabase
+        .from('stock')
+        .update(updates)
+        .eq('id', item.id);
+
+    if (error) throw error;
+
+    // Hareket kaydı oluştur
+    await createStockMovement(
+        item.id, 
+        item.product_code, 
+        item.product_name, 
+        'in', 
+        null, 
+        targetWarehouse, 
+        quantity, 
+        `Stok girişi - ${WAREHOUSE_NAMES[targetWarehouse]}`
+    );
+
+    console.log(`Stok girişi: ${item.product_name} - ${quantity} adet - ${WAREHOUSE_NAMES[targetWarehouse]}`);
+}
+
+// Stok transfer/çıkış işlemi
+async function handleStockTransfer(item, targetWarehouse, quantity) {
+    // Kaynak depo belirleme
+    let sourceWarehouse = currentWarehouse;
+    if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
+        const selectedSource = document.getElementById('sourceWarehouse').value;
+        if (selectedSource) {
+            sourceWarehouse = selectedSource;
+        }
+    }
+
+    const sourceStock = getCurrentWarehouseStock(item, sourceWarehouse);
+
+    if (quantity > sourceStock) {
+        alert(`Yetersiz stok! ${WAREHOUSE_NAMES[sourceWarehouse]}'da mevcut stok: ${sourceStock} adet`);
+        return;
+    }
+
+    // Stok güncelleme objesi oluştur
+    const updates = {};
+    const sourceField = `${sourceWarehouse}_stock`;
+    updates[sourceField] = sourceStock - quantity;
+
+    // Eğer başka bir depoya transfer ediyorsa
+    if (targetWarehouse !== 'external') {
+        const targetField = `${targetWarehouse}_stock`;
+        const targetStock = getCurrentWarehouseStock(item, targetWarehouse);
+        updates[targetField] = targetStock + quantity;
+    }
+
+    const { error } = await supabase
+        .from('stock')
+        .update(updates)
+        .eq('id', item.id);
+
+    if (error) throw error;
+
+    // Hareket kaydı oluştur
+    let movementType, notes;
+    if (targetWarehouse === 'external') {
+        movementType = 'out';
+        notes = 'Müşteri satış';
+        await createStockMovement(item.id, item.product_code, item.product_name, movementType, sourceWarehouse, 'external', quantity, notes);
+    } else {
+        movementType = 'transfer';
+        notes = `${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`;
+        await createStockMovement(item.id, item.product_code, item.product_name, movementType, sourceWarehouse, targetWarehouse, quantity, notes);
+    }
+
+    console.log(`Transfer işlemi: ${item.product_name} - ${quantity} adet - ${notes}`);
 }
 
 // Stok ekleme yetkisi kontrol et - auth.js'te tanımlı
@@ -1945,7 +2117,8 @@ function displayReport(movements, startDate, endDate, warehouse) {
                 <thead class="table-dark">
                     <tr>
                         <th>Tarih</th>
-                        <th>Ürün</th>
+                        <th>Ürün Kodu</th>
+                        <th>Ürün Adı</th>
                         <th>İşlem</th>
                         <th>Kaynak</th>
                         <th>Hedef</th>
@@ -1965,7 +2138,7 @@ function displayReport(movements, startDate, endDate, warehouse) {
 
         const sourceText = movement.source_warehouse ?
             WAREHOUSE_NAMES[movement.source_warehouse] || movement.source_warehouse : '-';
-        const targetText = movement.target_warehouse === 'external' ? 'Dış Kullanım' :
+        const targetText = movement.target_warehouse === 'external' ? 'Müşteri Satış' :
             (movement.target_warehouse ? WAREHOUSE_NAMES[movement.target_warehouse] || movement.target_warehouse : '-');
 
         // Ürün görseli kontrolü
@@ -1982,10 +2155,8 @@ function displayReport(movements, startDate, endDate, warehouse) {
         html += `
             <tr>
                 <td>${formatDateTime(movement.movement_date || movement.created_at)}</td>
-                <td>
-                    ${productCodeDisplay}<br>
-                    <small class="text-muted">${movement.product_name}</small>
-                </td>
+                <td>${productCodeDisplay}</td>
+                <td>${movement.product_name}</td>
                 <td>
                     <span class="badge bg-${getMovementTypeBadgeColor(movement.movement_type)}">
                         ${movementTypeText}
