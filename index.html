@@ -85,6 +85,28 @@
                                 <div class="row" id="warehouseCards">
                                     <!-- Depo kartları dinamik olarak yüklenecek -->
                                 </div>
+                                
+                                <!-- Kompakt İstatistikler -->
+                                <div class="compact-stats">
+                                    <div class="d-flex justify-content-around align-items-center flex-wrap gap-4">
+                                        <div class="stat-item text-center">
+                                            <div class="stat-value text-primary" id="totalProducts">0</div>
+                                            <div class="stat-label text-muted">Ürün Türü</div>
+                                        </div>
+                                        <div class="stat-item text-center">
+                                            <div class="stat-value text-success" id="totalStock">0</div>
+                                            <div class="stat-label text-muted">Toplam Stok</div>
+                                        </div>
+                                        <div class="stat-item text-center">
+                                            <button class="btn btn-link p-0 text-decoration-none stat-item" 
+                                                    onclick="showLowStockModal()"
+                                                    title="Düşük stoklu ürünleri görüntüle">
+                                                <div class="stat-value text-warning" id="lowStockProducts">0</div>
+                                                <div class="stat-label text-muted">Düşük Stok</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -92,7 +114,7 @@
 
                 <!-- İşlem Paneli -->
                 <div class="row mb-4">
-                    <div class="col-md-8">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
@@ -159,39 +181,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-chart-bar me-2"></i>Hızlı İstatistikler
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Toplam Ürün Türü:</span>
-                                        <strong id="totalProducts">0</strong>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Toplam Stok:</span>
-                                        <strong id="totalStock">0</strong>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <button class="btn btn-link p-0 text-warning text-decoration-none fw-normal d-flex align-items-center w-100 justify-content-between" 
-                                                onclick="showLowStockModal()"
-                                                title="Düşük stoklu ürünleri görüntüle">
-                                            <span>Düşük Stoklu Ürünler:</span>
-                                            <strong id="lowStockProducts" class="text-warning">0</strong>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+                    </div>
+                </div>
+
+                <!-- İşlem Paneli -->
                 </div>
             </div>
         </div>
