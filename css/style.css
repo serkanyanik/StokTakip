@@ -1238,9 +1238,94 @@ body {
     border: none;
 }
 
+
+
 .modal-header {
     background-color: #f8f9fa;
     border-radius: 12px 12px 0 0;
+}
+
+/* Gradient arka planlı modal header'lar için beyaz text */
+.modal-header[style*="linear-gradient"],
+.modal-header[style*="gradient"] {
+    color: white !important;
+}
+
+.modal-header[style*="linear-gradient"] .modal-title,
+.modal-header[style*="gradient"] .modal-title {
+    color: white !important;
+}
+
+.modal-header[style*="linear-gradient"] .btn-close,
+.modal-header[style*="gradient"] .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* User Management ve Password modal'ları için beyaz text */
+#userManagementModal .modal-header,
+#changePasswordModal .modal-header,
+#addUserModal .modal-header,
+#editUserModal .modal-header {
+    color: white !important;
+}
+
+#userManagementModal .modal-header .modal-title,
+#changePasswordModal .modal-header .modal-title,
+#addUserModal .modal-header .modal-title,
+#editUserModal .modal-header .modal-title {
+    color: white !important;
+}
+
+#userManagementModal .modal-header .btn-close,
+#changePasswordModal .modal-header .btn-close,
+#addUserModal .modal-header .btn-close,
+#editUserModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* Diğer styled modal'lar için genel kural */
+.modal-header.bg-primary,
+.modal-header.bg-secondary,
+.modal-header.bg-success,
+.modal-header.bg-danger,
+.modal-header.bg-warning,
+.modal-header.bg-info,
+.modal-header.bg-dark {
+    color: white !important;
+}
+
+.modal-header.bg-primary .modal-title,
+.modal-header.bg-secondary .modal-title,
+.modal-header.bg-success .modal-title,
+.modal-header.bg-danger .modal-title,
+.modal-header.bg-warning .modal-title,
+.modal-header.bg-info .modal-title,
+.modal-header.bg-dark .modal-title {
+    color: white !important;
+}
+
+/* Inline style ile gradient olan modal header'lar */
+.modal-header[style*="#667eea"],
+.modal-header[style*="#764ba2"],
+.modal-header[style*="rgb(102, 126, 234)"],
+.modal-header[style*="rgb(118, 75, 162)"] {
+    color: white !important;
+}
+
+.modal-header[style*="#667eea"] .modal-title,
+.modal-header[style*="#764ba2"] .modal-title,
+.modal-header[style*="rgb(102, 126, 234)"] .modal-title,
+.modal-header[style*="rgb(118, 75, 162)"] .modal-title {
+    color: white !important;
+}
+
+/* Her durumda koyu arka plan üzerinde beyaz text */
+.modal-header:not(.bg-light):not([style*="background-color: #f8f9fa"]) {
+    color: white !important;
+}
+
+.modal-header:not(.bg-light):not([style*="background-color: #f8f9fa"]) .modal-title {
+    color: white !important;
 }
 
 /* Form Stilleri */
@@ -1661,6 +1746,11 @@ button[onclick*="quickTransfer"]:hover {
 }
 
 /* Tablo hücre stilleri */
+td.actions-column {
+    vertical-align: middle !important;
+    text-align: center;
+}
+
 td .btn-group {
     display: flex;
     gap: 4px;
@@ -1690,6 +1780,23 @@ td .btn-sm {
     td .btn-sm {
         padding: 0.2rem 0.3rem;
         font-size: 0.7rem;
+    }
+    
+    .actions-column .btn {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        font-size: 8px !important;
+        padding: 0 !important;
+    }
+    
+    .actions-column .btn i {
+        font-size: 7px !important;
+    }
+    
+    .actions-column .d-flex {
+        height: 22px;
+        gap: 1px !important;
     }
 }
 
@@ -1735,32 +1842,42 @@ td .btn-sm {
 /* Actions Column Styles */
 .actions-column {
     white-space: nowrap;
-    width: 1px;
-    /* Minimal width, content will expand */
+    width: 120px;
+    min-width: 120px;
+    padding: 0.25rem !important;
+    vertical-align: middle;
 }
 
 .actions-column .d-flex {
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     gap: 2px !important;
     justify-content: flex-start;
     align-items: center;
+    min-width: max-content;
+    height: 24px;
 }
 
 /* Transfer button styles in actions column */
 .actions-column .btn {
-    font-size: 10px !important;
-    padding: 2px 6px !important;
-    margin: 1px !important;
-    min-width: 24px;
-    height: 24px;
+    font-size: 9px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    vertical-align: top;
 }
 
 .actions-column .btn i {
     font-size: 8px !important;
+    margin: 0 !important;
+    line-height: 1;
 }
 
 /* Transfer button colors for different vehicles */
