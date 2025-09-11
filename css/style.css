@@ -1781,7 +1781,7 @@ td .btn-sm {
         padding: 0.2rem 0.3rem;
         font-size: 0.7rem;
     }
-    
+
     .actions-column .btn {
         width: 20px !important;
         height: 20px !important;
@@ -1789,11 +1789,11 @@ td .btn-sm {
         font-size: 8px !important;
         padding: 0 !important;
     }
-    
+
     .actions-column .btn i {
         font-size: 7px !important;
     }
-    
+
     .actions-column .d-flex {
         height: 22px;
         gap: 1px !important;
