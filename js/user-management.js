@@ -187,7 +187,7 @@ async function handleAddUser() {
             alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`);
 
         } else {
-            alert(`🎉 Kullanıcı başarıyla oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n✅ Kullanıcı artık giriş yapabilir.`);
+            // Kullanıcı başarıyla oluşturuldu - sessizce işle
         }
 
         bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
@@ -254,7 +254,7 @@ async function handleUpdateUser() {
         }
 
         bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
-        alert('Kullanıcı başarıyla güncellendi!');
+        // Kullanıcı başarıyla güncellendi - sessizce işle
         await loadAllUsers();
         updateUsersTable();
 
@@ -313,7 +313,7 @@ async function handleDeleteUser(userId = null) {
             bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
         }
 
-        alert('Kullanıcı başarıyla silindi!');
+        // Kullanıcı başarıyla silindi - sessizce işle
         await loadAllUsers();
         updateUsersTable();
 
@@ -420,7 +420,7 @@ async function handleChangePassword() {
         document.getElementById('changePasswordForm').reset();
         bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
         
-        alert('Şifreniz başarıyla değiştirildi!');
+        // Şifre başarıyla değiştirildi - sessizce işle
 
     } catch (error) {
         console.error('Şifre değişikliği hatası:', error);

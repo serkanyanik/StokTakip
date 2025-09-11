@@ -13,100 +13,157 @@
 <body>
     <div id="app">
         <!-- Giriş Ekranı -->
-        <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
-            <div class="card shadow-lg" style="width: 400px;">
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-warehouse fa-3x text-primary mb-3"></i>
-                        <h2 class="card-title">Serkan Stok</h2>
-                        <p class="text-muted">Beyaz Eşya Teknik Servis Stok Takip</p>
+        <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center login-container">
+            <div class="login-wrapper">
+                <div class="login-card shadow-lg">
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <h2 class="login-title">Serkan Stok</h2>
+                        <p class="login-subtitle">Beyaz Eşya Teknik Servis Stok Takip Sistemi</p>
                     </div>
-                    <form id="loginForm">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">E-posta</label>
-                            <input type="email" class="form-control" id="email" required>
+                    <form id="loginForm" class="login-form">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control modern-input" id="email" placeholder="E-posta adresiniz" required>
+                            <label for="email">
+                                <i class="fas fa-envelope me-2"></i>E-posta
+                            </label>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Şifre</label>
-                            <input type="password" class="form-control" id="password" required>
+                        <div class="form-floating mb-4">
+                            <input type="password" class="form-control modern-input" id="password" placeholder="Şifreniz" required>
+                            <label for="password">
+                                <i class="fas fa-lock me-2"></i>Şifre
+                            </label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                        <button type="submit" class="btn btn-login w-100">
+                            <span class="btn-text">Sisteme Giriş Yap</span>
+                            <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     </form>
+                    <div class="login-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Güvenli bağlantı ile korunmaktadır
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Ana Dashboard -->
         <div id="dashboard" class="d-none">
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">
-                        <i class="fas fa-warehouse me-2"></i>Serkan Stok
+            <!-- Modern Navbar -->
+            <nav class="navbar navbar-expand-lg modern-navbar">
+                <div class="container-fluid px-4">
+                    <a class="navbar-brand modern-brand" href="#">
+                        <div class="brand-icon">
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+                        <div class="brand-text">
+                            <span class="brand-title">Serkan</span>
+                            <span class="brand-subtitle">Stok</span>
+                        </div>
                     </a>
-                    <div class="navbar-nav ms-auto">
-                        <span class="navbar-text me-3" id="userInfo">
-                            <i class="fas fa-user me-1"></i>
-                            <span id="userName"></span> - <span id="userRole"></span>
-                        </span>
-                        <button class="btn btn-outline-light btn-sm me-2" id="changeMyPasswordBtn">
-                            <i class="fas fa-key me-1"></i>Şifre Değiştir
+                    <div class="navbar-nav ms-auto d-flex align-items-center">
+                        <div class="user-info me-3" id="userInfo">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-details">
+                                <div class="user-name" id="userName"></div>
+                                <div class="user-role" id="userRole"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-navbar me-2" id="changeMyPasswordBtn" title="Şifre Değiştir">
+                            <i class="fas fa-key"></i>
                         </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="reportsBtn">
-                            <i class="fas fa-chart-line me-1"></i>Raporlar
+                        <button class="btn btn-navbar me-2" id="reportsBtn" title="Raporlar">
+                            <i class="fas fa-chart-line"></i>
                         </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="shelfManagementBtn"
-                            style="display: none;">
-                            <i class="fas fa-th-large me-1"></i>Raf Yönetimi
+                        <button class="btn btn-navbar me-2" id="shelfManagementBtn"
+                            style="display: none;" title="Raf Yönetimi">
+                            <i class="fas fa-th-large"></i>
                         </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="userManagementBtn" style="display: none;">
-                            <i class="fas fa-users me-1"></i>Kullanıcı Yönetimi
+                        <button class="btn btn-navbar me-2" id="userManagementBtn" style="display: none;" title="Kullanıcı Yönetimi">
+                            <i class="fas fa-users"></i>
                         </button>
-                        <button class="btn btn-outline-light btn-sm" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt me-1"></i>Çıkış
+                        <button class="btn btn-logout" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            <span>Çıkış</span>
                         </button>
                     </div>
                 </div>
             </nav>
 
             <!-- Ana İçerik -->
-            <div class="container-fluid mt-4">
-                <!-- Depo Seçimi -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-building me-2"></i>Depo Durumu
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row" id="warehouseCards">
-                                    <!-- Depo kartları dinamik olarak yüklenecek -->
-                                </div>
+            <div class="modern-container">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="header-content">
+                        <div class="header-info">
+                            <h1 class="dashboard-title">
+                                <i class="fas fa-tachometer-alt me-3"></i>
+                                Stok Yönetim Paneli
+                            </h1>
+                            <p class="dashboard-subtitle">
+                                Aktif Depo: <span class="current-warehouse-badge" id="currentWarehouseName">Ana Depo</span>
+                            </p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary btn-modern" id="addStockBtn">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Yeni Stok Ekle
+                            </button>
+                            <button class="btn btn-warning btn-modern" id="removeStockBtn">
+                                <i class="fas fa-exchange-alt me-2"></i>
+                                Stok İşlemleri
+                            </button>
+                            <button class="btn btn-info btn-modern" id="editWarehouseNameBtn">
+                                <i class="fas fa-edit me-2"></i>
+                                Adı Düzenle
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                                <!-- Kompakt İstatistikler -->
-                                <div class="compact-stats">
-                                    <div class="d-flex justify-content-around align-items-center flex-wrap gap-4">
-                                        <div class="stat-item text-center">
-                                            <div class="stat-value text-primary" id="totalProducts">0</div>
-                                            <div class="stat-label text-muted">Ürün Türü</div>
-                                        </div>
-                                        <div class="stat-item text-center">
-                                            <div class="stat-value text-success" id="totalStock">0</div>
-                                            <div class="stat-label text-muted">Toplam Stok</div>
-                                        </div>
-                                        <div class="stat-item text-center">
-                                            <button class="btn btn-link p-0 text-decoration-none stat-item"
-                                                onclick="showLowStockModal()" title="Düşük stoklu ürünleri görüntüle">
-                                                <div class="stat-value text-warning" id="lowStockProducts">0</div>
-                                                <div class="stat-label text-muted">Düşük Stok</div>
-                                            </button>
-                                        </div>
-                                    </div>
+                <!-- Depo Durumu Kartları -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3>Depo & Araç Durumu</h3>
+                            <p>Tüm lokasyonlardaki stok dağılımı</p>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div class="warehouse-grid" id="warehouseCards">
+                            <!-- Depo kartları dinamik olarak yüklenecek -->
+                        </div>
+
+                        <!-- Modern İstatistikler -->
+                        <div class="compact-stats">
+                            <div class="d-flex">
+                                <div class="stat-item">
+                                    <div class="stat-value text-primary" id="totalProducts">0</div>
+                                    <div class="stat-label">Ürün Türü</div>
                                 </div>
+                                <div class="stat-item">
+                                    <div class="stat-value text-success" id="totalStock">0</div>
+                                    <div class="stat-label">Toplam Stok</div>
+                                </div>
+                                <div class="stat-item">
+                                    <button class="btn btn-link p-0 text-decoration-none w-100" 
+                                            onclick="showLowStockModal()"
+                                            title="Düşük stoklu ürünleri görüntüle">
+                                        <div class="stat-value text-warning" id="lowStockProducts">0</div>
+                                        <div class="stat-label">Düşük Stok</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                             </div>
                         </div>
                     </div>
@@ -170,7 +227,7 @@
                                                 <th id="sub3WarehouseHeader">3. Araç</th>
                                                 <th id="sub4WarehouseHeader">4. Araç</th>
                                                 <th>Toplam</th>
-                                                <th>İşlemler</th>
+                                                <th class="actions-column">İşlemler</th>
                                             </tr>
                                         </thead>
                                         <tbody>

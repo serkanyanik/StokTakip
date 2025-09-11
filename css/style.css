@@ -1,64 +1,520 @@
-/* Ana Stiller */
+/* Ana Stiller - Modern UI */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 .card {
     border: none;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
     overflow: hidden;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    z-index: 1;
 }
 
 .card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
     background: rgba(255, 255, 255, 0.98);
 }
 
 .card-header {
-    background: linear-gradient(135deg, rgba(248, 249, 250, 0.9) 0%, rgba(233, 236, 239, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 16px 16px 0 0 !important;
-    padding: 1.5rem 2rem;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 2rem 2.5rem;
     font-weight: 600;
     color: #2d3436;
-    backdrop-filter: blur(5px);
-}
-
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
-/* Login Ekranı */
-#loginScreen {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-#loginScreen .card {
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
+    position: relative;
+    z-index: 2;
 }
 
-/* Depo ve Araç Kartları - Hoover Tarzı Modern Tasarım */
-.warehouse-card {
+.card-body {
+    padding: 2rem 2.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Modern Login Ekranı */
+.login-container {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 16px;
-    padding: 2rem 1.5rem;
-    margin-bottom: 1rem;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
 }
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.08)"/><circle cx="25" cy="75" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+    opacity: 0.3;
+}
+
+.login-wrapper {
+    position: relative;
+    z-index: 2;
+}
+
+.login-card {
+    width: 450px;
+    max-width: 90vw;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.login-header {
+    text-align: center;
+    padding: 3rem 2.5rem 2rem;
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.5) 0%, rgba(233, 236, 239, 0.3) 100%);
+}
+
+.login-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+}
+
+.login-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.login-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+    color: #636e72;
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.login-form {
+    padding: 0 2.5rem 2rem;
+}
+
+.modern-input {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.modern-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.form-floating > label {
+    padding: 1rem 1.25rem;
+    color: #636e72;
+    font-weight: 500;
+}
+
+.btn-login {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-login:hover::before {
+    left: 100%;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.login-footer {
+    text-align: center;
+    padding: 1rem 2.5rem 2.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(248, 249, 250, 0.3);
+}
+
+/* Modern Navbar */
+.modern-navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.modern-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #2d3436 !important;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.modern-brand:hover {
+    transform: scale(1.05);
+    color: #667eea !important;
+}
+
+.brand-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.brand-icon i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.brand-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #2d3436;
+}
+
+.brand-subtitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #636e72;
+    margin-top: -2px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.user-avatar i {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2d3436;
+    font-size: 0.95rem;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: #636e72;
+    font-weight: 500;
+}
+
+.btn-navbar {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-navbar:hover {
+    background: rgba(102, 126, 234, 0.2);
+    color: #5a67d8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.btn-logout {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    border: none;
+    color: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    color: white;
+}
+
+/* Modern Dashboard Container */
+.modern-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    min-height: calc(100vh - 80px);
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-title i {
+    color: #667eea;
+    font-size: 2rem;
+}
+
+.dashboard-subtitle {
+    color: #636e72;
+    margin: 0.5rem 0 0 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.current-warehouse-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-modern {
+    border: none;
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-modern:hover::before {
+    left: 100%;
+}
+
+.btn-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary.btn-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-warning.btn-modern {
+    background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+    color: white;
+}
+
+.btn-info.btn-modern {
+    background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+    color: white;
+}
+
+/* Section Cards */
+.section-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    padding: 2rem 2.5rem 1.5rem;
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.8) 0%, rgba(233, 236, 239, 0.6) 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.section-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.section-icon i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.section-title h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+.section-title p {
+    color: #636e72;
+    margin: 0.25rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+.section-body {
+    padding: 2rem 2.5rem;
+}
+
+/* Warehouse Grid */
+.warehouse-grid {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: stretch;
+}
+
+
 
 .warehouse-card::before {
     content: '';
@@ -67,57 +523,565 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    border-radius: 16px;
-    pointer-events: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
 }
 
-.warehouse-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+.warehouse-card:hover::before {
+    opacity: 0.1;
 }
 
 .warehouse-card.main-warehouse {
-    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(238, 90, 82, 0.1) 100%);
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+.warehouse-card.main-warehouse i {
+    color: #ff6b6b;
 }
 
 .warehouse-card.sub-warehouse {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, rgba(255, 167, 38, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%);
+    border-color: rgba(255, 167, 38, 0.3);
+}
+
+.warehouse-card.sub-warehouse i {
+    color: #ffa726;
 }
 
 .warehouse-card.active {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    box-shadow: 0 8px 32px rgba(238, 90, 36, 0.4);
-    transform: translateY(-4px) scale(1.05);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+    border-color: transparent;
 }
 
-.warehouse-card.active::before {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+.warehouse-card.active .stock-summary {
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Kart İçeriği */
-.warehouse-card .text-center {
+.warehouse-card.active i {
+    color: white;
+    transform: scale(1.1);
+}
+
+.warehouse-card.active h6 {
+    color: white;
+}
+
+.warehouse-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
+}
+
+.warehouse-card > * {
     position: relative;
     z-index: 2;
 }
 
 .warehouse-card i {
+    font-size: 2.5rem;
     margin-bottom: 1rem;
-    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.warehouse-card h6 {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: #2d3436;
+    letter-spacing: -0.2px;
+}
+
+.stock-summary {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #636e72;
+    opacity: 0.8;
+}
+
+/* Warehouse Card Buttons */
+.warehouse-card .btn {
+    position: absolute;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 3;
+    font-size: 0.9rem;
+}
+
+.warehouse-card .btn-outline-light {
+    background: rgba(255, 255, 255, 0.95);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    top: 8px;
+    right: 8px;
+}
+
+.warehouse-card .btn-outline-light:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #5a67d8;
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.warehouse-card .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    bottom: 8px;
+    right: 8px;
+    border: none;
+}
+
+.warehouse-card .btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Modern Statistics */
+.compact-stats {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.5) 0%, rgba(233, 236, 239, 0.3) 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    border-top: 3px solid #667eea;
+    margin-top: 2rem;
+}
+
+.compact-stats .d-flex {
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    min-width: 120px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(5px);
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value.text-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-value.text-success {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-value.text-warning {
+    background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #636e72;
+    opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .modern-container {
+        padding: 1.5rem;
+    }
+    
+    .dashboard-header {
+        padding: 1.5rem 2rem;
+    }
+    
+    .section-body {
+        padding: 1.5rem 2rem;
+    }
+    
+    .warehouse-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 992px) and (min-width: 769px) {
+    .warehouse-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .warehouse-card {
+        min-height: 110px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-container {
+        padding: 1rem;
+    }
+    
+    .dashboard-header {
+        padding: 1.5rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-modern {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    
+    .warehouse-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .warehouse-card {
+        min-height: 100px;
+        padding: 1rem 0.75rem;
+    }
+    
+    .warehouse-card i {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .warehouse-card h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .warehouse-card .btn {
+        width: 28px;
+        height: 28px;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .warehouse-card .btn i {
+        font-size: 0.7rem;
+    }
+    
+    .warehouse-card {
+        padding: 1.5rem;
+    }
+    
+    .warehouse-card i {
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
+    
+    .compact-stats {
+        padding: 1.5rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+        min-width: 100px;
+    }
+    
+    .section-header {
+        padding: 1.5rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .section-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .modern-navbar .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .navbar-nav {
+        gap: 0.5rem;
+    }
+    
+    .btn-navbar, .btn-logout {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    .brand-text .brand-subtitle {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .warehouse-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .warehouse-card {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    .compact-stats .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        width: 100%;
+    }
+    
+    .login-card {
+        margin: 1rem;
+        width: auto;
+    }
+    
+    .login-header {
+        padding: 2rem 1.5rem 1.5rem;
+    }
+    
+    .login-form {
+        padding: 0 1.5rem 1.5rem;
+    }
+}
+
+/* Depo ve Araç Kartları - Temiz ve Okunabilir Tasarım */
+.warehouse-card {
+    background: rgba(255, 255, 255, 0.95);
+    color: #2c3e50;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.warehouse-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    border-color: #007bff;
+}
+
+.warehouse-card.main-warehouse {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-color: #0056b3;
+    min-height: 140px;
+}
+
+.warehouse-card.main-warehouse:hover {
+    border-color: #004085;
+    box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+}
+
+.warehouse-card.sub-warehouse {
+    background: rgba(255, 255, 255, 0.95);
+    color: #495057;
+    border-color: #dee2e6;
+}
+
+.warehouse-card.sub-warehouse:hover {
+    border-color: #6c757d;
+}
+
+.warehouse-card.active {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-color: #20c997;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+    transform: translateY(-2px);
+}
+
+.warehouse-card.active:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 25px rgba(40, 167, 69, 0.4);
+}
+
+/* Kart İçeriği */
+.warehouse-card .card-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+}
+
+.warehouse-card i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
     transition: transform 0.3s ease;
+    display: block;
+}
+
+.warehouse-card.main-warehouse i {
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.warehouse-card.active i {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .warehouse-card:hover i {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    opacity: 1;
 }
 
 .warehouse-card h6 {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+.warehouse-card.main-warehouse h6 {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.warehouse-card.active h6 {
+    color: white;
+}
+
+.warehouse-card .stock-summary {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    opacity: 0.8;
+}
+
+.warehouse-card.main-warehouse .stock-summary {
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 1;
+}
+
+.warehouse-card.active .stock-summary {
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 1;
+}
+
+.warehouse-card .product-count {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.warehouse-card .total-stock {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.warehouse-card.main-warehouse .total-stock,
+.warehouse-card.active .total-stock {
+    opacity: 0.8;
+}
+
+/* Kart Butonları - Küçük ve Minimal */
+.warehouse-card .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    min-width: auto;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.warehouse-card .btn i {
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.warehouse-card .btn.btn-outline-light {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.warehouse-card .btn.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.warehouse-card .btn.btn-primary {
+    background: rgba(0, 123, 255, 0.8);
+    border: 1px solid rgba(0, 123, 255, 0.6);
+    color: white;
+}
+
+.warehouse-card .btn.btn-primary:hover {
+    background: rgba(0, 123, 255, 1);
+    border-color: rgba(0, 123, 255, 0.8);
 }
 
 .warehouse-card small {
@@ -765,4 +1729,106 @@ td .btn-sm {
     .stat-label {
         font-size: 0.7rem;
     }
+}
+
+/* Actions Column Styles */
+.actions-column {
+    white-space: nowrap;
+    width: 1px; /* Minimal width, content will expand */
+}
+
+.actions-column .d-flex {
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Transfer button styles in actions column */
+.actions-column .btn {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    margin: 1px !important;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions-column .btn i {
+    font-size: 8px !important;
+}
+
+/* Transfer button colors for different vehicles */
+.actions-column .btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.actions-column .btn-warning {
+    background: linear-gradient(45deg, #ffc107, #e0a800);
+    border: none;
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+.actions-column .btn-danger {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    border: none;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.actions-column .btn:hover {
+    transform: scale(1.1);
+    transition: transform 0.15s ease;
+}
+
+/* Transfer Dropdown Styles */
+.actions-column .dropdown-menu {
+    min-width: 180px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+}
+
+.actions-column .dropdown-header {
+    color: #6c757d;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem 0.25rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.actions-column .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    color: #495057;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.actions-column .dropdown-item:hover {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    transform: translateX(4px);
+}
+
+.actions-column .dropdown-item i {
+    color: #007bff;
+    transition: color 0.2s ease;
+}
+
+.actions-column .dropdown-item:hover i {
+    color: white;
 }

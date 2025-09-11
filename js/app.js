@@ -175,7 +175,7 @@ async function handleSaveWarehouseName() {
         // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('editWarehouseNameModal')).hide();
 
-        alert(`${isMainWarehouse ? 'Ana depo' : 'Araç'} adı "${newName}" olarak güncellendi!`);
+        // Depo adı güncellendi - sessizce işle
 
     } catch (error) {
         console.error('Ad kaydetme hatası:', error);
@@ -303,48 +303,77 @@ function updateWarehouseCards() {
     });
 }
 
-// Depo kartı oluştur
+// Depo kartı oluştur - Modern Tasarım
 function createWarehouseCard(warehouseType) {
-    const col = document.createElement('div');
-    col.className = 'col-md-2 col-sm-4 col-6 mb-3';
-
+    const cardDiv = document.createElement('div');
+    
     const isMainWarehouse = warehouseType === WAREHOUSE_TYPES.MAIN;
     const isActive = warehouseType === currentWarehouse;
     const canAccess = hasWarehouseAccess(warehouseType) || canViewOtherWarehouses();
 
+    // Stok sayısını hesapla
+    const warehouseStock = getWarehouseStockSummary(warehouseType);
+
     // Edit butonu sadece ana depo sorumlusu için
     const editButton = currentUser && currentUser.is_depo_admin ?
-        `<button class="btn btn-outline-light btn-sm position-absolute top-0 end-0 m-1" 
+        `<button class="btn btn-outline-light btn-sm position-absolute top-0 end-0 m-2" 
                 onclick="event.stopPropagation(); editWarehouseName('${warehouseType}')" 
                 title="${isMainWarehouse ? 'Ana Depo Adını Düzenle' : 'Araç Adını Düzenle'}">
             <i class="fas fa-edit"></i>
         </button>` : '';
 
-    // Transfer butonu sadece ana depo sorumlusu için (tüm depolar için)
+    // Transfer butonu sadece ana depo sorumlusu için
     const transferButton = currentUser && currentUser.is_depo_admin ?
-        `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-1" 
+        `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-2" 
                 onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
                 title="${WAREHOUSE_NAMES[warehouseType]}${isMainWarehouse ? ' için Transfer İşlemleri' : ' Aracına Transfer'}">
             <i class="fas fa-exchange-alt"></i>
         </button>` : '';
 
-    col.innerHTML = `
-        <div class="warehouse-card ${isMainWarehouse ? 'main-warehouse' : 'sub-warehouse'} ${isActive ? 'active' : ''}" 
-             onclick="${canAccess ? `selectWarehouse('${warehouseType}')` : ''}"
-             style="${!canAccess ? 'opacity: 0.5; cursor: not-allowed;' : ''} position: relative;">
-            ${editButton}
-            ${transferButton}
-            <div class="text-center">
-                <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck-moving'} fa-2x mb-2"></i>
-                <h6 class="mb-1">${WAREHOUSE_NAMES[warehouseType]}</h6>
-                <small class="stock-summary" id="summary-${warehouseType}">
-                    Yükleniyor...
-                </small>
+    cardDiv.className = `warehouse-card ${isMainWarehouse ? 'main-warehouse' : 'sub-warehouse'} ${isActive ? 'active' : ''}`;
+    
+    if (canAccess) {
+        cardDiv.onclick = () => selectWarehouse(warehouseType);
+        cardDiv.style.cursor = 'pointer';
+    } else {
+        cardDiv.style.opacity = '0.5';
+        cardDiv.style.cursor = 'not-allowed';
+    }
+
+    cardDiv.innerHTML = `
+        ${editButton}
+        ${transferButton}
+        <div class="card-content">
+            <i class="fas ${isMainWarehouse ? 'fa-warehouse' : 'fa-truck-moving'}"></i>
+            <h6>${WAREHOUSE_NAMES[warehouseType]}</h6>
+            <div class="stock-summary">
+                <span class="product-count">${warehouseStock.productCount} ürün</span>
+                <span class="total-stock">${warehouseStock.totalStock} toplam adet</span>
             </div>
         </div>
     `;
 
-    return col;
+    return cardDiv;
+}
+
+// Depo stok özetini hesapla
+function getWarehouseStockSummary(warehouseType) {
+    if (!stockData || stockData.length === 0) {
+        return { productCount: 0, totalStock: 0 };
+    }
+
+    let productCount = 0;
+    let totalStock = 0;
+
+    stockData.forEach(item => {
+        const stock = getCurrentWarehouseStock(item, warehouseType);
+        if (stock > 0) {
+            productCount++;
+            totalStock += stock;
+        }
+    });
+
+    return { productCount, totalStock };
 }
 
 // Depo seç
@@ -444,6 +473,7 @@ async function loadStockData() {
         updateStockTable();
         updateStatistics();
         updateWarehouseSummaries();
+        updateWarehouseCards();
 
     } catch (error) {
         console.error('Stok verileri yüklenirken hata:', error);
@@ -508,15 +538,39 @@ function createStockRow(item) {
         (item.sub4_stock || 0);
 
     // Ana depodan transfer için buton oluşturma fonksiyonu
-    const createTransferButton = (targetWarehouse, targetStockField) => {
-        if (!currentUser.is_depo_admin || (item.main_stock || 0) <= 0 || targetWarehouse === 'main') {
+    const createTransferDropdown = () => {
+        if (!currentUser.is_depo_admin || (item.main_stock || 0) <= 0) {
             return '';
         }
-        return `<button class="btn btn-primary btn-sm ms-1" 
-                        onclick="quickTransfer('${item.id}', 'main', '${targetWarehouse}')" 
-                        title="Ana depodan ${WAREHOUSE_NAMES[targetWarehouse]}'ya 1 adet transfer et">
+        
+        const dropdownId = `transferDropdown_${item.id}`;
+        
+        return `
+            <div class="dropdown">
+                <button class="btn btn-primary btn-sm" 
+                        type="button" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        title="Transfer seçenekleri">
                     <i class="fas fa-arrow-right"></i>
-                </button>`;
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header">Hangi araca transfer?</h6></li>
+                    <li><button class="dropdown-item" onclick="quickTransfer('${item.id}', 'main', 'sub1')">
+                        <i class="fas fa-truck me-2"></i>${WAREHOUSE_NAMES.sub1}
+                    </button></li>
+                    <li><button class="dropdown-item" onclick="quickTransfer('${item.id}', 'main', 'sub2')">
+                        <i class="fas fa-truck me-2"></i>${WAREHOUSE_NAMES.sub2}
+                    </button></li>
+                    <li><button class="dropdown-item" onclick="quickTransfer('${item.id}', 'main', 'sub3')">
+                        <i class="fas fa-truck me-2"></i>${WAREHOUSE_NAMES.sub3}
+                    </button></li>
+                    <li><button class="dropdown-item" onclick="quickTransfer('${item.id}', 'main', 'sub4')">
+                        <i class="fas fa-truck me-2"></i>${WAREHOUSE_NAMES.sub4}
+                    </button></li>
+                </ul>
+            </div>
+        `;
     };
 
     // Inline edit fonksiyonu
@@ -580,35 +634,35 @@ function createStockRow(item) {
         </td>
         <td>
             <span class="stock-count ${getStockClass(item.sub1_stock)}">${item.sub1_stock || 0}</span>
-            ${createTransferButton('sub1', 'sub1_stock')}
         </td>
         <td>
             <span class="stock-count ${getStockClass(item.sub2_stock)}">${item.sub2_stock || 0}</span>
-            ${createTransferButton('sub2', 'sub2_stock')}
         </td>
         <td>
             <span class="stock-count ${getStockClass(item.sub3_stock)}">${item.sub3_stock || 0}</span>
-            ${createTransferButton('sub3', 'sub3_stock')}
         </td>
         <td>
             <span class="stock-count ${getStockClass(item.sub4_stock)}">${item.sub4_stock || 0}</span>
-            ${createTransferButton('sub4', 'sub4_stock')}
         </td>
         <td><strong>${total}</strong></td>
-        <td>
-            ${canRemoveStock(currentWarehouse) ?
-                `<button class="btn btn-warning btn-sm me-1" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
-                    <i class="fas fa-minus"></i>
-                </button>` : ''
-            }
-            ${currentUser.is_depo_admin ?
-                `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
-                    <i class="fas fa-trash"></i>
-                </button>` : ''
-            }
-            ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin ? 
-                '<span class="text-muted">-</span>' : ''
-            }
+        <td class="actions-column">
+            <div class="d-flex flex-wrap gap-1">
+                ${createTransferDropdown()}
+                ${canRemoveStock(currentWarehouse) ?
+                    `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
+                        <i class="fas fa-minus"></i>
+                    </button>` : ''
+                }
+                ${currentUser.is_depo_admin ?
+                    `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''
+                }
+                ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin && 
+                  currentWarehouse !== 'main' ? 
+                    '<span class="text-muted">-</span>' : ''
+                }
+            </div>
         </td>
     `;
 
@@ -697,8 +751,7 @@ async function editField(productId, fieldName, currentValue, element) {
         // Tabloyu yeniden yükle
         await loadStockData();
         
-        // Başarı mesajı
-        alert(`${fieldLabel} başarıyla güncellendi!`);
+        // Başarı durumunda sessizce güncelle
 
     } catch (error) {
         console.error('Alan güncelleme hatası:', error);
@@ -770,7 +823,7 @@ async function confirmDeleteProduct() {
         // Tabloyu yeniden yükle
         await loadStockData();
         
-        alert('Ürün başarıyla silindi!');
+        // Başarı durumunda sessizce sil
 
     } catch (error) {
         console.error('Ürün silme hatası:', error);
@@ -852,15 +905,8 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
         // Tabloyu güncelle
         await loadStockData();
 
-        // Başarı mesajı
-        const toastMsg = `✅ ${item.product_name}: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]} (1 adet)`;
-
-        // Toast bildirimi göster (eğer yoksa alert)
-        if (typeof showToast === 'function') {
-            showToast(toastMsg, 'success');
-        } else {
-            alert(toastMsg);
-        }
+        // Transfer başarılı - sessizce işle
+        await loadStockData();
 
     } catch (error) {
         console.error('Hızlı transfer hatası:', error);
@@ -1029,7 +1075,7 @@ async function handleAddStock() {
                 'Mevcut ürüne stok ekleme'
             );
 
-            alert(`${existingProduct.product_name} ürününe ${quantity} adet eklendi (${WAREHOUSE_NAMES[targetWarehouse]})`);
+            // Mevcut ürüne stok eklendi - sessizce işle
         } else {
             // Yeni ürün ekle
             const newProduct = {
@@ -1074,7 +1120,7 @@ async function handleAddStock() {
                 );
             }
 
-            alert(`Yeni ürün "${productName}" başarıyla ${WAREHOUSE_NAMES[targetWarehouse]}'ya eklendi!`);
+            // Yeni ürün başarıyla eklendi - sessizce işle
         }
 
         bootstrap.Modal.getInstance(document.getElementById('addStockModal')).hide();
@@ -1420,13 +1466,7 @@ async function handleRemoveStock() {
         bootstrap.Modal.getInstance(document.getElementById('removeStockModal')).hide();
         await loadStockData();
 
-        if (targetWarehouse === 'add_to_main' && sourceWarehouse === WAREHOUSE_TYPES.MAIN) {
-            alert(`${item.product_name} ürününe ${quantity} adet başarıyla eklendi (Sisteme Giriş)!`);
-        } else if (targetWarehouse === 'external') {
-            alert(`${item.product_name} ürününden ${quantity} adet başarıyla çıkarıldı (${WAREHOUSE_NAMES[sourceWarehouse]})!`);
-        } else {
-            alert(`${item.product_name}: ${quantity} adet ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]} transfer edildi!`);
-        }
+        // Stok işlemleri başarılı - sessizce işle
 
         // Formu temizle
         document.getElementById('removeQuantity').value = '';
@@ -1732,7 +1772,7 @@ async function executeWarehouseTransfer() {
         bootstrap.Modal.getInstance(modal).hide();
         await loadStockData();
 
-        alert(`${item.product_name} ürününden ${quantity} adet başarıyla ${WAREHOUSE_NAMES[sourceWarehouse]}'dan ${WAREHOUSE_NAMES[targetWarehouse]}'ya transfer edildi!`);
+        // Transfer başarılı - sessizce işle
 
         // Formu temizle
         document.getElementById('transferSourceWarehouse').value = '';
