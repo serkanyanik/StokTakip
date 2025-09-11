@@ -13,7 +13,8 @@
 <body>
     <div id="app">
         <!-- Giriş Ekranı -->
-        <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center login-container">
+        <div id="loginScreen"
+            class="container-fluid vh-100 d-flex align-items-center justify-content-center login-container">
             <div class="login-wrapper">
                 <div class="login-card shadow-lg">
                     <div class="login-header">
@@ -25,13 +26,15 @@
                     </div>
                     <form id="loginForm" class="login-form">
                         <div class="form-floating mb-3">
-                            <input type="email" class="form-control modern-input" id="email" placeholder="E-posta adresiniz" required>
+                            <input type="email" class="form-control modern-input" id="email"
+                                placeholder="E-posta adresiniz" required>
                             <label for="email">
                                 <i class="fas fa-envelope me-2"></i>E-posta
                             </label>
                         </div>
                         <div class="form-floating mb-4">
-                            <input type="password" class="form-control modern-input" id="password" placeholder="Şifreniz" required>
+                            <input type="password" class="form-control modern-input" id="password"
+                                placeholder="Şifreniz" required>
                             <label for="password">
                                 <i class="fas fa-lock me-2"></i>Şifre
                             </label>
@@ -81,11 +84,12 @@
                         <button class="btn btn-navbar me-2" id="reportsBtn" title="Raporlar">
                             <i class="fas fa-chart-line"></i>
                         </button>
-                        <button class="btn btn-navbar me-2" id="shelfManagementBtn"
-                            style="display: none;" title="Raf Yönetimi">
+                        <button class="btn btn-navbar me-2" id="shelfManagementBtn" style="display: none;"
+                            title="Raf Yönetimi">
                             <i class="fas fa-th-large"></i>
                         </button>
-                        <button class="btn btn-navbar me-2" id="userManagementBtn" style="display: none;" title="Kullanıcı Yönetimi">
+                        <button class="btn btn-navbar me-2" id="userManagementBtn" style="display: none;"
+                            title="Kullanıcı Yönetimi">
                             <i class="fas fa-users"></i>
                         </button>
                         <button class="btn btn-logout" id="logoutBtn">
@@ -107,7 +111,8 @@
                                 Stok Yönetim Paneli
                             </h1>
                             <p class="dashboard-subtitle">
-                                Aktif Depo: <span class="current-warehouse-badge" id="currentWarehouseName">Ana Depo</span>
+                                Aktif Depo: <span class="current-warehouse-badge" id="currentWarehouseName">Ana
+                                    Depo</span>
                             </p>
                         </div>
                         <div class="header-actions">
@@ -155,85 +160,11 @@
                                     <div class="stat-label">Toplam Stok</div>
                                 </div>
                                 <div class="stat-item">
-                                    <button class="btn btn-link p-0 text-decoration-none w-100" 
-                                            onclick="showLowStockModal()"
-                                            title="Düşük stoklu ürünleri görüntüle">
+                                    <button class="btn btn-link p-0 text-decoration-none w-100"
+                                        onclick="showLowStockModal()" title="Düşük stoklu ürünleri görüntüle">
                                         <div class="stat-value text-warning" id="lowStockProducts">0</div>
                                         <div class="stat-label">Düşük Stok</div>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- İşlem Paneli -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-list me-2"></i>Stok Listesi
-                                </h5>
-                                <div>
-                                    <button class="btn btn-success btn-sm" id="addStockBtn" style="display: none;">
-                                        <i class="fas fa-plus me-1"></i>Stok Ekle
-                                    </button>
-                                    <button class="btn btn-warning btn-sm" id="removeStockBtn" style="display: none;">
-                                        <i class="fas fa-exchange-alt me-1"></i>Stok İşlemleri
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <!-- Arama Çubuğu -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-search"></i>
-                                            </span>
-                                            <input type="text" class="form-control" id="searchInput"
-                                                placeholder="Ürün kodu veya adı ile arama yapın...">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="d-flex align-items-center">
-                                            <small class="text-muted me-3" id="stockFilter">
-                                                <i class="fas fa-warehouse me-1"></i>
-                                                <span id="currentWarehouseName">Tüm Depolar</span>
-                                            </small>
-                                            <button class="btn btn-outline-secondary btn-sm" id="editWarehouseNameBtn"
-                                                style="display: none;">
-                                                <i class="fas fa-edit me-1"></i>Depo Adını Düzenle
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="table-responsive">
-                                    <table class="table table-striped" id="stockTable">
-                                        <thead>
-                                            <tr id="stockTableHeader">
-                                                <th>Ürün Kodu</th>
-                                                <th>Ürün Adı</th>
-                                                <th>Fiyat</th>
-                                                <th>Görsel</th>
-                                                <th>Raf Adresi</th>
-                                                <th id="mainWarehouseHeader">Ana Depo</th>
-                                                <th id="sub1WarehouseHeader">1. Araç</th>
-                                                <th id="sub2WarehouseHeader">2. Araç</th>
-                                                <th id="sub3WarehouseHeader">3. Araç</th>
-                                                <th id="sub4WarehouseHeader">4. Araç</th>
-                                                <th>Toplam</th>
-                                                <th class="actions-column">İşlemler</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Stok verileri dinamik olarak yüklenecek -->
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -243,6 +174,79 @@
         </div>
 
         <!-- İşlem Paneli -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Stok Listesi
+                        </h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" id="addStockBtn" style="display: none;">
+                                <i class="fas fa-plus me-1"></i>Stok Ekle
+                            </button>
+                            <button class="btn btn-warning btn-sm" id="removeStockBtn" style="display: none;">
+                                <i class="fas fa-exchange-alt me-1"></i>Stok İşlemleri
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Arama Çubuğu -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput"
+                                        placeholder="Ürün kodu veya adı ile arama yapın...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <small class="text-muted me-3" id="stockFilter">
+                                        <i class="fas fa-warehouse me-1"></i>
+                                        <span id="currentWarehouseName">Tüm Depolar</span>
+                                    </small>
+                                    <button class="btn btn-outline-secondary btn-sm" id="editWarehouseNameBtn"
+                                        style="display: none;">
+                                        <i class="fas fa-edit me-1"></i>Depo Adını Düzenle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="stockTable">
+                                <thead>
+                                    <tr id="stockTableHeader">
+                                        <th>Ürün Kodu</th>
+                                        <th>Ürün Adı</th>
+                                        <th>Fiyat</th>
+                                        <th>Görsel</th>
+                                        <th>Raf Adresi</th>
+                                        <th id="mainWarehouseHeader">Ana Depo</th>
+                                        <th id="sub1WarehouseHeader">1. Araç</th>
+                                        <th id="sub2WarehouseHeader">2. Araç</th>
+                                        <th id="sub3WarehouseHeader">3. Araç</th>
+                                        <th id="sub4WarehouseHeader">4. Araç</th>
+                                        <th>Toplam</th>
+                                        <th class="actions-column">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Stok verileri dinamik olarak yüklenecek -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- İşlem Paneli -->
     </div>
     </div>
     </div>

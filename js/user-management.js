@@ -10,7 +10,7 @@ function setupUserManagementListeners() {
     document.getElementById('saveUserBtn')?.addEventListener('click', handleAddUser);
     document.getElementById('updateUserBtn')?.addEventListener('click', handleUpdateUser);
     document.getElementById('deleteUserBtn')?.addEventListener('click', handleDeleteUser);
-    
+
     // Şifre değişikliği butonuna tıklandığında
     document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
         const editModal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
@@ -391,7 +391,7 @@ async function handleChangePassword() {
 
         // Mevcut kullanıcıyı al
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError || !user) {
             throw new Error('Kullanıcı bilgileri alınamadı');
         }
@@ -419,7 +419,7 @@ async function handleChangePassword() {
         // Formu temizle ve modalı kapat
         document.getElementById('changePasswordForm').reset();
         bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
-        
+
         // Şifre başarıyla değiştirildi - sessizce işle
 
     } catch (error) {

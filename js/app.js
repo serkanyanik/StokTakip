@@ -11,13 +11,13 @@ async function ensureDatabaseSetup() {
             .from('stock_movements')
             .select('id')
             .limit(1);
-        
+
         if (error && error.code === 'PGRST106') {
             console.log('Stock_movements tablosu bulunamadı. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
             alert('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
             return false;
         }
-        
+
         return true;
     } catch (error) {
         console.error('Database setup kontrol hatası:', error);
@@ -306,7 +306,7 @@ function updateWarehouseCards() {
 // Depo kartı oluştur - Modern Tasarım
 function createWarehouseCard(warehouseType) {
     const cardDiv = document.createElement('div');
-    
+
     const isMainWarehouse = warehouseType === WAREHOUSE_TYPES.MAIN;
     const isActive = warehouseType === currentWarehouse;
     const canAccess = hasWarehouseAccess(warehouseType) || canViewOtherWarehouses();
@@ -331,7 +331,7 @@ function createWarehouseCard(warehouseType) {
         </button>` : '';
 
     cardDiv.className = `warehouse-card ${isMainWarehouse ? 'main-warehouse' : 'sub-warehouse'} ${isActive ? 'active' : ''}`;
-    
+
     if (canAccess) {
         cardDiv.onclick = () => selectWarehouse(warehouseType);
         cardDiv.style.cursor = 'pointer';
@@ -418,8 +418,8 @@ function applySearchFilter() {
         const productPrice = row.cells[2].textContent.toLowerCase();
         const shelfAddress = row.cells[4].textContent.toLowerCase(); // Raf adresi sütunu kaydı
 
-        if (productCode.includes(searchTerm) || 
-            productName.includes(searchTerm) || 
+        if (productCode.includes(searchTerm) ||
+            productName.includes(searchTerm) ||
             productPrice.includes(searchTerm) ||
             shelfAddress.includes(searchTerm)) {
             row.style.display = '';
@@ -542,9 +542,9 @@ function createStockRow(item) {
         if (!currentUser.is_depo_admin || (item.main_stock || 0) <= 0) {
             return '';
         }
-        
+
         const dropdownId = `transferDropdown_${item.id}`;
-        
+
         return `
             <div class="dropdown">
                 <button class="btn btn-primary btn-sm" 
@@ -578,10 +578,10 @@ function createStockRow(item) {
         if (!currentUser.is_depo_admin) {
             return displayValue || value || '-';
         }
-        
+
         // value'yu string'e çevir ve güvenli hale getir
         const safeValue = String(value || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        
+
         return `<span class="editable-field" 
                       onclick="editField('${item.id}', '${fieldName}', '${safeValue}', this)" 
                       title="Düzenlemek için tıklayın">
@@ -592,24 +592,24 @@ function createStockRow(item) {
     // Ürün görseli için özel buton
     const createImageButton = (imageUrl) => {
         if (!imageUrl) {
-            return currentUser.is_depo_admin ? 
+            return currentUser.is_depo_admin ?
                 `<button class="btn btn-outline-secondary btn-sm" onclick="editField('${item.id}', 'product_image_url', '', this)" title="Görsel ekle">
                     <i class="fas fa-plus"></i>
-                </button>` : 
+                </button>` :
                 '<span class="text-muted">-</span>';
         }
         // Güvenli string dönüşümü
         const safeImageUrl = String(imageUrl || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
         const safeProductName = String(item.product_name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        
+
         return `<button class="btn btn-primary btn-sm" onclick="showProductImage('${safeImageUrl}', '${safeProductName}')" title="Görseli görüntüle">
                     <i class="fas fa-image"></i>
                 </button>
-                ${currentUser.is_depo_admin ? 
-                    `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${safeImageUrl}', this)" title="Görsel URL'ini düzenle">
+                ${currentUser.is_depo_admin ?
+                `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${safeImageUrl}', this)" title="Görsel URL'ini düzenle">
                         <i class="fas fa-edit"></i>
                     </button>` : ''
-                }`;
+            }`;
     };
 
     // Fiyat formatı
@@ -649,19 +649,19 @@ function createStockRow(item) {
             <div class="d-flex flex-wrap gap-1">
                 ${createTransferDropdown()}
                 ${canRemoveStock(currentWarehouse) ?
-                    `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
+            `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
                         <i class="fas fa-minus"></i>
                     </button>` : ''
-                }
+        }
                 ${currentUser.is_depo_admin ?
-                    `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
+            `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
                         <i class="fas fa-trash"></i>
                     </button>` : ''
-                }
-                ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin && 
-                  currentWarehouse !== 'main' ? 
-                    '<span class="text-muted">-</span>' : ''
-                }
+        }
+                ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin &&
+            currentWarehouse !== 'main' ?
+            '<span class="text-muted">-</span>' : ''
+        }
             </div>
         </td>
     `;
@@ -702,7 +702,7 @@ async function editField(productId, fieldName, currentValue, element) {
     }
 
     const newValue = prompt(
-        `${fieldLabel} düzenleyin:`, 
+        `${fieldLabel} düzenleyin:`,
         currentValue || ''
     );
 
@@ -750,7 +750,7 @@ async function editField(productId, fieldName, currentValue, element) {
 
         // Tabloyu yeniden yükle
         await loadStockData();
-        
+
         // Başarı durumunda sessizce güncelle
 
     } catch (error) {
@@ -764,7 +764,7 @@ function showProductImage(imageUrl, productName) {
     document.getElementById('productImageModalTitle').textContent = productName;
     document.getElementById('productImagePreview').src = imageUrl;
     document.getElementById('productImagePreview').alt = productName;
-    
+
     new bootstrap.Modal(document.getElementById('productImageModal')).show();
 }
 
@@ -786,21 +786,21 @@ function showDeleteProductModal(productId) {
     document.getElementById('deleteProductCode').textContent = item.product_code;
     document.getElementById('deleteProductTotalStock').textContent = total;
     document.getElementById('deleteConfirmText').value = '';
-    
+
     // Silme butonunu deaktif et
     document.getElementById('confirmDeleteBtn').disabled = true;
-    
+
     // Onay metni kontrolü
     const confirmInput = document.getElementById('deleteConfirmText');
     const deleteBtn = document.getElementById('confirmDeleteBtn');
-    
-    confirmInput.oninput = function() {
+
+    confirmInput.oninput = function () {
         deleteBtn.disabled = this.value.toUpperCase() !== 'SİL';
     };
-    
+
     // Modal açarken productId'yi sakla
     window.currentDeleteProductId = productId;
-    
+
     new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
 }
 
@@ -819,10 +819,10 @@ async function confirmDeleteProduct() {
 
         // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
-        
+
         // Tabloyu yeniden yükle
         await loadStockData();
-        
+
         // Başarı durumunda sessizce sil
 
     } catch (error) {
@@ -892,13 +892,13 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
 
         // Hareket kaydı oluştur
         await createStockMovement(
-            stockId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            1, 
+            stockId,
+            item.product_code,
+            item.product_name,
+            'transfer',
+            sourceWarehouse,
+            targetWarehouse,
+            1,
             `Hızlı transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
         );
 
@@ -1065,13 +1065,13 @@ async function handleAddStock() {
 
             // Hareket kaydı oluştur
             await createStockMovement(
-                existingProduct.id, 
-                existingProduct.product_code, 
-                existingProduct.product_name, 
-                'in', 
-                null, 
-                targetWarehouse, 
-                quantity, 
+                existingProduct.id,
+                existingProduct.product_code,
+                existingProduct.product_name,
+                'in',
+                null,
+                targetWarehouse,
+                quantity,
                 'Mevcut ürüne stok ekleme'
             );
 
@@ -1109,13 +1109,13 @@ async function handleAddStock() {
             if (newProductData) {
                 // Hareket kaydı oluştur
                 await createStockMovement(
-                    newProductData.id, 
-                    productCode.toUpperCase(), 
-                    productName, 
-                    'in', 
-                    null, 
-                    targetWarehouse, 
-                    quantity, 
+                    newProductData.id,
+                    productCode.toUpperCase(),
+                    productName,
+                    'in',
+                    null,
+                    targetWarehouse,
+                    quantity,
                     'Yeni ürün ekleme'
                 );
             }
@@ -1494,7 +1494,7 @@ function showLowStockModal() {
 // Düşük stoklu ürünleri yükle ve göster
 function loadLowStockProducts() {
     const content = document.getElementById('lowStockContent');
-    
+
     // Yükleme animasyonu göster
     content.innerHTML = `
         <div class="text-center">
@@ -1521,7 +1521,7 @@ function getLowStockProducts() {
                 (item.sub2_stock || 0) +
                 (item.sub3_stock || 0) +
                 (item.sub4_stock || 0);
-            
+
             return {
                 ...item,
                 totalStock: totalStock
@@ -1534,7 +1534,7 @@ function getLowStockProducts() {
 // Düşük stoklu ürünleri modal içinde göster
 function displayLowStockProducts(lowStockProducts) {
     const content = document.getElementById('lowStockContent');
-    
+
     if (lowStockProducts.length === 0) {
         content.innerHTML = `
             <div class="text-center text-success">
@@ -1573,8 +1573,8 @@ function displayLowStockProducts(lowStockProducts) {
     lowStockProducts.forEach((item, index) => {
         const isZeroStock = item.totalStock === 0;
         const rowClass = isZeroStock ? 'table-danger' : 'table-warning';
-        const statusIcon = isZeroStock ? 
-            '<i class="fas fa-times-circle text-danger" title="Stok tükendi"></i>' : 
+        const statusIcon = isZeroStock ?
+            '<i class="fas fa-times-circle text-danger" title="Stok tükendi"></i>' :
             '<i class="fas fa-exclamation-triangle text-warning" title="Düşük stok"></i>';
 
         html += `
@@ -1759,13 +1759,13 @@ async function executeWarehouseTransfer() {
 
         // Hareket kaydı oluştur
         await createStockMovement(
-            productId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            quantity, 
+            productId,
+            item.product_code,
+            item.product_name,
+            'transfer',
+            sourceWarehouse,
+            targetWarehouse,
+            quantity,
             `Depo arası transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
         );
 
@@ -1790,18 +1790,18 @@ async function executeWarehouseTransfer() {
 // Raporlar modalını göster
 function showReportsModal() {
     const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
-    
+
     // Varsayılan tarih aralığını bu ay olarak ayarla
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
     document.getElementById('reportEndDate').value = lastDay.toISOString().split('T')[0];
-    
+
     // Depo seçeneklerini doldur
     populateReportWarehouseOptions();
-    
+
     modal.show();
 }
 
@@ -1809,7 +1809,7 @@ function showReportsModal() {
 function populateReportWarehouseOptions() {
     const select = document.getElementById('reportWarehouse');
     select.innerHTML = '<option value="all">Tüm Depolar</option>';
-    
+
     Object.entries(WAREHOUSE_TYPES).forEach(([key, warehouseType]) => {
         const option = document.createElement('option');
         option.value = warehouseType;
@@ -1826,7 +1826,7 @@ async function createStockMovement(productId, productCode, productName, movement
             .from('stock_movements')
             .select('*')
             .limit(1);
-        
+
         if (checkError) {
             console.error('Tablo kontrol hatası:', checkError);
             return;
@@ -1848,7 +1848,7 @@ async function createStockMovement(productId, productCode, productName, movement
             });
 
         if (error) throw error;
-        
+
         // Başarılı kayıt (sadece development için)
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             console.log(`Stok hareketi kaydedildi: ${movementType} - ${productCode} (${quantity} adet)`);
@@ -1863,17 +1863,17 @@ async function generateReport() {
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
     const warehouse = document.getElementById('reportWarehouse').value;
-    
+
     if (!startDate || !endDate) {
         alert('Lütfen başlangıç ve bitiş tarihlerini seçin!');
         return;
     }
-    
+
     if (new Date(startDate) > new Date(endDate)) {
         alert('Başlangıç tarihi bitiş tarihinden büyük olamaz!');
         return;
     }
-    
+
     const content = document.getElementById('reportContent');
     content.innerHTML = `
         <div class="text-center py-3">
@@ -1883,7 +1883,7 @@ async function generateReport() {
             <p class="mt-2">Rapor hazırlanıyor...</p>
         </div>
     `;
-    
+
     try {
         let query = supabase
             .from('stock_movements')
@@ -1891,17 +1891,17 @@ async function generateReport() {
             .gte('created_at', startDate)
             .lte('created_at', endDate + ' 23:59:59')
             .order('created_at', { ascending: false });
-            
+
         if (warehouse !== 'all') {
             query = query.or(`source_warehouse.eq.${warehouse},target_warehouse.eq.${warehouse}`);
         }
-        
+
         const { data: movements, error } = await query;
-        
+
         if (error) throw error;
-        
+
         displayReport(movements, startDate, endDate, warehouse);
-        
+
     } catch (error) {
         console.error('Rapor oluşturma hatası:', error);
         content.innerHTML = `
@@ -1917,7 +1917,7 @@ async function generateReport() {
 function displayReport(movements, startDate, endDate, warehouse) {
     const content = document.getElementById('reportContent');
     const exportBtn = document.getElementById('exportReportBtn');
-    
+
     if (!movements || movements.length === 0) {
         content.innerHTML = `
             <div class="alert alert-info text-center">
@@ -1929,7 +1929,7 @@ function displayReport(movements, startDate, endDate, warehouse) {
         exportBtn.style.display = 'none';
         return;
     }
-    
+
     let html = `
         <div class="mb-3">
             <h6>
@@ -1955,30 +1955,30 @@ function displayReport(movements, startDate, endDate, warehouse) {
                 </thead>
                 <tbody>
     `;
-    
+
     movements.forEach(movement => {
         const movementTypeText = {
             'in': 'Giriş',
             'out': 'Çıkış',
             'transfer': 'Transfer'
         }[movement.movement_type] || movement.movement_type;
-        
-        const sourceText = movement.source_warehouse ? 
+
+        const sourceText = movement.source_warehouse ?
             WAREHOUSE_NAMES[movement.source_warehouse] || movement.source_warehouse : '-';
         const targetText = movement.target_warehouse === 'external' ? 'Dış Kullanım' :
             (movement.target_warehouse ? WAREHOUSE_NAMES[movement.target_warehouse] || movement.target_warehouse : '-');
-        
+
         // Ürün görseli kontrolü
         const product = stockData.find(p => p.product_code === movement.product_code);
         const hasImage = product && product.product_image_url;
-        
-        const productCodeDisplay = hasImage ? 
+
+        const productCodeDisplay = hasImage ?
             `<a href="#" onclick="showProductImage('${String(product.product_image_url || '').replace(/'/g, '&#39;')}', '${String(movement.product_name || '').replace(/'/g, '&#39;')}')" 
                class="text-decoration-none" title="Ürün görselini görüntüle">
                <i class="fas fa-image text-primary me-1"></i><strong>${movement.product_code}</strong>
-             </a>` : 
+             </a>` :
             `<strong>${movement.product_code}</strong>`;
-            
+
         html += `
             <tr>
                 <td>${formatDateTime(movement.movement_date || movement.created_at)}</td>
@@ -1998,13 +1998,13 @@ function displayReport(movements, startDate, endDate, warehouse) {
             </tr>
         `;
     });
-    
+
     html += `
                 </tbody>
             </table>
         </div>
     `;
-    
+
     content.innerHTML = html;
     exportBtn.style.display = 'inline-block';
 }
@@ -2023,7 +2023,7 @@ function getMovementTypeBadgeColor(type) {
 function showShelfManagementModal() {
     const modal = new bootstrap.Modal(document.getElementById('shelfManagementModal'));
     modal.show();
-    
+
     // Modalı açtığımızda tüm ürünleri listele
     loadAllProductsForShelf();
 }
@@ -2036,20 +2036,20 @@ function loadAllProductsForShelf() {
 // Raf ürünlerini filtrele (klavyeden yazdıkça)
 function filterShelfProducts() {
     const searchTerm = document.getElementById('shelfProductSearch').value.toLowerCase().trim();
-    
-    const filteredProducts = stockData.filter(item => 
+
+    const filteredProducts = stockData.filter(item =>
         item.product_code.toLowerCase().includes(searchTerm) ||
         item.product_name.toLowerCase().includes(searchTerm) ||
         (item.shelf_address && item.shelf_address.toLowerCase().includes(searchTerm))
     );
-    
+
     displayShelfProducts(filteredProducts);
 }
 
 // Raf ürünlerini görüntüle
 function displayShelfProducts(products) {
     const container = document.getElementById('shelfProductsList');
-    
+
     if (products.length === 0) {
         container.innerHTML = `
             <tr>
@@ -2060,12 +2060,12 @@ function displayShelfProducts(products) {
             </tr>`;
         return;
     }
-    
+
     container.innerHTML = products.map(item => {
-        const shelfDisplay = item.shelf_address ? 
-            `<span class="badge bg-success">${item.shelf_address}</span>` : 
+        const shelfDisplay = item.shelf_address ?
+            `<span class="badge bg-success">${item.shelf_address}</span>` :
             '<span class="text-muted">Atanmamış</span>';
-            
+
         return `
             <tr>
                 <td><strong>${item.product_code}</strong></td>
@@ -2086,15 +2086,15 @@ function displayShelfProducts(products) {
 // Raf adresi düzenleme modalını aç
 function editShelfAddress(productId, productCode, productName, currentAddress) {
     const modal = new bootstrap.Modal(document.getElementById('editShelfModal'));
-    
+
     document.getElementById('shelfProductInfo').innerHTML = `
         <strong>${productCode}</strong> - ${productName}
     `;
     document.getElementById('shelfAddress').value = currentAddress;
-    
+
     // Modal'a product ID'yi kaydet
     modal._element.setAttribute('data-product-id', productId);
-    
+
     modal.show();
 }
 
@@ -2103,26 +2103,26 @@ async function saveShelfAddress() {
     const modal = document.getElementById('editShelfModal');
     const productId = modal.getAttribute('data-product-id');
     const shelfAddress = document.getElementById('shelfAddress').value.trim();
-    
+
     try {
         const { error } = await supabase
             .from('stock')
             .update({ shelf_address: shelfAddress || null })
             .eq('id', productId);
-            
+
         if (error) throw error;
-        
+
         // Stok verilerini yenile
         await loadStockData();
-        
+
         // Modal'ı kapat
         bootstrap.Modal.getInstance(modal).hide();
-        
+
         // Raf yönetimi modalındaki listeyi güncelle
         if (document.getElementById('shelfProductSearch').value.trim()) {
             searchProductsForShelf();
         }
-        
+
     } catch (error) {
         console.error('Raf adresi kaydetme hatası:', error);
         alert('Raf adresi kaydedilirken bir hata oluştu: ' + error.message);
@@ -2142,18 +2142,18 @@ function formatDateTime(dateString) {
 function exportReport() {
     const table = document.querySelector('#reportContent table');
     if (!table) return;
-    
+
     let csv = '';
     const rows = table.querySelectorAll('tr');
-    
+
     rows.forEach(row => {
         const cols = row.querySelectorAll('th, td');
-        const csvRow = Array.from(cols).map(col => 
+        const csvRow = Array.from(cols).map(col =>
             '"' + col.textContent.replace(/"/g, '""') + '"'
         ).join(',');
         csv += csvRow + '\n';
     });
-    
+
     // CSV dosyası oluştur ve indir
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');

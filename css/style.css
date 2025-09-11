@@ -155,7 +155,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
 }
 
-.form-floating > label {
+.form-floating>label {
     padding: 1rem 1.25rem;
     color: #636e72;
     font-weight: 500;
@@ -578,7 +578,7 @@ body {
     border-color: #667eea;
 }
 
-.warehouse-card > * {
+.warehouse-card>* {
     position: relative;
     z-index: 2;
 }
@@ -725,15 +725,15 @@ body {
     .modern-container {
         padding: 1.5rem;
     }
-    
+
     .dashboard-header {
         padding: 1.5rem 2rem;
     }
-    
+
     .section-body {
         padding: 1.5rem 2rem;
     }
-    
+
     .warehouse-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
@@ -745,7 +745,7 @@ body {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 1rem;
     }
-    
+
     .warehouse-card {
         min-height: 110px;
     }
@@ -755,111 +755,112 @@ body {
     .modern-container {
         padding: 1rem;
     }
-    
+
     .dashboard-header {
         padding: 1.5rem;
     }
-    
+
     .header-content {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .header-actions {
         width: 100%;
         justify-content: center;
     }
-    
+
     .btn-modern {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
     }
-    
+
     .dashboard-title {
         font-size: 1.8rem;
     }
-    
+
     .warehouse-grid {
         grid-template-columns: 1fr;
         gap: 0.75rem;
     }
-    
+
     .warehouse-card {
         min-height: 100px;
         padding: 1rem 0.75rem;
     }
-    
+
     .warehouse-card i {
         font-size: 1.8rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .warehouse-card h6 {
         font-size: 0.9rem;
         margin-bottom: 0.4rem;
     }
-    
+
     .warehouse-card .btn {
         width: 28px;
         height: 28px;
         padding: 0.3rem 0.5rem;
     }
-    
+
     .warehouse-card .btn i {
         font-size: 0.7rem;
     }
-    
+
     .warehouse-card {
         padding: 1.5rem;
     }
-    
+
     .warehouse-card i {
         font-size: 2rem;
     }
-    
+
     .stat-value {
         font-size: 2rem;
     }
-    
+
     .compact-stats {
         padding: 1.5rem;
     }
-    
+
     .stat-item {
         padding: 1rem;
         min-width: 100px;
     }
-    
+
     .section-header {
         padding: 1.5rem;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .section-icon {
         margin-right: 0;
         margin-bottom: 1rem;
     }
-    
+
     .user-info {
         display: none;
     }
-    
+
     .modern-navbar .container-fluid {
         padding-left: 1rem;
         padding-right: 1rem;
     }
-    
+
     .navbar-nav {
         gap: 0.5rem;
     }
-    
-    .btn-navbar, .btn-logout {
+
+    .btn-navbar,
+    .btn-logout {
         padding: 0.6rem;
         font-size: 0.9rem;
     }
-    
+
     .brand-text .brand-subtitle {
         display: none;
     }
@@ -869,33 +870,33 @@ body {
     .warehouse-grid {
         grid-template-columns: 1fr 1fr;
     }
-    
+
     .warehouse-card {
         padding: 1rem;
     }
-    
+
     .stat-value {
         font-size: 1.8rem;
     }
-    
+
     .compact-stats .d-flex {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .stat-item {
         width: 100%;
     }
-    
+
     .login-card {
         margin: 1rem;
         width: auto;
     }
-    
+
     .login-header {
         padding: 2rem 1.5rem 1.5rem;
     }
-    
+
     .login-form {
         padding: 0 1.5rem 1.5rem;
     }
@@ -1734,7 +1735,8 @@ td .btn-sm {
 /* Actions Column Styles */
 .actions-column {
     white-space: nowrap;
-    width: 1px; /* Minimal width, content will expand */
+    width: 1px;
+    /* Minimal width, content will expand */
 }
 
 .actions-column .d-flex {
