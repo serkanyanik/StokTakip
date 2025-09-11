@@ -57,7 +57,8 @@
                         <button class="btn btn-outline-light btn-sm me-2" id="reportsBtn">
                             <i class="fas fa-chart-line me-1"></i>Raporlar
                         </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="shelfManagementBtn" style="display: none;">
+                        <button class="btn btn-outline-light btn-sm me-2" id="shelfManagementBtn"
+                            style="display: none;">
                             <i class="fas fa-th-large me-1"></i>Raf Yönetimi
                         </button>
                         <button class="btn btn-outline-light btn-sm me-2" id="userManagementBtn" style="display: none;">
@@ -85,7 +86,7 @@
                                 <div class="row" id="warehouseCards">
                                     <!-- Depo kartları dinamik olarak yüklenecek -->
                                 </div>
-                                
+
                                 <!-- Kompakt İstatistikler -->
                                 <div class="compact-stats">
                                     <div class="d-flex justify-content-around align-items-center flex-wrap gap-4">
@@ -98,9 +99,8 @@
                                             <div class="stat-label text-muted">Toplam Stok</div>
                                         </div>
                                         <div class="stat-item text-center">
-                                            <button class="btn btn-link p-0 text-decoration-none stat-item" 
-                                                    onclick="showLowStockModal()"
-                                                    title="Düşük stoklu ürünleri görüntüle">
+                                            <button class="btn btn-link p-0 text-decoration-none stat-item"
+                                                onclick="showLowStockModal()" title="Düşük stoklu ürünleri görüntüle">
                                                 <div class="stat-value text-warning" id="lowStockProducts">0</div>
                                                 <div class="stat-label text-muted">Düşük Stok</div>
                                             </button>
@@ -181,14 +181,14 @@
                             </div>
                         </div>
                     </div>
-                    </div>
-                    </div>
-                </div>
-
-                <!-- İşlem Paneli -->
                 </div>
             </div>
         </div>
+
+        <!-- İşlem Paneli -->
+    </div>
+    </div>
+    </div>
     </div>
 
     <!-- Stok Ekleme Modal -->
@@ -217,7 +217,8 @@
                         <div class="mb-3">
                             <label for="productImageUrl" class="form-label">Ürün Görseli URL</label>
                             <input type="url" class="form-control" id="productImageUrl">
-                            <small class="form-text text-muted">Opsiyonel - Ürün görselinin web adresini girebilirsiniz</small>
+                            <small class="form-text text-muted">Opsiyonel - Ürün görselinin web adresini
+                                girebilirsiniz</small>
                         </div>
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Miktar</label>
@@ -614,7 +615,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Rapor İçeriği -->
                     <div id="reportContent">
                         <div class="text-center text-muted py-5">
@@ -625,7 +626,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                    <button type="button" class="btn btn-success" onclick="exportReport()" style="display: none;" id="exportReportBtn">
+                    <button type="button" class="btn btn-success" onclick="exportReport()" style="display: none;"
+                        id="exportReportBtn">
                         <i class="fas fa-download me-1"></i>Excel'e Aktar
                     </button>
                 </div>
@@ -647,12 +649,12 @@
                     <!-- Ürün Arama -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <input type="text" class="form-control" id="shelfProductSearch" 
-                                   placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..." 
-                                   onkeyup="filterShelfProducts()">
+                            <input type="text" class="form-control" id="shelfProductSearch"
+                                placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..."
+                                onkeyup="filterShelfProducts()">
                         </div>
                     </div>
-                    
+
                     <!-- Ürün Listesi Tablosu -->
                     <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                         <table class="table table-hover">
@@ -700,7 +702,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="shelfAddress" class="form-label">Raf Adresi</label>
-                        <input type="text" class="form-control" id="shelfAddress" placeholder="Örn: A1-B2, R01-K03" maxlength="20">
+                        <input type="text" class="form-control" id="shelfAddress" placeholder="Örn: A1-B2, R01-K03"
+                            maxlength="20">
                         <div class="form-text">Raf adresi boş bırakılabilir.</div>
                     </div>
                 </div>
@@ -723,7 +726,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <img id="productImagePreview" src="" alt="Ürün Görseli" class="img-fluid" style="max-height: 500px;">
+                    <img id="productImagePreview" src="" alt="Ürün Görseli" class="img-fluid"
+                        style="max-height: 500px;">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
@@ -766,7 +770,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled onclick="confirmDeleteProduct()">
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled
+                        onclick="confirmDeleteProduct()">
                         <i class="fas fa-trash me-2"></i>Ürünü Sil
                     </button>
                 </div>

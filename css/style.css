@@ -170,9 +170,17 @@ body {
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 2px 8px rgba(214, 48, 49, 0.4); }
-    50% { box-shadow: 0 4px 16px rgba(214, 48, 49, 0.6); }
-    100% { box-shadow: 0 2px 8px rgba(214, 48, 49, 0.4); }
+    0% {
+        box-shadow: 0 2px 8px rgba(214, 48, 49, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 4px 16px rgba(214, 48, 49, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 2px 8px rgba(214, 48, 49, 0.4);
+    }
 }
 
 .stock-count.good {
@@ -271,13 +279,15 @@ body {
 }
 
 /* Form Stilleri */
-.form-control, .form-select {
+.form-control,
+.form-select {
     border-radius: 8px;
     border: 1px solid #ced4da;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: #80bdff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
@@ -318,11 +328,11 @@ body {
     .warehouse-card {
         margin-bottom: 0.5rem;
     }
-    
+
     .table-responsive {
         font-size: 0.875rem;
     }
-    
+
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
@@ -341,7 +351,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Başarı/Hata Mesajları */
@@ -355,8 +367,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Koyu Tema Desteği */
@@ -365,33 +384,34 @@ body {
         background-color: #1a1a1a;
         color: #e9ecef;
     }
-    
+
     .card {
         background-color: #2d3748;
         color: #e9ecef;
     }
-    
+
     .card-header {
         background-color: #2d3748;
         border-bottom-color: #4a5568;
     }
-    
+
     .table th {
         background-color: #2d3748;
         color: #e9ecef;
     }
-    
-    .form-control, .form-select {
+
+    .form-control,
+    .form-select {
         background-color: #2d3748;
         border-color: #4a5568;
         color: #e9ecef;
     }
-    
+
     .modal-content {
         background-color: #2d3748;
         color: #e9ecef;
     }
-    
+
     .modal-header {
         background-color: #2d3748;
         border-bottom-color: #4a5568;
@@ -509,13 +529,13 @@ button[onclick*="quickTransfer"]:hover {
         padding: 2px 4px;
         font-size: 0.6rem;
     }
-    
+
     .btn-sm .fa-arrow-right,
     .btn-sm .fa-shipping-fast,
     .btn-sm .fa-exchange-alt {
         font-size: 0.55rem;
     }
-    
+
     .stock-count {
         min-width: 25px;
     }
@@ -692,16 +712,16 @@ td .btn-sm {
         font-size: 0.8rem;
         padding: 0.2rem 0.4rem;
     }
-    
+
     #reportContent .table {
         font-size: 0.85rem;
     }
-    
+
     .editable-field {
         font-size: 0.85rem;
         padding: 2px 6px;
     }
-    
+
     td .btn-sm {
         padding: 0.2rem 0.3rem;
         font-size: 0.7rem;
@@ -710,7 +730,7 @@ td .btn-sm {
 
 /* Kompakt İstatistikler Stilleri */
 .compact-stats {
-    border-top: 1px solid rgba(0,0,0,0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
     margin-top: 1rem;
     padding-top: 1rem;
 }
@@ -741,7 +761,7 @@ td .btn-sm {
     .stat-value {
         font-size: 1.5rem;
     }
-    
+
     .stat-label {
         font-size: 0.7rem;
     }
