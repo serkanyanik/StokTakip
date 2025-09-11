@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>JavaScript Test</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="output"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/user-management.js"></script>
+    
+    <script>
+        function testLogin() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing login functions...</p>';
+            
+            try {
+                // Test if functions exist
+                if (typeof login === 'function') {
+                    output.innerHTML += '<p>✅ login function exists</p>';
+                } else {
+                    output.innerHTML += '<p>❌ login function missing</p>';
+                }
+                
+                if (typeof handleLogin === 'function') {
+                    output.innerHTML += '<p>✅ handleLogin function exists</p>';
+                } else {
+                    output.innerHTML += '<p>❌ handleLogin function missing</p>';
+                }
+                
+                if (typeof supabase === 'object') {
+                    output.innerHTML += '<p>✅ Supabase client exists</p>';
+                } else {
+                    output.innerHTML += '<p>❌ Supabase client missing</p>';
+                }
+                
+            } catch (error) {
+                output.innerHTML += '<p>❌ Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

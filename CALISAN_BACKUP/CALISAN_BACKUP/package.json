@@ -1,0 +1,28 @@
+{
+  "name": "serkan-stok",
+  "version": "1.0.0",
+  "description": "Beyaz eşya teknik servis stok takip sistemi",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "deploy": "echo 'GitHub Pages üzerinden otomatik deploy edilir'"
+  },
+  "keywords": [
+    "stock-management",
+    "warehouse",
+    "inventory",
+    "supabase",
+    "github-pages"
+  ],
+  "author": "Serkan Stok Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/serkan-stok.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/serkan-stok/issues"
+  },
+  "homepage": "https://yourusername.github.io/serkan-stok/"
+}

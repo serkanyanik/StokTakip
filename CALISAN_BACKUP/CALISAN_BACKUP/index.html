@@ -54,12 +54,6 @@
                         <button class="btn btn-outline-light btn-sm me-2" id="changeMyPasswordBtn">
                             <i class="fas fa-key me-1"></i>Şifre Değiştir
                         </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="reportsBtn">
-                            <i class="fas fa-chart-line me-1"></i>Raporlar
-                        </button>
-                        <button class="btn btn-outline-light btn-sm me-2" id="shelfManagementBtn" style="display: none;">
-                            <i class="fas fa-th-large me-1"></i>Raf Yönetimi
-                        </button>
                         <button class="btn btn-outline-light btn-sm me-2" id="userManagementBtn" style="display: none;">
                             <i class="fas fa-users me-1"></i>Kullanıcı Yönetimi
                         </button>
@@ -139,9 +133,6 @@
                                             <tr id="stockTableHeader">
                                                 <th>Ürün Kodu</th>
                                                 <th>Ürün Adı</th>
-                                                <th>Fiyat</th>
-                                                <th>Görsel</th>
-                                                <th>Raf Adresi</th>
                                                 <th id="mainWarehouseHeader">Ana Depo</th>
                                                 <th id="sub1WarehouseHeader">1. Araç</th>
                                                 <th id="sub2WarehouseHeader">2. Araç</th>
@@ -214,16 +205,6 @@
                         <div class="mb-3">
                             <label for="productName" class="form-label">Ürün Adı</label>
                             <input type="text" class="form-control" id="productName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="productPrice" class="form-label">Fiyat (TL)</label>
-                            <input type="number" class="form-control" id="productPrice" step="0.01" min="0">
-                            <small class="form-text text-muted">Opsiyonel - Ürün fiyatını girebilirsiniz</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="productImageUrl" class="form-label">Ürün Görseli URL</label>
-                            <input type="url" class="form-control" id="productImageUrl">
-                            <small class="form-text text-muted">Opsiyonel - Ürün görselinin web adresini girebilirsiniz</small>
                         </div>
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Miktar</label>
@@ -582,199 +563,6 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="button" class="btn btn-primary" onclick="executeWarehouseTransfer()">Transfer
                         Et</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Giriş/Çıkış Raporları Modal -->
-    <div class="modal fade" id="reportsModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-chart-line me-2"></i>Giriş/Çıkış Raporları
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Filtre Bölümü -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <label for="reportStartDate" class="form-label">Başlangıç Tarihi</label>
-                            <input type="date" class="form-control" id="reportStartDate">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="reportEndDate" class="form-label">Bitiş Tarihi</label>
-                            <input type="date" class="form-control" id="reportEndDate">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="reportWarehouse" class="form-label">Depo</label>
-                            <select class="form-select" id="reportWarehouse">
-                                <option value="all">Tüm Depolar</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" onclick="generateReport()">
-                                <i class="fas fa-search me-1"></i>Rapor Oluştur
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Rapor İçeriği -->
-                    <div id="reportContent">
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-chart-line fa-3x mb-3"></i>
-                            <p>Rapor oluşturmak için tarih aralığı seçin ve "Rapor Oluştur" butonuna tıklayın.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                    <button type="button" class="btn btn-success" onclick="exportReport()" style="display: none;" id="exportReportBtn">
-                        <i class="fas fa-download me-1"></i>Excel'e Aktar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Raf Yönetimi Modal -->
-    <div class="modal fade" id="shelfManagementModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-th-large me-2"></i>Raf Yönetimi
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Ürün Arama -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <input type="text" class="form-control" id="shelfProductSearch" 
-                                   placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..." 
-                                   onkeyup="filterShelfProducts()">
-                        </div>
-                    </div>
-                    
-                    <!-- Ürün Listesi Tablosu -->
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover">
-                            <thead class="table-dark sticky-top">
-                                <tr>
-                                    <th>Ürün Kodu</th>
-                                    <th>Ürün Adı</th>
-                                    <th>Mevcut Raf</th>
-                                    <th>Ana Depo Stok</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody id="shelfProductsList">
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
-                                        <i class="fas fa-box fa-2x mb-3"></i>
-                                        <p>Ürünler yükleniyor...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Raf Adresi Düzenleme Modal -->
-    <div class="modal fade" id="editShelfModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-map-marker-alt me-2"></i>Raf Adresi Düzenle
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Ürün</label>
-                        <div class="form-control-plaintext" id="shelfProductInfo"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="shelfAddress" class="form-label">Raf Adresi</label>
-                        <input type="text" class="form-control" id="shelfAddress" placeholder="Örn: A1-B2, R01-K03" maxlength="20">
-                        <div class="form-text">Raf adresi boş bırakılabilir.</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-primary" onclick="saveShelfAddress()">
-                        <i class="fas fa-save me-1"></i>Kaydet
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ürün Görseli Modal -->
-    <div class="modal fade" id="productImageModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="productImageModalTitle">Ürün Görseli</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="productImagePreview" src="" alt="Ürün Görseli" class="img-fluid" style="max-height: 500px;">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ürün Silme Onay Modal -->
-    <div class="modal fade" id="deleteProductModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Ürünü Sil
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-warning me-2"></i>
-                        <strong>Dikkat!</strong> Bu işlem geri alınamaz.
-                    </div>
-                    <p>Aşağıdaki ürünü kalıcı olarak silmek istediğinizden emin misiniz?</p>
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title" id="deleteProductName">-</h6>
-                            <p class="card-text">
-                                <strong>Ürün Kodu:</strong> <span id="deleteProductCode">-</span><br>
-                                <strong>Toplam Stok:</strong> <span id="deleteProductTotalStock">-</span> adet
-                            </p>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <label for="deleteConfirmText" class="form-label">
-                            Onaylamak için <strong>"SİL"</strong> yazın:
-                        </label>
-                        <input type="text" class="form-control" id="deleteConfirmText" placeholder="SİL">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled onclick="confirmDeleteProduct()">
-                        <i class="fas fa-trash me-2"></i>Ürünü Sil
-                    </button>
                 </div>
             </div>
         </div>

@@ -3,28 +3,6 @@
 let currentWarehouse = WAREHOUSE_TYPES.MAIN;
 let stockData = [];
 
-// Database setup kontrol fonksiyonu
-async function ensureDatabaseSetup() {
-    try {
-        // Stock_movements tablosunun varlığını kontrol et
-        const { data, error } = await supabase
-            .from('stock_movements')
-            .select('id')
-            .limit(1);
-        
-        if (error && error.code === 'PGRST106') {
-            console.log('Stock_movements tablosu bulunamadı. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
-            alert('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
-            return false;
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('Database setup kontrol hatası:', error);
-        return false;
-    }
-}
-
 // Sayfa yüklendiğinde çalışacak
 document.addEventListener('DOMContentLoaded', async function () {
     // Depo adlarını yükle
@@ -76,12 +54,6 @@ function setupEventListeners() {
 
     // Depo adı kaydetme
     document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
-
-    // Raporlar butonu
-    document.getElementById('reportsBtn').addEventListener('click', showReportsModal);
-
-    // Raf yönetimi butonu
-    document.getElementById('shelfManagementBtn').addEventListener('click', showShelfManagementModal);
 }
 
 // Depo/araç adı düzenleme modalını göster
@@ -237,15 +209,9 @@ function showLoginScreen() {
 }
 
 // Dashboard'u göster
-async function showDashboard() {
+function showDashboard() {
     document.getElementById('loginScreen').classList.add('d-none');
     document.getElementById('dashboard').classList.remove('d-none');
-
-    // Database setup kontrol et
-    const dbSetupOk = await ensureDatabaseSetup();
-    if (!dbSetupOk) {
-        console.log('Database setup gerekiyor.');
-    }
 
     updateUserInfo();
     updateWarehouseCards();
@@ -266,14 +232,6 @@ function updateUserInfo() {
         userMgmtBtn.style.display = 'inline-block';
     } else {
         userMgmtBtn.style.display = 'none';
-    }
-
-    // Raf yönetimi butonunu göster/gizle (sadece ana depo sorumlusu)
-    const shelfMgmtBtn = document.getElementById('shelfManagementBtn');
-    if (currentUser.is_depo_admin) {
-        shelfMgmtBtn.style.display = 'inline-block';
-    } else {
-        shelfMgmtBtn.style.display = 'none';
     }
 }
 
@@ -378,7 +336,7 @@ function updateCurrentWarehouseDisplay() {
     }
 }
 
-// Arama filtresini uygula (ürün kodu, adı, fiyat ve raf adresi dahil)
+// Arama filtresini uygula
 function applySearchFilter() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
     const rows = document.querySelectorAll('#stockTable tbody tr');
@@ -386,13 +344,8 @@ function applySearchFilter() {
     rows.forEach(row => {
         const productCode = row.cells[0].textContent.toLowerCase();
         const productName = row.cells[1].textContent.toLowerCase();
-        const productPrice = row.cells[2].textContent.toLowerCase();
-        const shelfAddress = row.cells[4].textContent.toLowerCase(); // Raf adresi sütunu kaydı
 
-        if (productCode.includes(searchTerm) || 
-            productName.includes(searchTerm) || 
-            productPrice.includes(searchTerm) ||
-            shelfAddress.includes(searchTerm)) {
+        if (productCode.includes(searchTerm) || productName.includes(searchTerm)) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
@@ -519,62 +472,9 @@ function createStockRow(item) {
                 </button>`;
     };
 
-    // Inline edit fonksiyonu
-    const createEditableField = (fieldName, value, displayValue = null) => {
-        if (!currentUser.is_depo_admin) {
-            return displayValue || value || '-';
-        }
-        
-        // value'yu string'e çevir ve güvenli hale getir
-        const safeValue = String(value || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        
-        return `<span class="editable-field" 
-                      onclick="editField('${item.id}', '${fieldName}', '${safeValue}', this)" 
-                      title="Düzenlemek için tıklayın">
-                    ${displayValue || value || '<i class="fas fa-plus text-muted"></i> Ekle'}
-                </span>`;
-    };
-
-    // Ürün görseli için özel buton
-    const createImageButton = (imageUrl) => {
-        if (!imageUrl) {
-            return currentUser.is_depo_admin ? 
-                `<button class="btn btn-outline-secondary btn-sm" onclick="editField('${item.id}', 'product_image_url', '', this)" title="Görsel ekle">
-                    <i class="fas fa-plus"></i>
-                </button>` : 
-                '<span class="text-muted">-</span>';
-        }
-        // Güvenli string dönüşümü
-        const safeImageUrl = String(imageUrl || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        const safeProductName = String(item.product_name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        
-        return `<button class="btn btn-primary btn-sm" onclick="showProductImage('${safeImageUrl}', '${safeProductName}')" title="Görseli görüntüle">
-                    <i class="fas fa-image"></i>
-                </button>
-                ${currentUser.is_depo_admin ? 
-                    `<button class="btn btn-outline-secondary btn-sm ms-1" onclick="editField('${item.id}', 'product_image_url', '${safeImageUrl}', this)" title="Görsel URL'ini düzenle">
-                        <i class="fas fa-edit"></i>
-                    </button>` : ''
-                }`;
-    };
-
-    // Fiyat formatı
-    const formatPrice = (price) => {
-        if (!price) return null;
-        return parseFloat(price).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
-    };
-
     row.innerHTML = `
-        <td>${createEditableField('product_code', item.product_code)}</td>
-        <td>${createEditableField('product_name', item.product_name)}</td>
-        <td>${createEditableField('product_price', item.product_price, formatPrice(item.product_price))}</td>
-        <td>${createImageButton(item.product_image_url)}</td>
-        <td>
-            <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')" 
-                  title="Raf adresini düzenle">
-                ${item.shelf_address ? `<i class="fas fa-map-marker-alt text-success me-1"></i>${item.shelf_address}` : '<i class="fas fa-plus text-muted"></i> Raf Ekle'}
-            </span>
-        </td>
+        <td>${item.product_code}</td>
+        <td>${item.product_name}</td>
         <td>
             <span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span>
         </td>
@@ -597,18 +497,11 @@ function createStockRow(item) {
         <td><strong>${total}</strong></td>
         <td>
             ${canRemoveStock(currentWarehouse) ?
-                `<button class="btn btn-warning btn-sm me-1" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
+            `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')">
                     <i class="fas fa-minus"></i>
-                </button>` : ''
-            }
-            ${currentUser.is_depo_admin ?
-                `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
-                    <i class="fas fa-trash"></i>
-                </button>` : ''
-            }
-            ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin ? 
-                '<span class="text-muted">-</span>' : ''
-            }
+                </button>` :
+            '<span class="text-muted">-</span>'
+        }
         </td>
     `;
 
@@ -620,162 +513,6 @@ function getStockClass(stock) {
     if (!stock || stock === 0) return 'zero';
     if (stock <= LOW_STOCK_THRESHOLD) return 'low';
     return 'good';
-}
-
-// Inline alan düzenleme
-async function editField(productId, fieldName, currentValue, element) {
-    if (!currentUser.is_depo_admin) {
-        alert('Bu işlem için yetkiniz yok!');
-        return;
-    }
-
-    const fieldLabels = {
-        'product_code': 'Ürün Kodu',
-        'product_name': 'Ürün Adı',
-        'product_price': 'Fiyat (TL)',
-        'product_image_url': 'Görsel URL'
-    };
-
-    const fieldLabel = fieldLabels[fieldName] || fieldName;
-    let inputType = 'text';
-    let step = null;
-
-    if (fieldName === 'product_price') {
-        inputType = 'number';
-        step = '0.01';
-    } else if (fieldName === 'product_image_url') {
-        inputType = 'url';
-    }
-
-    const newValue = prompt(
-        `${fieldLabel} düzenleyin:`, 
-        currentValue || ''
-    );
-
-    if (newValue === null) return; // İptal edildi
-
-    // Validation
-    if (fieldName === 'product_code' && newValue.trim() === '') {
-        alert('Ürün kodu boş olamaz!');
-        return;
-    }
-
-    if (fieldName === 'product_name' && newValue.trim() === '') {
-        alert('Ürün adı boş olamaz!');
-        return;
-    }
-
-    if (fieldName === 'product_price' && newValue && isNaN(parseFloat(newValue))) {
-        alert('Geçerli bir fiyat girin!');
-        return;
-    }
-
-    if (fieldName === 'product_image_url' && newValue) {
-        try {
-            new URL(newValue);
-        } catch (e) {
-            alert('Geçerli bir URL girin!');
-            return;
-        }
-    }
-
-    try {
-        const updateData = {};
-        if (fieldName === 'product_price') {
-            updateData[fieldName] = newValue ? parseFloat(newValue) : null;
-        } else {
-            updateData[fieldName] = newValue.trim() || null;
-        }
-
-        const { error } = await supabase
-            .from('stock')
-            .update(updateData)
-            .eq('id', productId);
-
-        if (error) throw error;
-
-        // Tabloyu yeniden yükle
-        await loadStockData();
-        
-        // Başarı mesajı
-        alert(`${fieldLabel} başarıyla güncellendi!`);
-
-    } catch (error) {
-        console.error('Alan güncelleme hatası:', error);
-        alert('Güncelleme sırasında bir hata oluştu: ' + error.message);
-    }
-}
-
-// Ürün görseli gösterme
-function showProductImage(imageUrl, productName) {
-    document.getElementById('productImageModalTitle').textContent = productName;
-    document.getElementById('productImagePreview').src = imageUrl;
-    document.getElementById('productImagePreview').alt = productName;
-    
-    new bootstrap.Modal(document.getElementById('productImageModal')).show();
-}
-
-// Ürün silme modalını göster
-function showDeleteProductModal(productId) {
-    const item = stockData.find(s => s.id === productId);
-    if (!item) {
-        alert('Ürün bulunamadı!');
-        return;
-    }
-
-    const total = (item.main_stock || 0) +
-        (item.sub1_stock || 0) +
-        (item.sub2_stock || 0) +
-        (item.sub3_stock || 0) +
-        (item.sub4_stock || 0);
-
-    document.getElementById('deleteProductName').textContent = item.product_name;
-    document.getElementById('deleteProductCode').textContent = item.product_code;
-    document.getElementById('deleteProductTotalStock').textContent = total;
-    document.getElementById('deleteConfirmText').value = '';
-    
-    // Silme butonunu deaktif et
-    document.getElementById('confirmDeleteBtn').disabled = true;
-    
-    // Onay metni kontrolü
-    const confirmInput = document.getElementById('deleteConfirmText');
-    const deleteBtn = document.getElementById('confirmDeleteBtn');
-    
-    confirmInput.oninput = function() {
-        deleteBtn.disabled = this.value.toUpperCase() !== 'SİL';
-    };
-    
-    // Modal açarken productId'yi sakla
-    window.currentDeleteProductId = productId;
-    
-    new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
-}
-
-// Ürün silmeyi onayla
-async function confirmDeleteProduct() {
-    const productId = window.currentDeleteProductId;
-    if (!productId) return;
-
-    try {
-        const { error } = await supabase
-            .from('stock')
-            .delete()
-            .eq('id', productId);
-
-        if (error) throw error;
-
-        // Modal'ı kapat
-        bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
-        
-        // Tabloyu yeniden yükle
-        await loadStockData();
-        
-        alert('Ürün başarıyla silindi!');
-
-    } catch (error) {
-        console.error('Ürün silme hatası:', error);
-        alert('Ürün silinirken bir hata oluştu: ' + error.message);
-    }
 }
 
 // Hızlı stok çıkarma
@@ -836,18 +573,6 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
             .eq('id', stockId);
 
         if (error) throw error;
-
-        // Hareket kaydı oluştur
-        await createStockMovement(
-            stockId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            1, 
-            `Hızlı transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
-        );
 
         // Tabloyu güncelle
         await loadStockData();
@@ -943,8 +668,6 @@ function populateAddStockWarehouseOptions() {
 async function handleAddStock() {
     const productCode = document.getElementById('productCode').value.trim();
     const productName = document.getElementById('productName').value.trim();
-    const productPrice = document.getElementById('productPrice').value.trim();
-    const productImageUrl = document.getElementById('productImageUrl').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value);
     const targetWarehouse = document.getElementById('addStockWarehouse')?.value || WAREHOUSE_TYPES.MAIN;
 
@@ -965,22 +688,6 @@ async function handleAddStock() {
         return;
     }
 
-    // Fiyat kontrolü
-    if (productPrice && isNaN(parseFloat(productPrice))) {
-        alert('Geçerli bir fiyat girin!');
-        return;
-    }
-
-    // URL kontrolü
-    if (productImageUrl) {
-        try {
-            new URL(productImageUrl);
-        } catch (e) {
-            alert('Geçerli bir görsel URL girin!');
-            return;
-        }
-    }
-
     try {
         // Ürün zaten var mı kontrol et
         const existingProduct = stockData.find(item =>
@@ -996,14 +703,6 @@ async function handleAddStock() {
                 [targetField]: currentStock + quantity
             };
 
-            // Fiyat ve görsel bilgisi varsa güncelle
-            if (productPrice) {
-                updates.product_price = parseFloat(productPrice);
-            }
-            if (productImageUrl) {
-                updates.product_image_url = productImageUrl;
-            }
-
             const { error } = await supabase
                 .from('stock')
                 .update(updates)
@@ -1011,26 +710,12 @@ async function handleAddStock() {
 
             if (error) throw error;
 
-            // Hareket kaydı oluştur
-            await createStockMovement(
-                existingProduct.id, 
-                existingProduct.product_code, 
-                existingProduct.product_name, 
-                'in', 
-                null, 
-                targetWarehouse, 
-                quantity, 
-                'Mevcut ürüne stok ekleme'
-            );
-
             alert(`${existingProduct.product_name} ürününe ${quantity} adet eklendi (${WAREHOUSE_NAMES[targetWarehouse]})`);
         } else {
             // Yeni ürün ekle
             const newProduct = {
                 product_code: productCode.toUpperCase(),
                 product_name: productName,
-                product_price: productPrice ? parseFloat(productPrice) : null,
-                product_image_url: productImageUrl || null,
                 main_stock: 0,
                 sub1_stock: 0,
                 sub2_stock: 0,
@@ -1046,27 +731,6 @@ async function handleAddStock() {
                 .insert(newProduct);
 
             if (error) throw error;
-
-            // Yeni eklenen ürünün ID'sini al
-            const { data: newProductData } = await supabase
-                .from('stock')
-                .select('id')
-                .eq('product_code', productCode.toUpperCase())
-                .single();
-
-            if (newProductData) {
-                // Hareket kaydı oluştur
-                await createStockMovement(
-                    newProductData.id, 
-                    productCode.toUpperCase(), 
-                    productName, 
-                    'in', 
-                    null, 
-                    targetWarehouse, 
-                    quantity, 
-                    'Yeni ürün ekleme'
-                );
-            }
 
             alert(`Yeni ürün "${productName}" başarıyla ${WAREHOUSE_NAMES[targetWarehouse]}'ya eklendi!`);
         }
@@ -1389,22 +1053,6 @@ async function handleRemoveStock() {
 
         if (error) throw error;
 
-        // Hareket kaydı oluştur
-        let movementType, notes;
-        if (targetWarehouse === 'add_to_main' && sourceWarehouse === WAREHOUSE_TYPES.MAIN) {
-            movementType = 'in';
-            notes = 'Sisteme giriş (stok artışı)';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, null, sourceWarehouse, quantity, notes);
-        } else if (targetWarehouse === 'external') {
-            movementType = 'out';
-            notes = 'Dış kullanım';
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, 'external', quantity, notes);
-        } else {
-            movementType = 'transfer';
-            notes = `${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`;
-            await createStockMovement(productId, item.product_code, item.product_name, movementType, sourceWarehouse, targetWarehouse, quantity, notes);
-        }
-
         bootstrap.Modal.getInstance(document.getElementById('removeStockModal')).hide();
         await loadStockData();
 
@@ -1699,18 +1347,6 @@ async function executeWarehouseTransfer() {
 
         if (error) throw error;
 
-        // Hareket kaydı oluştur
-        await createStockMovement(
-            productId, 
-            item.product_code, 
-            item.product_name, 
-            'transfer', 
-            sourceWarehouse, 
-            targetWarehouse, 
-            quantity, 
-            `Depo arası transfer: ${WAREHOUSE_NAMES[sourceWarehouse]} → ${WAREHOUSE_NAMES[targetWarehouse]}`
-        );
-
         bootstrap.Modal.getInstance(modal).hide();
         await loadStockData();
 
@@ -1724,380 +1360,5 @@ async function executeWarehouseTransfer() {
     } catch (error) {
         console.error('Transfer hatası:', error);
         alert('İşlem sırasında bir hata oluştu: ' + error.message);
-    }
-}
-
-// ==================== YENİ ÖZELLİKLER ====================
-
-// Raporlar modalını göster
-function showReportsModal() {
-    const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
-    
-    // Varsayılan tarih aralığını bu ay olarak ayarla
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
-    document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
-    document.getElementById('reportEndDate').value = lastDay.toISOString().split('T')[0];
-    
-    // Depo seçeneklerini doldur
-    populateReportWarehouseOptions();
-    
-    modal.show();
-}
-
-// Rapor için depo seçeneklerini doldur
-function populateReportWarehouseOptions() {
-    const select = document.getElementById('reportWarehouse');
-    select.innerHTML = '<option value="all">Tüm Depolar</option>';
-    
-    Object.entries(WAREHOUSE_TYPES).forEach(([key, warehouseType]) => {
-        const option = document.createElement('option');
-        option.value = warehouseType;
-        option.textContent = WAREHOUSE_NAMES[warehouseType];
-        select.appendChild(option);
-    });
-}
-
-// Stok hareket kaydı oluştur
-async function createStockMovement(productId, productCode, productName, movementType, sourceWarehouse, targetWarehouse, quantity, notes = '') {
-    try {
-        // Önce tabloyu kontrol et
-        const { data: tableCheck, error: checkError } = await supabase
-            .from('stock_movements')
-            .select('*')
-            .limit(1);
-        
-        if (checkError) {
-            console.error('Tablo kontrol hatası:', checkError);
-            return;
-        }
-
-        const { error } = await supabase
-            .from('stock_movements')
-            .insert({
-                product_id: productId,
-                product_code: productCode,
-                product_name: productName,
-                movement_type: movementType,
-                source_warehouse: sourceWarehouse,
-                target_warehouse: targetWarehouse,
-                quantity: quantity,
-                user_id: currentUser.id,
-                user_name: currentUser.name,
-                notes: notes
-            });
-
-        if (error) throw error;
-        
-        // Başarılı kayıt (sadece development için)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log(`Stok hareketi kaydedildi: ${movementType} - ${productCode} (${quantity} adet)`);
-        }
-    } catch (error) {
-        console.error('Stok hareket kaydı oluşturma hatası:', error);
-    }
-}
-
-// Rapor oluştur
-async function generateReport() {
-    const startDate = document.getElementById('reportStartDate').value;
-    const endDate = document.getElementById('reportEndDate').value;
-    const warehouse = document.getElementById('reportWarehouse').value;
-    
-    if (!startDate || !endDate) {
-        alert('Lütfen başlangıç ve bitiş tarihlerini seçin!');
-        return;
-    }
-    
-    if (new Date(startDate) > new Date(endDate)) {
-        alert('Başlangıç tarihi bitiş tarihinden büyük olamaz!');
-        return;
-    }
-    
-    const content = document.getElementById('reportContent');
-    content.innerHTML = `
-        <div class="text-center py-3">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Rapor oluşturuluyor...</span>
-            </div>
-            <p class="mt-2">Rapor hazırlanıyor...</p>
-        </div>
-    `;
-    
-    try {
-        let query = supabase
-            .from('stock_movements')
-            .select('*')
-            .gte('created_at', startDate)
-            .lte('created_at', endDate + ' 23:59:59')
-            .order('created_at', { ascending: false });
-            
-        if (warehouse !== 'all') {
-            query = query.or(`source_warehouse.eq.${warehouse},target_warehouse.eq.${warehouse}`);
-        }
-        
-        const { data: movements, error } = await query;
-        
-        if (error) throw error;
-        
-        displayReport(movements, startDate, endDate, warehouse);
-        
-    } catch (error) {
-        console.error('Rapor oluşturma hatası:', error);
-        content.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Rapor oluşturulurken bir hata oluştu: ${error.message}
-            </div>
-        `;
-    }
-}
-
-// Raporu görüntüle
-function displayReport(movements, startDate, endDate, warehouse) {
-    const content = document.getElementById('reportContent');
-    const exportBtn = document.getElementById('exportReportBtn');
-    
-    if (!movements || movements.length === 0) {
-        content.innerHTML = `
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle fa-2x mb-3"></i>
-                <h5>Veri Bulunamadı</h5>
-                <p>Seçilen tarih aralığında ve depoda hiç hareket kaydı bulunmuyor.</p>
-            </div>
-        `;
-        exportBtn.style.display = 'none';
-        return;
-    }
-    
-    let html = `
-        <div class="mb-3">
-            <h6>
-                <i class="fas fa-calendar me-2"></i>
-                ${formatDate(startDate)} - ${formatDate(endDate)} 
-                ${warehouse !== 'all' ? `(${WAREHOUSE_NAMES[warehouse]})` : '(Tüm Depolar)'}
-            </h6>
-            <small class="text-muted">Toplam ${movements.length} hareket</small>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Tarih</th>
-                        <th>Ürün</th>
-                        <th>İşlem</th>
-                        <th>Kaynak</th>
-                        <th>Hedef</th>
-                        <th>Miktar</th>
-                        <th>Kullanıcı</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    movements.forEach(movement => {
-        const movementTypeText = {
-            'in': 'Giriş',
-            'out': 'Çıkış',
-            'transfer': 'Transfer'
-        }[movement.movement_type] || movement.movement_type;
-        
-        const sourceText = movement.source_warehouse ? 
-            WAREHOUSE_NAMES[movement.source_warehouse] || movement.source_warehouse : '-';
-        const targetText = movement.target_warehouse === 'external' ? 'Dış Kullanım' :
-            (movement.target_warehouse ? WAREHOUSE_NAMES[movement.target_warehouse] || movement.target_warehouse : '-');
-            
-        html += `
-            <tr>
-                <td>${formatDateTime(movement.movement_date || movement.created_at)}</td>
-                <td>
-                    <strong>${movement.product_code}</strong><br>
-                    <small class="text-muted">${movement.product_name}</small>
-                </td>
-                <td>
-                    <span class="badge bg-${getMovementTypeBadgeColor(movement.movement_type)}">
-                        ${movementTypeText}
-                    </span>
-                </td>
-                <td>${sourceText}</td>
-                <td>${targetText}</td>
-                <td><strong>${movement.quantity}</strong></td>
-                <td>${movement.user_name}</td>
-            </tr>
-        `;
-    });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    content.innerHTML = html;
-    exportBtn.style.display = 'inline-block';
-}
-
-// Hareket tipi için badge rengini getir
-function getMovementTypeBadgeColor(type) {
-    switch (type) {
-        case 'in': return 'success';
-        case 'out': return 'danger';
-        case 'transfer': return 'primary';
-        default: return 'secondary';
-    }
-}
-
-// Raf yönetimi modalını göster
-function showShelfManagementModal() {
-    const modal = new bootstrap.Modal(document.getElementById('shelfManagementModal'));
-    modal.show();
-}
-
-// Raf için ürün ara
-function searchProductsForShelf() {
-    const searchTerm = document.getElementById('shelfProductSearch').value.trim();
-    
-    if (!searchTerm) {
-        alert('Lütfen arama terimi girin!');
-        return;
-    }
-    
-    const filteredProducts = stockData.filter(item => 
-        item.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.shelf_address && item.shelf_address.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    
-    displayShelfProducts(filteredProducts);
-}
-
-// Raf ürünlerini görüntüle
-function displayShelfProducts(products) {
-    const container = document.getElementById('shelfProductsList');
-    
-    if (products.length === 0) {
-        container.innerHTML = `
-            <div class="alert alert-warning text-center">
-                <i class="fas fa-search fa-2x mb-2"></i>
-                <p>Arama kriterlerine uygun ürün bulunamadı.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '<div class="list-group">';
-    
-    products.forEach(product => {
-        html += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">${product.product_code} - ${product.product_name}</h6>
-                        <small class="text-muted">
-                            Ana Depo: ${product.main_stock || 0} adet
-                            ${product.shelf_address ? 
-                                `<span class="badge bg-success ms-2"><i class="fas fa-map-marker-alt"></i> ${product.shelf_address}</span>` : 
-                                '<span class="badge bg-secondary ms-2">Raf adresi yok</span>'
-                            }
-                        </small>
-                    </div>
-                    <button class="btn btn-primary btn-sm" 
-                            onclick="editShelfAddress('${product.id}', '${product.product_code}', '${product.product_name}', '${product.shelf_address || ''}')">
-                        <i class="fas fa-edit"></i> Düzenle
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-// Raf adresi düzenleme modalını aç
-function editShelfAddress(productId, productCode, productName, currentAddress) {
-    const modal = new bootstrap.Modal(document.getElementById('editShelfModal'));
-    
-    document.getElementById('shelfProductInfo').innerHTML = `
-        <strong>${productCode}</strong> - ${productName}
-    `;
-    document.getElementById('shelfAddress').value = currentAddress;
-    
-    // Modal'a product ID'yi kaydet
-    modal._element.setAttribute('data-product-id', productId);
-    
-    modal.show();
-}
-
-// Raf adresini kaydet
-async function saveShelfAddress() {
-    const modal = document.getElementById('editShelfModal');
-    const productId = modal.getAttribute('data-product-id');
-    const shelfAddress = document.getElementById('shelfAddress').value.trim();
-    
-    try {
-        const { error } = await supabase
-            .from('stock')
-            .update({ shelf_address: shelfAddress || null })
-            .eq('id', productId);
-            
-        if (error) throw error;
-        
-        // Stok verilerini yenile
-        await loadStockData();
-        
-        // Modal'ı kapat
-        bootstrap.Modal.getInstance(modal).hide();
-        
-        // Raf yönetimi modalındaki listeyi güncelle
-        if (document.getElementById('shelfProductSearch').value.trim()) {
-            searchProductsForShelf();
-        }
-        
-    } catch (error) {
-        console.error('Raf adresi kaydetme hatası:', error);
-        alert('Raf adresi kaydedilirken bir hata oluştu: ' + error.message);
-    }
-}
-
-// Tarih formatlama fonksiyonları
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('tr-TR');
-}
-
-function formatDateTime(dateString) {
-    return new Date(dateString).toLocaleString('tr-TR');
-}
-
-// Excel export (basit CSV olarak)
-function exportReport() {
-    const table = document.querySelector('#reportContent table');
-    if (!table) return;
-    
-    let csv = '';
-    const rows = table.querySelectorAll('tr');
-    
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('th, td');
-        const csvRow = Array.from(cols).map(col => 
-            '"' + col.textContent.replace(/"/g, '""') + '"'
-        ).join(',');
-        csv += csvRow + '\n';
-    });
-    
-    // CSV dosyası oluştur ve indir
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'stok-raporu.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 }

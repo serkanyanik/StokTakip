@@ -941,6 +941,12 @@ function populateAddStockWarehouseOptions() {
 
 // Stok ekleme işlemi
 async function handleAddStock() {
+    // Yetki kontrolü - Sadece ana depo sorumlusu stok ekleyebilir
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu stok ekleyebilir.');
+        return;
+    }
+
     const productCode = document.getElementById('productCode').value.trim();
     const productName = document.getElementById('productName').value.trim();
     const productPrice = document.getElementById('productPrice').value.trim();
@@ -1321,6 +1327,12 @@ function getCurrentWarehouseStock(item, warehouseType) {
 
 // Stok çıkarma işlemi
 async function handleRemoveStock() {
+    // Yetki kontrolü - Sadece ana depo sorumlusu stok işlemi yapabilir
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu stok işlemleri yapabilir.');
+        return;
+    }
+
     const productId = document.getElementById('selectProduct').value;
     const quantity = parseInt(document.getElementById('removeQuantity').value);
     const targetWarehouse = document.getElementById('targetWarehouse').value;
@@ -1649,6 +1661,12 @@ function updateTransferProductOptions(sourceWarehouse) {
 }
 
 async function executeWarehouseTransfer() {
+    // Yetki kontrolü - Sadece ana depo sorumlusu transfer yapabilir
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu transfer işlemleri yapabilir.');
+        return;
+    }
+
     const modal = document.getElementById('transferToWarehouseModal');
     const targetWarehouse = modal.getAttribute('data-target-warehouse');
     const sourceWarehouse = document.getElementById('transferSourceWarehouse').value;
@@ -1909,12 +1927,23 @@ function displayReport(movements, startDate, endDate, warehouse) {
             WAREHOUSE_NAMES[movement.source_warehouse] || movement.source_warehouse : '-';
         const targetText = movement.target_warehouse === 'external' ? 'Dış Kullanım' :
             (movement.target_warehouse ? WAREHOUSE_NAMES[movement.target_warehouse] || movement.target_warehouse : '-');
+        
+        // Ürün görseli kontrolü
+        const product = stockData.find(p => p.product_code === movement.product_code);
+        const hasImage = product && product.product_image_url;
+        
+        const productCodeDisplay = hasImage ? 
+            `<a href="#" onclick="showProductImage('${String(product.product_image_url || '').replace(/'/g, '&#39;')}', '${String(movement.product_name || '').replace(/'/g, '&#39;')}')" 
+               class="text-decoration-none" title="Ürün görselini görüntüle">
+               <i class="fas fa-image text-primary me-1"></i><strong>${movement.product_code}</strong>
+             </a>` : 
+            `<strong>${movement.product_code}</strong>`;
             
         html += `
             <tr>
                 <td>${formatDateTime(movement.movement_date || movement.created_at)}</td>
                 <td>
-                    <strong>${movement.product_code}</strong><br>
+                    ${productCodeDisplay}<br>
                     <small class="text-muted">${movement.product_name}</small>
                 </td>
                 <td>
@@ -1954,21 +1983,24 @@ function getMovementTypeBadgeColor(type) {
 function showShelfManagementModal() {
     const modal = new bootstrap.Modal(document.getElementById('shelfManagementModal'));
     modal.show();
+    
+    // Modalı açtığımızda tüm ürünleri listele
+    loadAllProductsForShelf();
 }
 
-// Raf için ürün ara
-function searchProductsForShelf() {
-    const searchTerm = document.getElementById('shelfProductSearch').value.trim();
-    
-    if (!searchTerm) {
-        alert('Lütfen arama terimi girin!');
-        return;
-    }
+// Tüm ürünleri raf yönetimi için yükle
+function loadAllProductsForShelf() {
+    displayShelfProducts(stockData);
+}
+
+// Raf ürünlerini filtrele (klavyeden yazdıkça)
+function filterShelfProducts() {
+    const searchTerm = document.getElementById('shelfProductSearch').value.toLowerCase().trim();
     
     const filteredProducts = stockData.filter(item => 
-        item.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.shelf_address && item.shelf_address.toLowerCase().includes(searchTerm.toLowerCase()))
+        item.product_code.toLowerCase().includes(searchTerm) ||
+        item.product_name.toLowerCase().includes(searchTerm) ||
+        (item.shelf_address && item.shelf_address.toLowerCase().includes(searchTerm))
     );
     
     displayShelfProducts(filteredProducts);
@@ -1980,41 +2012,35 @@ function displayShelfProducts(products) {
     
     if (products.length === 0) {
         container.innerHTML = `
-            <div class="alert alert-warning text-center">
-                <i class="fas fa-search fa-2x mb-2"></i>
-                <p>Arama kriterlerine uygun ürün bulunamadı.</p>
-            </div>
-        `;
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <p>Arama kriterlerine uygun ürün bulunamadı.</p>
+                </td>
+            </tr>`;
         return;
     }
     
-    let html = '<div class="list-group">';
-    
-    products.forEach(product => {
-        html += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1">${product.product_code} - ${product.product_name}</h6>
-                        <small class="text-muted">
-                            Ana Depo: ${product.main_stock || 0} adet
-                            ${product.shelf_address ? 
-                                `<span class="badge bg-success ms-2"><i class="fas fa-map-marker-alt"></i> ${product.shelf_address}</span>` : 
-                                '<span class="badge bg-secondary ms-2">Raf adresi yok</span>'
-                            }
-                        </small>
-                    </div>
-                    <button class="btn btn-primary btn-sm" 
-                            onclick="editShelfAddress('${product.id}', '${product.product_code}', '${product.product_name}', '${product.shelf_address || ''}')">
+    container.innerHTML = products.map(item => {
+        const shelfDisplay = item.shelf_address ? 
+            `<span class="badge bg-success">${item.shelf_address}</span>` : 
+            '<span class="text-muted">Atanmamış</span>';
+            
+        return `
+            <tr>
+                <td><strong>${item.product_code}</strong></td>
+                <td>${item.product_name}</td>
+                <td>${shelfDisplay}</td>
+                <td><span class="badge bg-primary">${item.main_stock || 0}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')"
+                            title="Raf adresi düzenle">
                         <i class="fas fa-edit"></i> Düzenle
                     </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
+                </td>
+            </tr>`;
+    }).join('');
 }
 
 // Raf adresi düzenleme modalını aç
