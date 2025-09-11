@@ -75,12 +75,12 @@ function setupEventListeners() {
         productSelect.disabled = false;
         productSelect.value = '';
         hiddenProductId.value = '';
-        
+
         // Ürün seçici container'ını göster
         if (productSelectContainer) {
             productSelectContainer.style.display = 'block';
         }
-        
+
         if (productInfo) {
             productInfo.style.display = 'none';
         }
@@ -105,7 +105,7 @@ function setupEventListeners() {
     document.getElementById('operationType').addEventListener('change', handleOperationTypeChange);
 
     // Ürün seçildiğinde kaynak depo listesini güncelle
-    document.getElementById('selectProduct').addEventListener('change', function() {
+    document.getElementById('selectProduct').addEventListener('change', function () {
         const operationType = document.getElementById('operationType').value;
         if (operationType === 'transfer' && currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
             populateSourceWarehouseOptions();
@@ -899,17 +899,17 @@ function quickRemoveStock(stockId) {
     // Ürünü seç ve hidden input'a da yaz
     const productSelect = document.getElementById('selectProduct');
     const hiddenProductId = document.getElementById('selectedProductId');
-    
+
     productSelect.value = stockId;
     hiddenProductId.value = stockId;
-    
+
     // Transfer işlemini varsayılan olarak seç
     document.getElementById('operationType').value = 'transfer';
-    
+
     // Ürün bilgisini görsel olarak göster ve ürün seçici alanını gizle
     const productInfo = document.getElementById('selectedProductInfo');
     const productSelectContainer = productSelect.closest('.mb-3');
-    
+
     if (productInfo) {
         productInfo.innerHTML = `
             <div class="alert alert-info mb-3">
@@ -918,7 +918,7 @@ function quickRemoveStock(stockId) {
         `;
         productInfo.style.display = 'block';
     }
-    
+
     // Ürün seçici container'ını gizle
     if (productSelectContainer) {
         productSelectContainer.style.display = 'none';
@@ -927,7 +927,7 @@ function quickRemoveStock(stockId) {
     showRemoveStockModal();
     // İşlem türü değişikliğini tetikle
     handleOperationTypeChange();
-    
+
     // Kaynak depo listesini güncelle (transfer modunda)
     if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
         populateSourceWarehouseOptions();
@@ -1241,7 +1241,7 @@ function handleOperationTypeChange() {
 
         // Kaynak depo gizle (stok girişinde kaynak yok)
         sourceContainer.style.display = 'none';
-        
+
         // Hedef depo container'ını göster
         targetWarehouseContainer.style.display = 'block';
 
@@ -1262,7 +1262,7 @@ function handleOperationTypeChange() {
         } else {
             sourceContainer.style.display = 'none';
         }
-        
+
         // Hedef depo container'ını göster
         targetWarehouseContainer.style.display = 'block';
 
@@ -1301,7 +1301,7 @@ function populateWarehouseOptionsForEntry() {
 // Stok çıkarma modalını göster
 function showRemoveStockModal() {
     const productSelect = document.getElementById('selectProduct');
-    
+
     // Modal başlığını depo türüne ve kullanıcı yetkisine göre ayarla
     const modalTitle = document.getElementById('removeStockModalTitle');
     if (modalTitle) {
@@ -1320,18 +1320,18 @@ function showRemoveStockModal() {
         // Normal modal açılımı - işlem türünü sıfırla
         document.getElementById('operationType').value = '';
     }
-    
+
     document.getElementById('targetWarehouseContainer').style.display = 'none';
 
     // Ana depo sorumlusu ve ana depo seçiliyse kaynak depo seçimini gizle (başlangıçta)
     const sourceContainer = document.getElementById('sourceWarehouseContainer');
     sourceContainer.style.display = 'none';
-    
+
     // Sadece ürün seçici görünürse ürün seçeneklerini doldur
     if (productSelectContainer && productSelectContainer.style.display !== 'none') {
         populateProductOptions();
     }
-    
+
     new bootstrap.Modal(document.getElementById('removeStockModal')).show();
 }// Ürün seçeneklerini doldur
 function populateProductOptions() {
@@ -1404,7 +1404,7 @@ function populateProductOptions() {
 function populateSourceWarehouseOptions() {
     const select = document.getElementById('sourceWarehouse');
     const selectedProductId = document.getElementById('selectedProductId').value || document.getElementById('selectProduct').value;
-    
+
     select.innerHTML = '<option value="">Kaynak depo seçiniz...</option>';
 
     if (!selectedProductId) {
@@ -1451,12 +1451,12 @@ function setupSourceWarehouseListener() {
     sourceSelect.addEventListener('change', function () {
         const selectedWarehouse = this.value;
         const productSelectContainer = document.getElementById('selectProduct').closest('.mb-3');
-        
+
         // Ürün seçici gizliyse (quickRemove durumu) ürün listesini değiştirme
         if (productSelectContainer && productSelectContainer.style.display === 'none') {
             return;
         }
-        
+
         if (selectedWarehouse) {
             populateProductOptionsForWarehouse(selectedWarehouse);
         } else {
