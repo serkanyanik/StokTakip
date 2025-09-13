@@ -1,6 +1,6 @@
-# Serkan Stok - Kurulum Rehberi
+# MS TEKNİK SERVİS - Kurulum Rehberi
 
-Bu rehber Serkan Stok sistemini kurmanız için adım adım talimatlar içerir.
+Bu rehber MS TEKNİK SERVİS sistemini kurmanız için adım adım talimatlar içerir.
 
 ## 🚀 Hızlı Başlangıç
 
@@ -55,7 +55,7 @@ Projenizi GitHub'a yüklemek için terminal açın ve şu komutları çalıştı
 cd /path/to/SerkanStok
 git init
 git add .
-git commit -m "İlk commit: Serkan Stok sistemi"
+git commit -m "İlk commit: MS TEKNİK SERVİS sistemi"
 git branch -M main
 git remote add origin https://github.com/yourusername/serkan-stok.git
 git push -u origin main
@@ -199,4 +199,4 @@ Herhangi bir sorunla karşılaştığınızda:
 
 ---
 
-**Tebrikler! 🎉 Serkan Stok sisteminiz artık çalışıyor!**
+**Tebrikler! 🎉 MS TEKNİK SERVİS sisteminiz artık çalışıyor!**

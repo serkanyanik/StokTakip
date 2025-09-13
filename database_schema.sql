@@ -1,4 +1,4 @@
--- Serkan Stok Veritabanı Şeması (Güncellenmiş Versiyon)
+-- MS TEKNİK SERVİS Veritabanı Şeması (Güncellenmiş Versiyon)
 -- Supabase PostgreSQL için SQL komutları
 
 -- 1. Kullanıcı profilleri tablosu (Yeni esnek sistem)

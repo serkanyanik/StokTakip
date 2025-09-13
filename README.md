@@ -1,4 +1,4 @@
-# Serkan Stok - Beyaz Eşya Teknik Servis Stok Takip Sistemi
+# MS TEKNİK SERVİS - Beyaz Eşya Teknik Servis Stok Takip Sistemi
 
 Beyaz eşya teknik servisleri için geliştirilmiş web tabanlı stok takip sistemi. GitHub Pages üzerinde barındırılır ve Supabase veritabanı kullanır.
 
