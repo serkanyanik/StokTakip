@@ -2244,7 +2244,7 @@ async function handleRemoveStock() {
             alert('Lütfen geçerli bir satış fiyatı girin!');
             return;
         }
-        
+
         formInfo = document.getElementById('formInfo').value.trim();
     }
 
@@ -2773,7 +2773,7 @@ function showReportsModal() {
     // Varsayılan tarih aralığını ayarla
     const now = new Date();
     let startDate, endDate;
-    
+
     if (now.getDate() <= 5) {
         // Ayın ilk 5 günündeyse son 30 gün
         endDate = new Date(now);
@@ -2809,11 +2809,11 @@ function showReportsModal() {
 
     // Hızlı filtre event listener'ları ekle
     document.querySelectorAll('input[name="quickFilter"]').forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
             // Tarih seçili ise otomatik rapor oluştur
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
-            
+
             if (startDate && endDate) {
                 generateReport();
             }
@@ -3136,7 +3136,7 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
     const quickFilterTexts = {
         'all': 'Tümü',
         'in': 'Giriş',
-        'out': 'Çıkış', 
+        'out': 'Çıkış',
         'transfer': 'Transfer',
         'customer': 'Müşteri Satış'
     };
