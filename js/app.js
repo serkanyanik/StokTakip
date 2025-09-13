@@ -336,12 +336,40 @@ async function showDashboard() {
         console.log('Database setup gerekiyor.');
     }
 
+    // Kullanıcının varsayılan deposunu ayarla
+    setDefaultWarehouseForUser();
+
     updateUserInfo();
     updateWarehouseCards();
     updateTableHeaders(); // Tablo başlıklarını güncelle
     updateCurrentWarehouseDisplay();
     loadStockData();
     updateButtonVisibility();
+}
+
+// Kullanıcının varsayılan deposunu ayarla
+function setDefaultWarehouseForUser() {
+    if (!currentUser) return;
+
+    // Ana depo sorumlusu ise ana depoda başlat
+    if (currentUser.is_depo_admin) {
+        currentWarehouse = WAREHOUSE_TYPES.MAIN;
+        return;
+    }
+
+    // Araç sorumluları için yetkili oldukları ilk depoyu bul
+    if (currentUser.sub1_access) {
+        currentWarehouse = WAREHOUSE_TYPES.SUB1;
+    } else if (currentUser.sub2_access) {
+        currentWarehouse = WAREHOUSE_TYPES.SUB2;
+    } else if (currentUser.sub3_access) {
+        currentWarehouse = WAREHOUSE_TYPES.SUB3;
+    } else if (currentUser.sub4_access) {
+        currentWarehouse = WAREHOUSE_TYPES.SUB4;
+    } else {
+        // Hiçbir yetkisi yoksa ana depoya yönlendir (fallback)
+        currentWarehouse = WAREHOUSE_TYPES.MAIN;
+    }
 }
 
 // Kullanıcı bilgilerini güncelle
