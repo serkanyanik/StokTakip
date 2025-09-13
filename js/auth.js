@@ -67,20 +67,20 @@ async function logout() {
     console.log('Logout fonksiyonu çağrıldı');
     try {
         console.log('Supabase logout deneniyor...');
-        
+
         // Timeout ile logout işlemini zorla
         const logoutPromise = supabase.auth.signOut();
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Timeout')), 3000)
         );
-        
+
         await Promise.race([logoutPromise, timeoutPromise]);
         console.log('Logout başarılı, sayfa yenileniyor...');
-        
+
     } catch (error) {
         console.error('Logout hatası veya timeout:', error);
     }
-    
+
     // Her durumda kullanıcıyı temizle ve sayfayı yenile
     currentUser = null;
     localStorage.clear(); // Tüm yerel verileri temizle

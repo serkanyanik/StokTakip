@@ -58,7 +58,7 @@ function setupEventListeners() {
     // Çıkış butonu
     const logoutButtonElement = document.getElementById('logoutBtn');
     if (logoutButtonElement) {
-        logoutButtonElement.addEventListener('click', function(e) {
+        logoutButtonElement.addEventListener('click', function (e) {
             console.log('Logout butonuna tıklandı');
             e.preventDefault();
             logout();
@@ -571,14 +571,14 @@ function updateCurrentWarehouseDisplay() {
         'warehouse-main', 'warehouse-sub1', 'warehouse-sub2', 'warehouse-sub3', 'warehouse-sub4',
         'vehicle-user', 'sub1-user', 'sub2-user', 'sub3-user', 'sub4-user'
     );
-    
+
     // Depo class'ını ekle
     document.body.classList.add(`warehouse-${currentWarehouse}`);
-    
+
     // Kullanıcı tipine göre class ekle
     if (!currentUser.is_depo_admin) {
         document.body.classList.add('vehicle-user');
-        
+
         if (currentUser.is_depo_sorumlu1) {
             document.body.classList.add('sub1-user');
         } else if (currentUser.is_depo_sorumlu2) {
@@ -625,7 +625,7 @@ function updateTableHeadersForUserType() {
         const sub2Header = document.getElementById('sub2WarehouseHeader');
         const sub3Header = document.getElementById('sub3WarehouseHeader');
         const sub4Header = document.getElementById('sub4WarehouseHeader');
-        
+
         if (mainHeader) mainHeader.textContent = 'Ana Depo';
         if (sub1Header) sub1Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1];
         if (sub2Header) sub2Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2];
