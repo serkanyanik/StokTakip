@@ -2780,6 +2780,14 @@ function showReportsModal() {
     // Ürün listesini yükle
     loadProductsForReport();
 
+    // Ürün filtresi başlangıç ayarları
+    const searchInput = document.getElementById('reportProductSearch');
+    const hiddenInput = document.getElementById('reportProduct');
+    if (searchInput && hiddenInput) {
+        searchInput.value = '';
+        hiddenInput.value = 'all';
+    }
+
     modal.show();
 }
 
@@ -2870,8 +2878,14 @@ function setupProductSearch(products) {
     const dropdown = document.getElementById('reportProductDropdown');
     const hiddenInput = document.getElementById('reportProduct');
 
-    // Arama input'una odaklanınca tüm ürünleri göster
+    // Arama input'una odaklanınca davranış
     searchInput.addEventListener('focus', () => {
+        // Eğer içerik varsa (ürün seçilmişse) temizle
+        if (searchInput.value.trim()) {
+            searchInput.value = '';
+            hiddenInput.value = 'all';
+        }
+        
         showAllProducts(products);
         dropdown.style.display = 'block';
     });
@@ -2901,8 +2915,10 @@ function setupProductSearch(products) {
         }
     });
 
-    // Başlangıçta dropdown gizli
+    // Başlangıçta dropdown gizli ve "Tüm Ürünler" seçili
     dropdown.style.display = 'none';
+    searchInput.value = '';
+    hiddenInput.value = 'all';
 }
 
 // Tüm ürünleri dropdown'da göster
