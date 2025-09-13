@@ -1989,3 +1989,79 @@ td .btn-sm {
 .actions-column .dropdown-item:hover i {
     color: white;
 }
+
+/* Diğer Lokasyon Sonuçları Stilleri */
+#otherLocationsContainer {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+    border: 2px solid rgba(255, 193, 7, 0.2);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.1);
+    animation: slideIn 0.4s ease-out;
+}
+
+#otherLocationsContainer h5 {
+    color: #d39e00;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#otherLocationsContainer h5 i {
+    font-size: 1.2em;
+    animation: pulse 2s infinite;
+}
+
+.other-location-item {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.other-location-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 193, 7, 0.5);
+}
+
+.other-location-item .badge {
+    font-size: 0.85em;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.other-location-item .text-muted {
+    font-size: 0.85em;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
