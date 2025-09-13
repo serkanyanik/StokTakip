@@ -735,7 +735,7 @@ function showOtherLocationResults(matches) {
                 </div>
                 <div class="text-muted mt-2">
                     <i class="fas fa-info-circle me-1"></i>
-                    Bu ürünü almak için ilgili lokasyon sorumlusu ile iletişime geçin.
+                    Bu ürünü almak için ana lokasyon sorumlusu Serkan Bey ile iletişime geçin.
                 </div>
             </div>
         `;
