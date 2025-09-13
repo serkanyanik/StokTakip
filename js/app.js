@@ -28,7 +28,7 @@ async function ensureDatabaseSetup() {
 document.addEventListener('DOMContentLoaded', async function () {
     // Initialize currentWarehouse
     currentWarehouse = WAREHOUSE_TYPES.MAIN;
-    
+
     // Bozuk auth token'ları temizle
     try {
         const { error } = await supabase.auth.getSession();
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         localStorage.clear();
         sessionStorage.clear();
     }
-    
+
     // Depo adlarını yükle
     loadWarehouseNamesFromStorage();
 
@@ -429,6 +429,14 @@ function updateUserInfo() {
     } else {
         statisticsCards.style.display = 'none';
     }
+
+    // Dashboard header'ı göster/gizle (araç sorumlularına gösterme)
+    const dashboardHeader = document.querySelector('.dashboard-header');
+    if (currentUser.is_depo_admin) {
+        dashboardHeader.style.display = 'block';
+    } else {
+        dashboardHeader.style.display = 'none';
+    }
 }
 
 // Tablo başlıklarını güncelle
@@ -669,10 +677,10 @@ async function applySearchFilter() {
 
                 if (otherStocks.length > 0) {
                     const productCode = row.cells[0].textContent.trim();
-                    
+
                     // stockData'dan ürün bilgisini bul
                     const productData = stockData.find(item => item.product_code === productCode);
-                    
+
                     otherLocationMatches.push({
                         productCode: productCode,
                         productName: row.cells[1].textContent.trim(),
@@ -883,19 +891,19 @@ function showOtherLocationResults(matches) {
                             </div>
                         </div>
                         <h6 class="mb-2">${match.productName}</h6>
-                        ${match.productPrice ? 
-                            `<div class="mb-2">
+                        ${match.productPrice ?
+                `<div class="mb-2">
                                 <span class="badge bg-success text-white px-3 py-2" style="font-size: 0.9rem; font-weight: 600;">
                                     Fiyat: ${parseFloat(match.productPrice).toFixed(2)} ₺
                                 </span>
-                            </div>` : 
-                            `<div class="mb-2">
+                            </div>` :
+                `<div class="mb-2">
                                 <span class="badge bg-secondary">
                                     <i class="fas fa-info-circle me-1"></i>
                                     Fiyat bilgisi yok
                                 </span>
                             </div>`
-                        }
+            }
                         <div class="d-flex flex-wrap gap-2 mt-2">
         `;
 
@@ -2768,7 +2776,7 @@ function showReportsModal() {
 
     // Depo seçeneklerini doldur
     populateReportWarehouseOptions();
-    
+
     // Ürün listesini yükle
     loadProductsForReport();
 
@@ -2845,19 +2853,129 @@ async function loadProductsForReport() {
 
         if (error) throw error;
 
-        const productSelect = document.getElementById('reportProduct');
-        productSelect.innerHTML = '<option value="all">Tüm Ürünler</option>';
-
-        products.forEach(product => {
-            const option = document.createElement('option');
-            option.value = product.id;
-            option.textContent = `${product.product_code} - ${product.product_name}`;
-            productSelect.appendChild(option);
-        });
+        // Ürün listesini input elementine data olarak sakla
+        const searchInput = document.getElementById('reportProductSearch');
+        searchInput.dataset.products = JSON.stringify(products);
+        
+        setupProductSearch(products);
 
     } catch (error) {
         console.error('Ürün listesi yükleme hatası:', error);
     }
+}
+
+// Ürün arama sistemi kurulumu
+function setupProductSearch(products) {
+    const searchInput = document.getElementById('reportProductSearch');
+    const dropdown = document.getElementById('reportProductDropdown');
+    const hiddenInput = document.getElementById('reportProduct');
+
+    // Arama input'una odaklanınca dropdown'ı göster
+    searchInput.addEventListener('focus', () => {
+        showAllProducts(products);
+        dropdown.style.display = 'block';
+    });
+
+    // Arama yaparken filtrele
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        filterProducts(searchTerm, products);
+    });
+
+    // Dışarı tıklanınca dropdown'ı gizle
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.position-relative')) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // İlk yüklemede tüm ürünleri göster
+    showAllProducts(products);
+}
+
+// Tüm ürünleri dropdown'da göster
+function showAllProducts(products) {
+    const dropdown = document.getElementById('reportProductDropdown');
+    
+    let html = `
+        <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
+            <i class="fas fa-list me-2"></i>Tüm Ürünler
+        </div>
+    `;
+
+    products.forEach(product => {
+        html += `
+            <div class="dropdown-item" 
+                 data-value="${product.id}" 
+                 onclick="selectReportProduct('${product.id}', '${product.product_code} - ${product.product_name}')">
+                <i class="fas fa-box me-2"></i>
+                <strong>${product.product_code}</strong> - ${product.product_name}
+            </div>
+        `;
+    });
+
+    dropdown.innerHTML = html;
+}
+
+// Ürünleri filtrele
+function filterProducts(searchTerm, products) {
+    const dropdown = document.getElementById('reportProductDropdown');
+    
+    if (!searchTerm) {
+        showAllProducts(products);
+        return;
+    }
+
+    const filteredProducts = products.filter(product => 
+        product.product_code.toLowerCase().includes(searchTerm) ||
+        product.product_name.toLowerCase().includes(searchTerm)
+    );
+
+    let html = `
+        <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
+            <i class="fas fa-list me-2"></i>Tüm Ürünler
+        </div>
+    `;
+
+    if (filteredProducts.length === 0) {
+        html += `
+            <div class="dropdown-item disabled">
+                <i class="fas fa-exclamation-circle me-2 text-muted"></i>
+                <span class="text-muted">Ürün bulunamadı</span>
+            </div>
+        `;
+    } else {
+        filteredProducts.forEach(product => {
+            html += `
+                <div class="dropdown-item" 
+                     data-value="${product.id}" 
+                     onclick="selectReportProduct('${product.id}', '${product.product_code} - ${product.product_name}')">
+                    <i class="fas fa-box me-2"></i>
+                    <strong>${product.product_code}</strong> - ${product.product_name}
+                </div>
+            `;
+        });
+    }
+
+    dropdown.innerHTML = html;
+    dropdown.style.display = 'block';
+}
+
+// Ürün seçimi
+function selectReportProduct(value, displayText) {
+    const searchInput = document.getElementById('reportProductSearch');
+    const dropdown = document.getElementById('reportProductDropdown');
+    const hiddenInput = document.getElementById('reportProduct');
+
+    searchInput.value = displayText;
+    hiddenInput.value = value;
+    dropdown.style.display = 'none';
+
+    // Aktif seçimi güncelle
+    dropdown.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    dropdown.querySelector(`[data-value="${value}"]`).classList.add('active');
 }
 
 // Rapor oluştur
@@ -3209,20 +3327,20 @@ function exportReport() {
     const endDate = document.getElementById('reportEndDate').value;
     const warehouse = document.getElementById('reportWarehouse').value;
     const productFilter = document.getElementById('reportProduct').value;
-    
+
     let filename = `stok-raporu_${startDate}_${endDate}`;
-    
+
     if (warehouse !== 'all') {
         filename += `_${WAREHOUSE_NAMES[warehouse].replace(/\s+/g, '-')}`;
     }
-    
+
     if (productFilter !== 'all') {
         const productSelect = document.getElementById('reportProduct');
         const selectedProductText = productSelect.options[productSelect.selectedIndex].text;
         const productCode = selectedProductText.split(' - ')[0];
         filename += `_${productCode}`;
     }
-    
+
     filename += '.csv';
 
     // CSV dosyası oluştur ve indir

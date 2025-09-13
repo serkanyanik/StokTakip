@@ -174,7 +174,7 @@
         </div>
 
         <!-- İşlem Paneli -->
-        <div class="row mb-4">
+        <div class="row mb-2">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -704,9 +704,21 @@
                         </div>
                         <div class="col-md-3">
                             <label for="reportProduct" class="form-label">Ürün Filtresi</label>
-                            <select class="form-select" id="reportProduct">
-                                <option value="all">Tüm Ürünler</option>
-                            </select>
+                            <div class="position-relative">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="reportProductSearch" 
+                                       placeholder="Ürün kodu veya adı ile arama..."
+                                       autocomplete="off">
+                                <input type="hidden" id="reportProduct" value="all">
+                                <div class="dropdown-menu w-100" 
+                                     id="reportProductDropdown" 
+                                     style="max-height: 200px; overflow-y: auto; display: none;">
+                                    <div class="dropdown-item active" data-value="all">
+                                        <i class="fas fa-list me-2"></i>Tüm Ürünler
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row mb-4">
