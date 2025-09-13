@@ -2870,16 +2870,28 @@ function setupProductSearch(products) {
     const dropdown = document.getElementById('reportProductDropdown');
     const hiddenInput = document.getElementById('reportProduct');
 
-    // Arama input'una odaklanınca dropdown'ı göster
+    // Arama input'una odaklanınca davranış
     searchInput.addEventListener('focus', () => {
-        showAllProducts(products);
+        // Eğer içerik varsa (ürün seçilmişse) temizle
+        if (searchInput.value.trim()) {
+            searchInput.value = '';
+            hiddenInput.value = 'all';
+        }
+        
+        // Sadece "Tüm Ürünler" seçeneğini göster
+        showOnlyAllOption();
         dropdown.style.display = 'block';
     });
 
     // Arama yaparken filtrele
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        filterProducts(searchTerm, products);
+        if (searchTerm) {
+            filterProducts(searchTerm, products);
+        } else {
+            showOnlyAllOption();
+        }
+        dropdown.style.display = 'block';
     });
 
     // Dışarı tıklanınca dropdown'ı gizle
@@ -2889,8 +2901,19 @@ function setupProductSearch(products) {
         }
     });
 
-    // İlk yüklemede tüm ürünleri göster
-    showAllProducts(products);
+    // Başlangıçta dropdown gizli
+    dropdown.style.display = 'none';
+}
+
+// Sadece "Tüm Ürünler" seçeneğini göster
+function showOnlyAllOption() {
+    const dropdown = document.getElementById('reportProductDropdown');
+    
+    dropdown.innerHTML = `
+        <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
+            <i class="fas fa-list me-2"></i>Tüm Ürünler
+        </div>
+    `;
 }
 
 // Tüm ürünleri dropdown'da göster
@@ -2922,7 +2945,7 @@ function filterProducts(searchTerm, products) {
     const dropdown = document.getElementById('reportProductDropdown');
 
     if (!searchTerm) {
-        showAllProducts(products);
+        showOnlyAllOption();
         return;
     }
 
@@ -2967,7 +2990,14 @@ function selectReportProduct(value, displayText) {
     const dropdown = document.getElementById('reportProductDropdown');
     const hiddenInput = document.getElementById('reportProduct');
 
-    searchInput.value = displayText;
+    // "Tüm Ürünler" seçildiğinde arama kutusunu boş bırak
+    if (value === 'all') {
+        searchInput.value = '';
+        searchInput.placeholder = 'Ürün kodu veya adı ile arama...';
+    } else {
+        searchInput.value = displayText;
+    }
+    
     hiddenInput.value = value;
     dropdown.style.display = 'none';
 
@@ -3058,9 +3088,8 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
     // Ürün filtresi bilgisini al
     let productFilterText = 'Tüm Ürünler';
     if (productFilter !== 'all') {
-        const productSelect = document.getElementById('reportProduct');
-        const selectedOption = productSelect.options[productSelect.selectedIndex];
-        productFilterText = selectedOption.text;
+        const searchInput = document.getElementById('reportProductSearch');
+        productFilterText = searchInput.value || 'Seçili Ürün';
     }
 
     let html = `
@@ -3335,10 +3364,12 @@ function exportReport() {
     }
 
     if (productFilter !== 'all') {
-        const productSelect = document.getElementById('reportProduct');
-        const selectedProductText = productSelect.options[productSelect.selectedIndex].text;
-        const productCode = selectedProductText.split(' - ')[0];
-        filename += `_${productCode}`;
+        const searchInput = document.getElementById('reportProductSearch');
+        const selectedProductText = searchInput.value;
+        if (selectedProductText) {
+            const productCode = selectedProductText.split(' - ')[0];
+            filename += `_${productCode}`;
+        }
     }
 
     filename += '.csv';
