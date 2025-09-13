@@ -477,7 +477,7 @@ function selectWarehouse(warehouseType) {
     updateCurrentWarehouseDisplay();
     updateStockTable();
     updateWarehouseSummaries(); // Depo özetlerini güncelle
-    
+
     // Mevcut arama varsa tekrar uygula
     const searchInput = document.getElementById('searchInput');
     if (searchInput && searchInput.value.trim()) {
@@ -562,73 +562,86 @@ async function applySearchFilter() {
 
     // Mevcut tabloda eşleşme yoksa, tüm veritabanında ara
     if (!hasVisibleRows && otherLocationMatches.length === 0) {
+        // Eğer mevcut depoda sonuç bulunamadıysa, diğer depolarda ara
         try {
             const { data: allProducts, error } = await supabase
                 .from('stock')
-                .select('product_code, product_name, main_stock, sub1_stock, sub2_stock, sub3_stock, sub4_stock')
+                .select('product_code, product_name, main_stock, sub1_stock, sub2_stock, sub3_stock, sub4_stock, product_image_url')
                 .or(`product_code.ilike.%${searchTerm}%,product_name.ilike.%${searchTerm}%`);
 
             if (error) throw error;
 
-            // Ürünleri grupla
-            const productGroups = {};
+            // Mevcut depoda stoku olmayan ama diğer depolarda stoku olan ürünleri bul
             allProducts.forEach(product => {
-                if (!productGroups[product.product_code]) {
-                    productGroups[product.product_code] = {
-                        productCode: product.product_code,
-                        productName: product.product_name,
-                        stocks: []
-                    };
+                // Mevcut depodaki stok
+                let currentStock = 0;
+                switch(currentWarehouse) {
+                    case WAREHOUSE_TYPES.MAIN:
+                        currentStock = product.main_stock || 0;
+                        break;
+                    case WAREHOUSE_TYPES.SUB1:
+                        currentStock = product.sub1_stock || 0;
+                        break;
+                    case WAREHOUSE_TYPES.SUB2:
+                        currentStock = product.sub2_stock || 0;
+                        break;
+                    case WAREHOUSE_TYPES.SUB3:
+                        currentStock = product.sub3_stock || 0;
+                        break;
+                    case WAREHOUSE_TYPES.SUB4:
+                        currentStock = product.sub4_stock || 0;
+                        break;
                 }
 
-                // Stok bilgilerini ekle
-                if (product.main_stock > 0) {
-                    productGroups[product.product_code].stocks.push({
-                        location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.MAIN],
-                        stock: product.main_stock,
-                        type: WAREHOUSE_TYPES.MAIN
-                    });
-                }
-                if (product.sub1_stock > 0) {
-                    productGroups[product.product_code].stocks.push({
-                        location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1],
-                        stock: product.sub1_stock,
-                        type: WAREHOUSE_TYPES.SUB1
-                    });
-                }
-                if (product.sub2_stock > 0) {
-                    productGroups[product.product_code].stocks.push({
-                        location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2],
-                        stock: product.sub2_stock,
-                        type: WAREHOUSE_TYPES.SUB2
-                    });
-                }
-                if (product.sub3_stock > 0) {
-                    productGroups[product.product_code].stocks.push({
-                        location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3],
-                        stock: product.sub3_stock,
-                        type: WAREHOUSE_TYPES.SUB3
-                    });
-                }
-                if (product.sub4_stock > 0) {
-                    productGroups[product.product_code].stocks.push({
-                        location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4],
-                        stock: product.sub4_stock,
-                        type: WAREHOUSE_TYPES.SUB4
-                    });
-                }
-            });
+                // Eğer mevcut depoda stok yoksa, diğer depolarda olup olmadığını kontrol et
+                if (currentStock === 0) {
+                    const otherStocks = [];
+                    
+                    if (currentWarehouse !== WAREHOUSE_TYPES.MAIN && product.main_stock > 0) {
+                        otherStocks.push({
+                            location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.MAIN],
+                            stock: product.main_stock,
+                            type: WAREHOUSE_TYPES.MAIN
+                        });
+                    }
+                    if (currentWarehouse !== WAREHOUSE_TYPES.SUB1 && product.sub1_stock > 0) {
+                        otherStocks.push({
+                            location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1],
+                            stock: product.sub1_stock,
+                            type: WAREHOUSE_TYPES.SUB1
+                        });
+                    }
+                    if (currentWarehouse !== WAREHOUSE_TYPES.SUB2 && product.sub2_stock > 0) {
+                        otherStocks.push({
+                            location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2],
+                            stock: product.sub2_stock,
+                            type: WAREHOUSE_TYPES.SUB2
+                        });
+                    }
+                    if (currentWarehouse !== WAREHOUSE_TYPES.SUB3 && product.sub3_stock > 0) {
+                        otherStocks.push({
+                            location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3],
+                            stock: product.sub3_stock,
+                            type: WAREHOUSE_TYPES.SUB3
+                        });
+                    }
+                    if (currentWarehouse !== WAREHOUSE_TYPES.SUB4 && product.sub4_stock > 0) {
+                        otherStocks.push({
+                            location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4],
+                            stock: product.sub4_stock,
+                            type: WAREHOUSE_TYPES.SUB4
+                        });
+                    }
 
-            // Mevcut depoda olmayan ürünleri bul
-            Object.values(productGroups).forEach(group => {
-                const otherStocks = group.stocks.filter(stock => stock.type !== currentWarehouse);
-                if (otherStocks.length > 0) {
-                    otherLocationMatches.push({
-                        productCode: group.productCode,
-                        productName: group.productName,
-                        currentStock: 0,
-                        stocks: otherStocks
-                    });
+                    if (otherStocks.length > 0) {
+                        otherLocationMatches.push({
+                            productCode: product.product_code,
+                            productName: product.product_name,
+                            imageUrl: product.product_image_url,
+                            currentStock: 0,
+                            stocks: otherStocks
+                        });
+                    }
                 }
             });
 
@@ -721,9 +734,14 @@ function showOtherLocationResults(matches) {
             <div class="other-location-item">
                 <div class="row">
                     <div class="col-md-3">
-                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
-                            <i class="fas fa-box text-muted"></i>
-                        </div>
+                        ${match.imageUrl ? 
+                            `<img src="${match.imageUrl}" alt="${match.productName}" class="img-fluid rounded" 
+                                 style="max-height: 80px; max-width: 80px; object-fit: cover; cursor: pointer;" 
+                                 onclick="openImageModal('${match.imageUrl}', '${match.productName}')">` : 
+                            `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
+                                <i class="fas fa-box text-muted"></i>
+                            </div>`
+                        }
                     </div>
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -738,7 +756,7 @@ function showOtherLocationResults(matches) {
                         <h6 class="mb-2">${match.productName}</h6>
                         <div class="d-flex flex-wrap gap-2 mt-2">
         `;
-        
+
         match.stocks.forEach(stock => {
             const badgeClass = stock.type === WAREHOUSE_TYPES.MAIN ? 'bg-primary' : 'bg-success';
             const icon = stock.type === WAREHOUSE_TYPES.MAIN ? 'fas fa-warehouse' : 'fas fa-truck';
@@ -749,7 +767,7 @@ function showOtherLocationResults(matches) {
                 </span>
             `;
         });
-        
+
         html += `
                         </div>
                         <div class="text-muted mt-2 small">
@@ -3019,4 +3037,22 @@ function exportReport() {
         link.click();
         document.body.removeChild(link);
     }
+}
+
+// Resim modal'ını aç
+function openImageModal(imageUrl, productName) {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalTitle');
+    
+    modalImage.src = imageUrl;
+    modalImage.alt = productName;
+    modalTitle.textContent = productName;
+    
+    modal.show();
+}
+
+// Ürün resmi göster (ana tabloda kullanılır)
+function showProductImage(imageUrl, productName) {
+    openImageModal(imageUrl, productName);
 }
