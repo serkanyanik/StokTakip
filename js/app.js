@@ -522,20 +522,20 @@ async function applySearchFilter() {
         const shelfAddress = row.cells[4].textContent.toLowerCase();
 
         const isMatch = productCode.includes(searchTerm) ||
-                       productName.includes(searchTerm) ||
-                       productPrice.includes(searchTerm) ||
-                       shelfAddress.includes(searchTerm);
+            productName.includes(searchTerm) ||
+            productPrice.includes(searchTerm) ||
+            shelfAddress.includes(searchTerm);
 
         if (isMatch) {
             const currentWarehouseStock = getCurrentRowStock(row);
-            
+
             if (currentWarehouseStock > 0) {
                 row.style.display = '';
                 hasVisibleRows = true;
             } else {
                 row.style.display = 'none';
                 const otherStocks = getOtherLocationStocks(row);
-                
+
                 if (otherStocks.length > 0) {
                     otherLocationMatches.push({
                         productCode: row.cells[0].textContent,
@@ -639,7 +639,7 @@ async function applySearchFilter() {
 // Mevcut satırdaki stok miktarını al (kullanıcının bulunduğu depo/araç)
 function getCurrentRowStock(row) {
     let stockColumnIndex;
-    
+
     // Kullanıcının bulunduğu depoya göre sütun belirle
     switch (currentWarehouse) {
         case WAREHOUSE_TYPES.MAIN:
@@ -660,7 +660,7 @@ function getCurrentRowStock(row) {
         default:
             stockColumnIndex = 5;
     }
-    
+
     const stockText = row.cells[stockColumnIndex].textContent.trim();
     const stockValue = parseInt(stockText) || 0;
     return stockValue;
@@ -676,7 +676,7 @@ function getOtherLocationStocks(row) {
         { index: 8, type: WAREHOUSE_TYPES.SUB3, name: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3] },
         { index: 9, type: WAREHOUSE_TYPES.SUB4, name: WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4] }
     ];
-    
+
     warehouseColumns.forEach(warehouse => {
         if (warehouse.type !== currentWarehouse) {
             const stockText = row.cells[warehouse.index].textContent.trim();
@@ -690,7 +690,7 @@ function getOtherLocationStocks(row) {
             }
         }
     });
-    
+
     return stocks;
 }
 
@@ -698,14 +698,14 @@ function getOtherLocationStocks(row) {
 function showOtherLocationResults(matches) {
     const content = document.getElementById('otherLocationsContent');
     let html = '';
-    
+
     // SADECE mevcut lokasyonda stoku 0 olan ürünleri göster
     const filteredMatches = matches.filter(match => match.currentStock === 0);
-    
+
     if (filteredMatches.length === 0) {
         return;
     }
-    
+
     filteredMatches.forEach(match => {
         html += `
             <div class="other-location-item">
@@ -719,7 +719,7 @@ function showOtherLocationResults(matches) {
                 <div class="mb-2 fw-medium">${match.productName}</div>
                 <div class="d-flex flex-wrap gap-2">
         `;
-        
+
         match.stocks.forEach(stock => {
             const badgeClass = stock.type === WAREHOUSE_TYPES.MAIN ? 'bg-primary' : 'bg-success';
             const icon = stock.type === WAREHOUSE_TYPES.MAIN ? 'fas fa-warehouse' : 'fas fa-truck';
@@ -730,7 +730,7 @@ function showOtherLocationResults(matches) {
                 </span>
             `;
         });
-        
+
         html += `
                 </div>
                 <div class="text-muted mt-2">
@@ -740,7 +740,7 @@ function showOtherLocationResults(matches) {
             </div>
         `;
     });
-    
+
     content.innerHTML = html;
 }
 
