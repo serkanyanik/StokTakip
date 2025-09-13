@@ -1506,7 +1506,9 @@ body {
     .modal-title {
         color: #ffffff !important;
         font-weight: 600;
-    }    .form-label {
+    }
+
+    .form-label {
         color: #f7fafc !important;
         font-weight: 500;
     }

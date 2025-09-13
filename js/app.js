@@ -2793,6 +2793,9 @@ function showReportsModal() {
     // Ürün listesini yükle
     loadProductsForReport();
 
+    // Filtreleri ve içeriği temizle
+    resetReportFilters();
+
     modal.show();
 }
 
@@ -2876,7 +2879,7 @@ async function loadProductsForReport() {
         const reportSearchInput = document.getElementById('reportProductSearch');
         const reportHiddenInput = document.getElementById('reportProduct');
         const reportDropdown = document.getElementById('reportProductDropdown');
-        
+
         if (reportSearchInput) reportSearchInput.value = '';
         if (reportHiddenInput) reportHiddenInput.value = 'all';
         if (reportDropdown) reportDropdown.style.display = 'none';
@@ -3204,6 +3207,37 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
 
     content.innerHTML = html;
     exportBtn.style.display = 'inline-block';
+    
+    // Rapor oluşturulduktan sonra 3 saniye bekleyip filtreleri temizle
+    setTimeout(() => {
+        resetReportFilters();
+    }, 3000);
+}
+
+// Rapor filtrelerini temizle
+function resetReportFilters() {
+    const searchInput = document.getElementById('reportProductSearch');
+    const hiddenInput = document.getElementById('reportProduct');
+    const dropdown = document.getElementById('reportProductDropdown');
+    
+    if (searchInput) searchInput.value = '';
+    if (hiddenInput) hiddenInput.value = 'all';
+    if (dropdown) dropdown.style.display = 'none';
+    
+    // İçerik alanını temizle ki başlangıç mesajı gösterilsin
+    const reportContent = document.getElementById('reportContent');
+    if (reportContent) {
+        reportContent.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line mb-3" style="font-size: 3rem; color: #6c757d;"></i>
+                <p class="text-muted">Rapor oluşturmak için tarih aralığı seçin ve "Rapor Oluştur" butonuna tıklayın.</p>
+            </div>
+        `;
+    }
+    
+    // Export butonunu da gizle
+    const exportBtn = document.getElementById('exportReportBtn');
+    if (exportBtn) exportBtn.style.display = 'none';
 }
 
 // Hareket tipi için badge rengini getir
