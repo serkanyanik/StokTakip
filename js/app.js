@@ -2856,7 +2856,7 @@ async function loadProductsForReport() {
         // Ürün listesini input elementine data olarak sakla
         const searchInput = document.getElementById('reportProductSearch');
         searchInput.dataset.products = JSON.stringify(products);
-        
+
         setupProductSearch(products);
 
     } catch (error) {
@@ -2896,7 +2896,7 @@ function setupProductSearch(products) {
 // Tüm ürünleri dropdown'da göster
 function showAllProducts(products) {
     const dropdown = document.getElementById('reportProductDropdown');
-    
+
     let html = `
         <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
             <i class="fas fa-list me-2"></i>Tüm Ürünler
@@ -2920,13 +2920,13 @@ function showAllProducts(products) {
 // Ürünleri filtrele
 function filterProducts(searchTerm, products) {
     const dropdown = document.getElementById('reportProductDropdown');
-    
+
     if (!searchTerm) {
         showAllProducts(products);
         return;
     }
 
-    const filteredProducts = products.filter(product => 
+    const filteredProducts = products.filter(product =>
         product.product_code.toLowerCase().includes(searchTerm) ||
         product.product_name.toLowerCase().includes(searchTerm)
     );
