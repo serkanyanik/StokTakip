@@ -1,6 +1,6 @@
 // Ana uygulama fonksiyonları
 
-let currentWarehouse = WAREHOUSE_TYPES.MAIN;
+let currentWarehouse;
 let stockData = [];
 
 // Database setup kontrol fonksiyonu
@@ -26,6 +26,22 @@ async function ensureDatabaseSetup() {
 
 // Sayfa yüklendiğinde çalışacak
 document.addEventListener('DOMContentLoaded', async function () {
+    // Initialize currentWarehouse
+    currentWarehouse = WAREHOUSE_TYPES.MAIN;
+    
+    // Bozuk auth token'ları temizle
+    try {
+        const { error } = await supabase.auth.getSession();
+        if (error && (error.name === 'AuthApiError' || error.__isAuthError)) {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+    } catch (e) {
+        // Herhangi bir auth hatası durumunda temizle
+        localStorage.clear();
+        sessionStorage.clear();
+    }
+    
     // Depo adlarını yükle
     loadWarehouseNamesFromStorage();
 
@@ -652,9 +668,16 @@ async function applySearchFilter() {
                 const otherStocks = getOtherLocationStocks(row);
 
                 if (otherStocks.length > 0) {
+                    const productCode = row.cells[0].textContent.trim();
+                    
+                    // stockData'dan ürün bilgisini bul
+                    const productData = stockData.find(item => item.product_code === productCode);
+                    
                     otherLocationMatches.push({
-                        productCode: row.cells[0].textContent,
-                        productName: row.cells[1].textContent,
+                        productCode: productCode,
+                        productName: row.cells[1].textContent.trim(),
+                        productPrice: productData ? productData.product_price : null,
+                        imageUrl: productData ? productData.product_image_url : null,
                         currentStock: currentWarehouseStock,
                         stocks: otherStocks
                     });
@@ -671,7 +694,7 @@ async function applySearchFilter() {
         try {
             const { data: allProducts, error } = await supabase
                 .from('stock')
-                .select('product_code, product_name, main_stock, sub1_stock, sub2_stock, sub3_stock, sub4_stock, product_image_url')
+                .select('product_code, product_name, main_stock, sub1_stock, sub2_stock, sub3_stock, sub4_stock, product_image_url, product_price')
                 .or(`product_code.ilike.%${searchTerm}%,product_name.ilike.%${searchTerm}%`);
 
             if (error) throw error;
@@ -743,6 +766,7 @@ async function applySearchFilter() {
                             productCode: product.product_code,
                             productName: product.product_name,
                             imageUrl: product.product_image_url,
+                            productPrice: product.product_price,
                             currentStock: 0,
                             stocks: otherStocks
                         });
@@ -859,6 +883,19 @@ function showOtherLocationResults(matches) {
                             </div>
                         </div>
                         <h6 class="mb-2">${match.productName}</h6>
+                        ${match.productPrice ? 
+                            `<div class="mb-2">
+                                <span class="badge bg-success text-white px-3 py-2" style="font-size: 0.9rem; font-weight: 600;">
+                                    Fiyat: ${parseFloat(match.productPrice).toFixed(2)} ₺
+                                </span>
+                            </div>` : 
+                            `<div class="mb-2">
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Fiyat bilgisi yok
+                                </span>
+                            </div>`
+                        }
                         <div class="d-flex flex-wrap gap-2 mt-2">
         `;
 
@@ -2731,6 +2768,9 @@ function showReportsModal() {
 
     // Depo seçeneklerini doldur
     populateReportWarehouseOptions();
+    
+    // Ürün listesini yükle
+    loadProductsForReport();
 
     modal.show();
 }
@@ -2795,11 +2835,37 @@ async function createStockMovement(productId, productCode, productName, movement
     }
 }
 
+// Rapor modalı için ürün listesini yükle
+async function loadProductsForReport() {
+    try {
+        const { data: products, error } = await supabase
+            .from('stock')
+            .select('id, product_code, product_name')
+            .order('product_name');
+
+        if (error) throw error;
+
+        const productSelect = document.getElementById('reportProduct');
+        productSelect.innerHTML = '<option value="all">Tüm Ürünler</option>';
+
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.id;
+            option.textContent = `${product.product_code} - ${product.product_name}`;
+            productSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Ürün listesi yükleme hatası:', error);
+    }
+}
+
 // Rapor oluştur
 async function generateReport() {
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
     const warehouse = document.getElementById('reportWarehouse').value;
+    const productFilter = document.getElementById('reportProduct').value;
 
     if (!startDate || !endDate) {
         alert('Lütfen başlangıç ve bitiş tarihlerini seçin!');
@@ -2833,11 +2899,15 @@ async function generateReport() {
             query = query.or(`source_warehouse.eq.${warehouse},target_warehouse.eq.${warehouse}`);
         }
 
+        if (productFilter !== 'all') {
+            query = query.eq('product_id', productFilter);
+        }
+
         const { data: movements, error } = await query;
 
         if (error) throw error;
 
-        displayReport(movements, startDate, endDate, warehouse);
+        displayReport(movements, startDate, endDate, warehouse, productFilter);
 
     } catch (error) {
         console.error('Rapor oluşturma hatası:', error);
@@ -2851,7 +2921,7 @@ async function generateReport() {
 }
 
 // Raporu görüntüle
-function displayReport(movements, startDate, endDate, warehouse) {
+function displayReport(movements, startDate, endDate, warehouse, productFilter = 'all') {
     const content = document.getElementById('reportContent');
     const exportBtn = document.getElementById('exportReportBtn');
 
@@ -2860,11 +2930,19 @@ function displayReport(movements, startDate, endDate, warehouse) {
             <div class="alert alert-info text-center">
                 <i class="fas fa-info-circle fa-2x mb-3"></i>
                 <h5>Veri Bulunamadı</h5>
-                <p>Seçilen tarih aralığında ve depoda hiç hareket kaydı bulunmuyor.</p>
+                <p>Seçilen kriterlerde hiç hareket kaydı bulunmuyor.</p>
             </div>
         `;
         exportBtn.style.display = 'none';
         return;
+    }
+
+    // Ürün filtresi bilgisini al
+    let productFilterText = 'Tüm Ürünler';
+    if (productFilter !== 'all') {
+        const productSelect = document.getElementById('reportProduct');
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        productFilterText = selectedOption.text;
     }
 
     let html = `
@@ -2874,7 +2952,17 @@ function displayReport(movements, startDate, endDate, warehouse) {
                 ${formatDate(startDate)} - ${formatDate(endDate)} 
                 ${warehouse !== 'all' ? `(${WAREHOUSE_NAMES[warehouse]})` : '(Tüm Depolar)'}
             </h6>
-            <small class="text-muted">Toplam ${movements.length} hareket</small>
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <i class="fas fa-box me-1"></i>
+                        Ürün: ${productFilterText}
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">Toplam ${movements.length} hareket</small>
+                </div>
+            </div>
         </div>
         
         <div class="table-responsive">
@@ -3116,13 +3204,34 @@ function exportReport() {
         csv += csvRow + '\n';
     });
 
+    // Dosya adını oluştururken tarih ve filtre bilgilerini ekle
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+    const warehouse = document.getElementById('reportWarehouse').value;
+    const productFilter = document.getElementById('reportProduct').value;
+    
+    let filename = `stok-raporu_${startDate}_${endDate}`;
+    
+    if (warehouse !== 'all') {
+        filename += `_${WAREHOUSE_NAMES[warehouse].replace(/\s+/g, '-')}`;
+    }
+    
+    if (productFilter !== 'all') {
+        const productSelect = document.getElementById('reportProduct');
+        const selectedProductText = productSelect.options[productSelect.selectedIndex].text;
+        const productCode = selectedProductText.split(' - ')[0];
+        filename += `_${productCode}`;
+    }
+    
+    filename += '.csv';
+
     // CSV dosyası oluştur ve indir
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', 'stok-raporu.csv');
+        link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();

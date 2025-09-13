@@ -702,9 +702,17 @@
                                 <option value="all">Tüm Depolar</option>
                             </select>
                         </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" onclick="generateReport()">
-                                <i class="fas fa-search me-1"></i>Rapor Oluştur
+                        <div class="col-md-3">
+                            <label for="reportProduct" class="form-label">Ürün Filtresi</label>
+                            <select class="form-select" id="reportProduct">
+                                <option value="all">Tüm Ürünler</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-12 d-flex justify-content-center">
+                            <button class="btn btn-primary btn-lg px-5" onclick="generateReport()">
+                                <i class="fas fa-search me-2"></i>Rapor Oluştur
                             </button>
                         </div>
                     </div>

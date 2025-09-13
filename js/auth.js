@@ -90,6 +90,11 @@ async function checkSession() {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
+            // Auth hatası varsa localStorage'ı temizle
+            if (error.message && error.message.includes('Invalid Refresh Token')) {
+                await supabase.auth.signOut();
+                localStorage.clear();
+            }
             throw error;
         }
 
@@ -115,6 +120,11 @@ async function checkSession() {
         return null;
     } catch (error) {
         console.error('Oturum kontrol hatası:', error);
+        // Auth hatası durumunda da localStorage'ı temizle
+        if (error.name === 'AuthApiError' || error.__isAuthError) {
+            await supabase.auth.signOut();
+            localStorage.clear();
+        }
         return null;
     }
 }
