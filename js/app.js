@@ -364,6 +364,22 @@ function updateUserInfo() {
     } else {
         shelfMgmtBtn.style.display = 'none';
     }
+
+    // Rapor butonunu göster/gizle (sadece ana depo sorumlusu)
+    const reportsBtn = document.getElementById('reportsBtn');
+    if (currentUser.is_depo_admin) {
+        reportsBtn.style.display = 'inline-block';
+    } else {
+        reportsBtn.style.display = 'none';
+    }
+
+    // İstatistik kartlarını göster/gizle (sadece ana depo sorumlusu)
+    const statisticsCards = document.getElementById('statisticsCards');
+    if (currentUser.is_depo_admin) {
+        statisticsCards.style.display = 'block';
+    } else {
+        statisticsCards.style.display = 'none';
+    }
 }
 
 // Tablo başlıklarını güncelle
@@ -575,7 +591,7 @@ async function applySearchFilter() {
             allProducts.forEach(product => {
                 // Mevcut depodaki stok
                 let currentStock = 0;
-                switch(currentWarehouse) {
+                switch (currentWarehouse) {
                     case WAREHOUSE_TYPES.MAIN:
                         currentStock = product.main_stock || 0;
                         break;
@@ -596,7 +612,7 @@ async function applySearchFilter() {
                 // Eğer mevcut depoda stok yoksa, diğer depolarda olup olmadığını kontrol et
                 if (currentStock === 0) {
                     const otherStocks = [];
-                    
+
                     if (currentWarehouse !== WAREHOUSE_TYPES.MAIN && product.main_stock > 0) {
                         otherStocks.push({
                             location: WAREHOUSE_NAMES[WAREHOUSE_TYPES.MAIN],
@@ -734,14 +750,14 @@ function showOtherLocationResults(matches) {
             <div class="other-location-item">
                 <div class="row">
                     <div class="col-md-3">
-                        ${match.imageUrl ? 
-                            `<img src="${match.imageUrl}" alt="${match.productName}" class="img-fluid rounded" 
+                        ${match.imageUrl ?
+                `<img src="${match.imageUrl}" alt="${match.productName}" class="img-fluid rounded" 
                                  style="max-height: 80px; max-width: 80px; object-fit: cover; cursor: pointer;" 
-                                 onclick="openImageModal('${match.imageUrl}', '${match.productName}')">` : 
-                            `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
+                                 onclick="openImageModal('${match.imageUrl}', '${match.productName}')">` :
+                `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
                                 <i class="fas fa-box text-muted"></i>
                             </div>`
-                        }
+            }
                     </div>
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -3044,11 +3060,11 @@ function openImageModal(imageUrl, productName) {
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
     const modalImage = document.getElementById('modalImage');
     const modalTitle = document.getElementById('imageModalTitle');
-    
+
     modalImage.src = imageUrl;
     modalImage.alt = productName;
     modalTitle.textContent = productName;
-    
+
     modal.show();
 }
 
