@@ -2074,3 +2074,29 @@ td .btn-sm {
 body:not(.warehouse-main) .shelf-address-column {
     display: none !important;
 }
+
+/* Araç sorumluları için sütun gizleme kuralları */
+/* 1. Araç sorumlusu - sadece kendi sütununu görsün */
+body.vehicle-user.sub1-user .warehouse-column:not(.sub1-warehouse) {
+    display: none !important;
+}
+
+/* 2. Araç sorumlusu - sadece kendi sütununu görsün */
+body.vehicle-user.sub2-user .warehouse-column:not(.sub2-warehouse) {
+    display: none !important;
+}
+
+/* 3. Araç sorumlusu - sadece kendi sütununu görsün */
+body.vehicle-user.sub3-user .warehouse-column:not(.sub3-warehouse) {
+    display: none !important;
+}
+
+/* 4. Araç sorumlusu - sadece kendi sütununu görsün */
+body.vehicle-user.sub4-user .warehouse-column:not(.sub4-warehouse) {
+    display: none !important;
+}
+
+/* Araç sorumluları için toplam sütununu da gizle */
+body.vehicle-user .total-column {
+    display: none !important;
+}

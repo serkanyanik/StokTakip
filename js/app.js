@@ -48,11 +48,25 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 // Event listener'ları kur
 function setupEventListeners() {
+    // Logout butonunun varlığını kontrol et
+    const logoutButton = document.getElementById('logoutBtn');
+    console.log('Logout butonu bulundu:', logoutButton);
+
     // Giriş formu
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
     // Çıkış butonu
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    const logoutButtonElement = document.getElementById('logoutBtn');
+    if (logoutButtonElement) {
+        logoutButtonElement.addEventListener('click', function(e) {
+            console.log('Logout butonuna tıklandı');
+            e.preventDefault();
+            logout();
+        });
+        console.log('Logout event listener başarıyla eklendi');
+    } else {
+        console.error('Logout butonu bulunamadı!');
+    }
 
     // Şifre değişikliği butonu
     document.getElementById('changeMyPasswordBtn').addEventListener('click', () => {
@@ -351,24 +365,38 @@ async function showDashboard() {
 function setDefaultWarehouseForUser() {
     if (!currentUser) return;
 
+    console.log('Kullanıcı yetkileri:', {
+        is_depo_admin: currentUser.is_depo_admin,
+        is_depo_sorumlu1: currentUser.is_depo_sorumlu1,
+        is_depo_sorumlu2: currentUser.is_depo_sorumlu2,
+        is_depo_sorumlu3: currentUser.is_depo_sorumlu3,
+        is_depo_sorumlu4: currentUser.is_depo_sorumlu4
+    });
+
     // Ana depo sorumlusu ise ana depoda başlat
     if (currentUser.is_depo_admin) {
         currentWarehouse = WAREHOUSE_TYPES.MAIN;
+        console.log('Ana depo sorumlusu - Ana depoda başlatılıyor');
         return;
     }
 
     // Araç sorumluları için yetkili oldukları ilk depoyu bul
-    if (currentUser.sub1_access) {
+    if (currentUser.is_depo_sorumlu1) {
         currentWarehouse = WAREHOUSE_TYPES.SUB1;
-    } else if (currentUser.sub2_access) {
+        console.log('1. Araç sorumlusu - 1. Araçta başlatılıyor');
+    } else if (currentUser.is_depo_sorumlu2) {
         currentWarehouse = WAREHOUSE_TYPES.SUB2;
-    } else if (currentUser.sub3_access) {
+        console.log('2. Araç sorumlusu - 2. Araçta başlatılıyor');
+    } else if (currentUser.is_depo_sorumlu3) {
         currentWarehouse = WAREHOUSE_TYPES.SUB3;
-    } else if (currentUser.sub4_access) {
+        console.log('3. Araç sorumlusu - 3. Araçta başlatılıyor');
+    } else if (currentUser.is_depo_sorumlu4) {
         currentWarehouse = WAREHOUSE_TYPES.SUB4;
+        console.log('4. Araç sorumlusu - 4. Araçta başlatılıyor');
     } else {
         // Hiçbir yetkisi yoksa ana depoya yönlendir (fallback)
         currentWarehouse = WAREHOUSE_TYPES.MAIN;
+        console.log('Varsayılan - Ana depoda başlatılıyor');
     }
 }
 
@@ -538,15 +566,71 @@ function updateCurrentWarehouseDisplay() {
         warehouseNameSpan.textContent = WAREHOUSE_NAMES[currentWarehouse];
     }
 
-    // Body class'ını güncelle (raf adresi kolonu için)
-    document.body.classList.remove('warehouse-main', 'warehouse-sub1', 'warehouse-sub2', 'warehouse-sub3', 'warehouse-sub4');
+    // Body class'larını temizle
+    document.body.classList.remove(
+        'warehouse-main', 'warehouse-sub1', 'warehouse-sub2', 'warehouse-sub3', 'warehouse-sub4',
+        'vehicle-user', 'sub1-user', 'sub2-user', 'sub3-user', 'sub4-user'
+    );
+    
+    // Depo class'ını ekle
     document.body.classList.add(`warehouse-${currentWarehouse}`);
+    
+    // Kullanıcı tipine göre class ekle
+    if (!currentUser.is_depo_admin) {
+        document.body.classList.add('vehicle-user');
+        
+        if (currentUser.is_depo_sorumlu1) {
+            document.body.classList.add('sub1-user');
+        } else if (currentUser.is_depo_sorumlu2) {
+            document.body.classList.add('sub2-user');
+        } else if (currentUser.is_depo_sorumlu3) {
+            document.body.classList.add('sub3-user');
+        } else if (currentUser.is_depo_sorumlu4) {
+            document.body.classList.add('sub4-user');
+        }
+    }
+
+    // Tablo başlıklarını güncelle
+    updateTableHeadersForUserType();
 
     // Ana depo sorumlusu ad düzenleyebilir
     if (editBtn && currentUser.is_depo_admin) {
         editBtn.style.display = 'inline-block';
     } else if (editBtn) {
         editBtn.style.display = 'none';
+    }
+}
+
+// Kullanıcı tipine göre tablo başlıklarını güncelle
+function updateTableHeadersForUserType() {
+    if (!currentUser) return;
+
+    // Araç sorumluları için sadece kendi sütunlarını "STOK" olarak göster
+    if (currentUser.is_depo_sorumlu1) {
+        const header = document.getElementById('sub1WarehouseHeader');
+        if (header) header.textContent = 'STOK';
+    } else if (currentUser.is_depo_sorumlu2) {
+        const header = document.getElementById('sub2WarehouseHeader');
+        if (header) header.textContent = 'STOK';
+    } else if (currentUser.is_depo_sorumlu3) {
+        const header = document.getElementById('sub3WarehouseHeader');
+        if (header) header.textContent = 'STOK';
+    } else if (currentUser.is_depo_sorumlu4) {
+        const header = document.getElementById('sub4WarehouseHeader');
+        if (header) header.textContent = 'STOK';
+    } else if (currentUser.is_depo_admin) {
+        // Ana depo sorumlusu için orijinal araç adlarını göster
+        const mainHeader = document.getElementById('mainWarehouseHeader');
+        const sub1Header = document.getElementById('sub1WarehouseHeader');
+        const sub2Header = document.getElementById('sub2WarehouseHeader');
+        const sub3Header = document.getElementById('sub3WarehouseHeader');
+        const sub4Header = document.getElementById('sub4WarehouseHeader');
+        
+        if (mainHeader) mainHeader.textContent = 'Ana Depo';
+        if (sub1Header) sub1Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB1];
+        if (sub2Header) sub2Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB2];
+        if (sub3Header) sub3Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB3];
+        if (sub4Header) sub4Header.textContent = WAREHOUSE_NAMES[WAREHOUSE_TYPES.SUB4];
     }
 }
 
@@ -1027,22 +1111,22 @@ function createStockRow(item) {
                 ${item.shelf_address ? `<i class="fas fa-map-marker-alt text-success me-1"></i>${item.shelf_address}` : '<i class="fas fa-plus text-muted"></i> Raf Ekle'}
             </span>
         </td>
-        <td>
+        <td class="warehouse-column main-warehouse">
             <span class="stock-count ${getStockClass(item.main_stock)}">${item.main_stock || 0}</span>
         </td>
-        <td>
+        <td class="warehouse-column sub1-warehouse">
             <span class="stock-count ${getStockClass(item.sub1_stock)}">${item.sub1_stock || 0}</span>
         </td>
-        <td>
+        <td class="warehouse-column sub2-warehouse">
             <span class="stock-count ${getStockClass(item.sub2_stock)}">${item.sub2_stock || 0}</span>
         </td>
-        <td>
+        <td class="warehouse-column sub3-warehouse">
             <span class="stock-count ${getStockClass(item.sub3_stock)}">${item.sub3_stock || 0}</span>
         </td>
-        <td>
+        <td class="warehouse-column sub4-warehouse">
             <span class="stock-count ${getStockClass(item.sub4_stock)}">${item.sub4_stock || 0}</span>
         </td>
-        <td><strong>${total}</strong></td>
+        <td class="warehouse-column total-column"><strong>${total}</strong></td>
         <td class="actions-column">
             <div class="d-flex flex-wrap gap-1">
                 ${createTransferDropdown()}
