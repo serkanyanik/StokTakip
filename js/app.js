@@ -477,6 +477,12 @@ function selectWarehouse(warehouseType) {
     updateCurrentWarehouseDisplay();
     updateStockTable();
     updateWarehouseSummaries(); // Depo özetlerini güncelle
+    
+    // Mevcut arama varsa tekrar uygula
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value.trim()) {
+        applySearchFilter();
+    }
 }
 
 // Mevcut depo bilgisini güncelle
@@ -487,6 +493,10 @@ function updateCurrentWarehouseDisplay() {
     if (warehouseNameSpan) {
         warehouseNameSpan.textContent = WAREHOUSE_NAMES[currentWarehouse];
     }
+
+    // Body class'ını güncelle (raf adresi kolonu için)
+    document.body.classList.remove('warehouse-main', 'warehouse-sub1', 'warehouse-sub2', 'warehouse-sub3', 'warehouse-sub4');
+    document.body.classList.add(`warehouse-${currentWarehouse}`);
 
     // Ana depo sorumlusu ad düzenleyebilir
     if (editBtn && currentUser.is_depo_admin) {
@@ -709,17 +719,26 @@ function showOtherLocationResults(matches) {
     filteredMatches.forEach(match => {
         html += `
             <div class="other-location-item">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong class="text-primary">${match.productCode}</strong>
-                    <span class="badge bg-warning text-dark">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
-                        Bu ürün sizde yok
-                    </span>
-                </div>
-                <div class="mb-2 fw-medium">${match.productName}</div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
+                            <i class="fas fa-box text-muted"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong class="text-primary">${match.productCode}</strong>
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Bu ürün sizde yok
+                                </span>
+                            </div>
+                        </div>
+                        <h6 class="mb-2">${match.productName}</h6>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
         `;
-
+        
         match.stocks.forEach(stock => {
             const badgeClass = stock.type === WAREHOUSE_TYPES.MAIN ? 'bg-primary' : 'bg-success';
             const icon = stock.type === WAREHOUSE_TYPES.MAIN ? 'fas fa-warehouse' : 'fas fa-truck';
@@ -730,12 +749,14 @@ function showOtherLocationResults(matches) {
                 </span>
             `;
         });
-
+        
         html += `
-                </div>
-                <div class="text-muted mt-2">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Bu ürünü almak için ana lokasyon sorumlusu Serkan Bey ile iletişime geçin.
+                        </div>
+                        <div class="text-muted mt-2 small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Bu ürünü almak için ana lokasyon sorumlusu Serkan Bey ile iletişime geçin.
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -938,7 +959,7 @@ function createStockRow(item) {
         <td>${createEditableField('product_name', item.product_name)}</td>
         <td>${createEditableField('product_price', item.product_price, formatPrice(item.product_price))}</td>
         <td>${createImageButton(item.product_image_url)}</td>
-        <td>
+        <td class="shelf-address-column">
             <span class="shelf-address" onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')" 
                   title="Raf adresini düzenle">
                 ${item.shelf_address ? `<i class="fas fa-map-marker-alt text-success me-1"></i>${item.shelf_address}` : '<i class="fas fa-plus text-muted"></i> Raf Ekle'}
