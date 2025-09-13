@@ -128,9 +128,8 @@ async function handleAddUser() {
 
     try {
         // Mevcut kullanıcının oturumunu kaydet
-        // Mevcut kullanıcının session'ını sakla
-        const { data: currentSession } = await supabase.auth.getSession();
-        console.log('Current session saved:', currentSession?.session?.user?.id);
+        // Current session'ı kaydet
+        const currentSession = await supabaseClient.auth.getSession();
 
         // Yeni kullanıcı oluştur
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -151,12 +150,9 @@ async function handleAddUser() {
             throw new Error('Kullanıcı oluşturulamadı');
         }
 
-        console.log('New user created:', authData.user.id);
-
         // Hemen mevcut admin oturumunu geri yükle
         if (currentSession?.session) {
             await supabase.auth.setSession(currentSession.session);
-            console.log('Admin session restored');
         }
 
         if (!authData.user) {

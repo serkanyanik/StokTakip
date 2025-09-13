@@ -64,10 +64,7 @@ async function getUserProfile(userId) {
 
 // Çıkış yapma
 async function logout() {
-    console.log('Logout fonksiyonu çağrıldı');
     try {
-        console.log('Supabase logout deneniyor...');
-
         // Timeout ile logout işlemini zorla
         const logoutPromise = supabase.auth.signOut();
         const timeoutPromise = new Promise((_, reject) =>
@@ -75,17 +72,15 @@ async function logout() {
         );
 
         await Promise.race([logoutPromise, timeoutPromise]);
-        console.log('Logout başarılı, sayfa yenileniyor...');
 
     } catch (error) {
-        console.error('Logout hatası veya timeout:', error);
+        console.error('Logout hatası:', error);
     }
 
     // Her durumda kullanıcıyı temizle ve sayfayı yenile
     currentUser = null;
     localStorage.clear(); // Tüm yerel verileri temizle
     sessionStorage.clear(); // Oturum verilerini temizle
-    console.log('Sayfa yenileniyor...');
     window.location.reload();
 }
 

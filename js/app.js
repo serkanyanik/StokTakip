@@ -13,7 +13,6 @@ async function ensureDatabaseSetup() {
             .limit(1);
 
         if (error && error.code === 'PGRST106') {
-            console.log('Stock_movements tablosu bulunamadı. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
             alert('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
             return false;
         }
@@ -48,10 +47,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 // Event listener'ları kur
 function setupEventListeners() {
-    // Logout butonunun varlığını kontrol et
-    const logoutButton = document.getElementById('logoutBtn');
-    console.log('Logout butonu bulundu:', logoutButton);
-
     // Giriş formu
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
@@ -59,13 +54,9 @@ function setupEventListeners() {
     const logoutButtonElement = document.getElementById('logoutBtn');
     if (logoutButtonElement) {
         logoutButtonElement.addEventListener('click', function (e) {
-            console.log('Logout butonuna tıklandı');
             e.preventDefault();
             logout();
         });
-        console.log('Logout event listener başarıyla eklendi');
-    } else {
-        console.error('Logout butonu bulunamadı!');
     }
 
     // Şifre değişikliği butonu
@@ -347,7 +338,7 @@ async function showDashboard() {
     // Database setup kontrol et
     const dbSetupOk = await ensureDatabaseSetup();
     if (!dbSetupOk) {
-        console.log('Database setup gerekiyor.');
+        // Database setup gerekiyor - Supabase Dashboard'da database-updates.sql çalıştırın
     }
 
     // Kullanıcının varsayılan deposunu ayarla
@@ -365,38 +356,24 @@ async function showDashboard() {
 function setDefaultWarehouseForUser() {
     if (!currentUser) return;
 
-    console.log('Kullanıcı yetkileri:', {
-        is_depo_admin: currentUser.is_depo_admin,
-        is_depo_sorumlu1: currentUser.is_depo_sorumlu1,
-        is_depo_sorumlu2: currentUser.is_depo_sorumlu2,
-        is_depo_sorumlu3: currentUser.is_depo_sorumlu3,
-        is_depo_sorumlu4: currentUser.is_depo_sorumlu4
-    });
-
     // Ana depo sorumlusu ise ana depoda başlat
     if (currentUser.is_depo_admin) {
         currentWarehouse = WAREHOUSE_TYPES.MAIN;
-        console.log('Ana depo sorumlusu - Ana depoda başlatılıyor');
         return;
     }
 
     // Araç sorumluları için yetkili oldukları ilk depoyu bul
     if (currentUser.is_depo_sorumlu1) {
         currentWarehouse = WAREHOUSE_TYPES.SUB1;
-        console.log('1. Araç sorumlusu - 1. Araçta başlatılıyor');
     } else if (currentUser.is_depo_sorumlu2) {
         currentWarehouse = WAREHOUSE_TYPES.SUB2;
-        console.log('2. Araç sorumlusu - 2. Araçta başlatılıyor');
     } else if (currentUser.is_depo_sorumlu3) {
         currentWarehouse = WAREHOUSE_TYPES.SUB3;
-        console.log('3. Araç sorumlusu - 3. Araçta başlatılıyor');
     } else if (currentUser.is_depo_sorumlu4) {
         currentWarehouse = WAREHOUSE_TYPES.SUB4;
-        console.log('4. Araç sorumlusu - 4. Araçta başlatılıyor');
     } else {
         // Hiçbir yetkisi yoksa ana depoya yönlendir (fallback)
         currentWarehouse = WAREHOUSE_TYPES.MAIN;
-        console.log('Varsayılan - Ana depoda başlatılıyor');
     }
 }
 
@@ -1370,14 +1347,12 @@ async function quickRemoveStock(stockId) {
 // Son satış fiyatını getir ve otomatik doldur
 async function loadLastSalePrice(stockId) {
     try {
-        console.log('Fiyat yükleniyor, product_id:', stockId);
 
         // 1. Önce ürünün ana tablosundaki GÜNCEL fiyatını al (en güncel fiyat)
         const stockItem = stockData.find(item => item.id === stockId);
         let currentPrice = null;
         if (stockItem && stockItem.product_price) {
             currentPrice = parseFloat(stockItem.product_price);
-            console.log('Ana tablodan güncel fiyat:', currentPrice);
         }
 
         // 2. Son satış fiyatını da al (referans için)
@@ -1400,7 +1375,6 @@ async function loadLastSalePrice(stockId) {
         if (movements && movements.length > 0) {
             lastSalePrice = movements[0].sale_price;
             lastSaleDate = new Date(movements[0].created_at);
-            console.log('Son satış fiyatı:', lastSalePrice, 'Tarih:', lastSaleDate.toLocaleDateString('tr-TR'));
         }
 
         const salePriceInput = document.getElementById('salePrice');
@@ -1410,7 +1384,6 @@ async function loadLastSalePrice(stockId) {
 
             if (finalPrice && finalPrice > 0) {
                 salePriceInput.value = finalPrice;
-                console.log('Kullanılan fiyat:', finalPrice);
 
                 // Bilgi mesajı
                 const salePriceContainer = document.getElementById('salePriceContainer');
@@ -1430,7 +1403,6 @@ async function loadLastSalePrice(stockId) {
                     infoDiv.textContent = `Son satış: ${lastSaleDate.toLocaleDateString('tr-TR')}`;
                 }
             } else {
-                console.log('Hiçbir fiyat bulunamadı');
             }
         }
     } catch (error) {
@@ -1443,13 +1415,11 @@ function autoSelectSourceWarehouse(stockId) {
     try {
         const item = stockData.find(s => s.id === stockId);
         if (!item) {
-            console.log('Ürün bulunamadı, otomatik depo seçimi yapılamıyor');
             return;
         }
 
         const sourceWarehouseSelect = document.getElementById('sourceWarehouse');
         if (!sourceWarehouseSelect) {
-            console.log('Kaynak depo select elementi bulunamadı');
             return;
         }
 
@@ -1466,12 +1436,10 @@ function autoSelectSourceWarehouse(stockId) {
             }
         });
 
-        console.log('Stoklu depolar:', availableWarehouses);
 
         if (availableWarehouses.length === 1) {
             // Tek depoda stok varsa otomatik seç
             sourceWarehouseSelect.value = availableWarehouses[0].type;
-            console.log(`Otomatik seçildi: ${availableWarehouses[0].name} (${availableWarehouses[0].stock} adet)`);
 
             // Kullanıcıya bilgi ver
             const sourceContainer = document.getElementById('sourceWarehouseContainer');
@@ -2273,7 +2241,6 @@ async function handleRemoveStock() {
 
                 if (availableWarehouses.length === 1) {
                     sourceWarehouseSelect.value = availableWarehouses[0];
-                    console.log('Tek depo tespit edildi, otomatik seçildi:', WAREHOUSE_NAMES[availableWarehouses[0]]);
                 } else if (availableWarehouses.length > 1) {
                     alert(`Lütfen kaynak depo seçin! Bu ürün ${availableWarehouses.map(w => WAREHOUSE_NAMES[w]).join(', ')} depolarında mevcut.`);
                     return;
@@ -2346,7 +2313,6 @@ async function handleStockEntry(item, targetWarehouse, quantity) {
         `Stok girişi - ${WAREHOUSE_NAMES[targetWarehouse]}`
     );
 
-    console.log(`Stok girişi: ${item.product_name} - ${quantity} adet - ${WAREHOUSE_NAMES[targetWarehouse]}`);
 }
 
 // Stok transfer/çıkış işlemi
@@ -2398,7 +2364,6 @@ async function handleStockTransfer(item, targetWarehouse, quantity) {
         await createStockMovement(item.id, item.product_code, item.product_name, movementType, sourceWarehouse, targetWarehouse, quantity, notes);
     }
 
-    console.log(`Transfer işlemi: ${item.product_name} - ${quantity} adet - ${notes}`);
 }
 
 // Müşteri satışı işlemi
@@ -2445,7 +2410,6 @@ async function handleCustomerSale(item, targetWarehouse, quantity, salePrice) {
         salePrice // Fiyat bilgisini ekstra parametre olarak gönder
     );
 
-    console.log(`Müşteri satışı: ${item.product_name} - ${quantity} adet - ${salePrice}₺ - ${notes}`);
 }
 
 // Stok ekleme yetkisi kontrol et - auth.js'te tanımlı
@@ -2825,7 +2789,6 @@ async function createStockMovement(productId, productCode, productName, movement
 
         // Başarılı kayıt (sadece development için)
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log(`Stok hareketi kaydedildi: ${movementType} - ${productCode} (${quantity} adet)`);
         }
     } catch (error) {
         console.error('Stok hareket kaydı oluşturma hatası:', error);
