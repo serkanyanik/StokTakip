@@ -1264,11 +1264,29 @@ body {
     filter: brightness(0) invert(1);
 }
 
+/* Tüm modal'ların header'ları için genel stil */
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.modal-title {
+    color: white !important;
+    font-weight: 600;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
 /* User Management ve Password modal'ları için beyaz text */
 #userManagementModal .modal-header,
 #changePasswordModal .modal-header,
 #addUserModal .modal-header,
-#editUserModal .modal-header {
+#editUserModal .modal-header,
+#reportsModal .modal-header,
+#shelfManagementModal .modal-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
 }
@@ -1276,7 +1294,9 @@ body {
 #userManagementModal .modal-header .modal-title,
 #changePasswordModal .modal-header .modal-title,
 #addUserModal .modal-header .modal-title,
-#editUserModal .modal-header .modal-title {
+#editUserModal .modal-header .modal-title,
+#reportsModal .modal-header .modal-title,
+#shelfManagementModal .modal-header .modal-title {
     color: white !important;
 }
 
@@ -1292,7 +1312,9 @@ body {
 #userManagementModal .modal-header .btn-close,
 #changePasswordModal .modal-header .btn-close,
 #addUserModal .modal-header .btn-close,
-#editUserModal .modal-header .btn-close {
+#editUserModal .modal-header .btn-close,
+#reportsModal .modal-header .btn-close,
+#shelfManagementModal .modal-header .btn-close {
     filter: brightness(0) invert(1);
 }
 
@@ -1476,15 +1498,15 @@ body {
     }
 
     .modal-header {
-        background-color: #2d3748;
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
         border-bottom-color: #4a5568;
+        color: #ffffff !important;
     }
 
     .modal-title {
         color: #ffffff !important;
-    }
-
-    .form-label {
+        font-weight: 600;
+    }    .form-label {
         color: #f7fafc !important;
         font-weight: 500;
     }

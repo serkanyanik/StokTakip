@@ -2777,16 +2777,21 @@ function showReportsModal() {
     // Depo seçeneklerini doldur
     populateReportWarehouseOptions();
 
-    // Ürün listesini yükle
-    loadProductsForReport();
-
-    // Ürün filtresi başlangıç ayarları
+    // Ürün filtresi başlangıç ayarları (ürün listesi yüklenmeden önce)
     const searchInput = document.getElementById('reportProductSearch');
     const hiddenInput = document.getElementById('reportProduct');
     if (searchInput && hiddenInput) {
         searchInput.value = '';
         hiddenInput.value = 'all';
+        // Dropdown'u da gizle
+        const dropdown = document.getElementById('reportProductDropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
     }
+
+    // Ürün listesini yükle
+    loadProductsForReport();
 
     modal.show();
 }
@@ -2867,6 +2872,15 @@ async function loadProductsForReport() {
 
         setupProductSearch(products);
 
+        // Ürün filtresini sıfırla
+        const reportSearchInput = document.getElementById('reportProductSearch');
+        const reportHiddenInput = document.getElementById('reportProduct');
+        const reportDropdown = document.getElementById('reportProductDropdown');
+        
+        if (reportSearchInput) reportSearchInput.value = '';
+        if (reportHiddenInput) reportHiddenInput.value = 'all';
+        if (reportDropdown) reportDropdown.style.display = 'none';
+
     } catch (error) {
         console.error('Ürün listesi yükleme hatası:', error);
     }
@@ -2885,7 +2899,7 @@ function setupProductSearch(products) {
             searchInput.value = '';
             hiddenInput.value = 'all';
         }
-        
+
         showAllProducts(products);
         dropdown.style.display = 'block';
     });
