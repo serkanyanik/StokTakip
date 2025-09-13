@@ -2870,28 +2870,28 @@ function setupProductSearch(products) {
     const dropdown = document.getElementById('reportProductDropdown');
     const hiddenInput = document.getElementById('reportProduct');
 
-    // Arama input'una odaklanınca davranış
+    // Arama input'una odaklanınca tüm ürünleri göster
     searchInput.addEventListener('focus', () => {
-        // Eğer içerik varsa (ürün seçilmişse) temizle
-        if (searchInput.value.trim()) {
-            searchInput.value = '';
-            hiddenInput.value = 'all';
-        }
-        
-        // Sadece "Tüm Ürünler" seçeneğini göster
-        showOnlyAllOption();
+        showAllProducts(products);
         dropdown.style.display = 'block';
     });
 
     // Arama yaparken filtrele
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        if (searchTerm) {
-            filterProducts(searchTerm, products);
-        } else {
-            showOnlyAllOption();
-        }
+        filterProducts(searchTerm, products);
         dropdown.style.display = 'block';
+    });
+
+    // Enter tuşuna basıldığında ilk ürünü seç
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstProduct = dropdown.querySelector('.dropdown-item[data-value]:not([data-value="all"])');
+            if (firstProduct) {
+                firstProduct.click();
+            }
+        }
     });
 
     // Dışarı tıklanınca dropdown'ı gizle
@@ -2903,17 +2903,6 @@ function setupProductSearch(products) {
 
     // Başlangıçta dropdown gizli
     dropdown.style.display = 'none';
-}
-
-// Sadece "Tüm Ürünler" seçeneğini göster
-function showOnlyAllOption() {
-    const dropdown = document.getElementById('reportProductDropdown');
-    
-    dropdown.innerHTML = `
-        <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
-            <i class="fas fa-list me-2"></i>Tüm Ürünler
-        </div>
-    `;
 }
 
 // Tüm ürünleri dropdown'da göster
@@ -2945,7 +2934,7 @@ function filterProducts(searchTerm, products) {
     const dropdown = document.getElementById('reportProductDropdown');
 
     if (!searchTerm) {
-        showOnlyAllOption();
+        showAllProducts(products);
         return;
     }
 
@@ -2954,14 +2943,10 @@ function filterProducts(searchTerm, products) {
         product.product_name.toLowerCase().includes(searchTerm)
     );
 
-    let html = `
-        <div class="dropdown-item active" data-value="all" onclick="selectReportProduct('all', 'Tüm Ürünler')">
-            <i class="fas fa-list me-2"></i>Tüm Ürünler
-        </div>
-    `;
+    let html = '';
 
     if (filteredProducts.length === 0) {
-        html += `
+        html = `
             <div class="dropdown-item disabled">
                 <i class="fas fa-exclamation-circle me-2 text-muted"></i>
                 <span class="text-muted">Ürün bulunamadı</span>
@@ -2990,25 +2975,10 @@ function selectReportProduct(value, displayText) {
     const dropdown = document.getElementById('reportProductDropdown');
     const hiddenInput = document.getElementById('reportProduct');
 
-    // "Tüm Ürünler" seçildiğinde arama kutusunu boş bırak
-    if (value === 'all') {
-        searchInput.value = '';
-        searchInput.placeholder = 'Ürün kodu veya adı ile arama...';
-    } else {
-        searchInput.value = displayText;
-    }
-    
+    searchInput.value = displayText;
     hiddenInput.value = value;
     dropdown.style.display = 'none';
-
-    // Aktif seçimi güncelle
-    dropdown.querySelectorAll('.dropdown-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    dropdown.querySelector(`[data-value="${value}"]`).classList.add('active');
-}
-
-// Rapor oluştur
+}// Rapor oluştur
 async function generateReport() {
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
