@@ -359,6 +359,12 @@
                             <input type="number" class="form-control" id="salePrice" min="0" step="0.01"
                                 placeholder="Birim satış fiyatı">
                         </div>
+                        <div class="mb-3" id="formInfoContainer" style="display: none;">
+                            <label for="formInfo" class="form-label">Form Bilgisi</label>
+                            <input type="text" class="form-control" id="formInfo" maxlength="100"
+                                placeholder="Form numarası, müşteri bilgisi vb.">
+                            <div class="form-text">Form numarası, müşteri adı veya diğer bilgileri girebilirsiniz.</div>
+                        </div>
                         <div class="mb-3" id="targetWarehouseContainer">
                             <label for="targetWarehouse" class="form-label" id="targetWarehouseLabel">Hedef Depo</label>
                             <select class="form-select" id="targetWarehouse" required>
@@ -717,6 +723,40 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Hızlı Filtreler -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Hızlı Filtreler</label>
+                            <div class="btn-group w-100" role="group" aria-label="İşlem türü filtreleri">
+                                <input type="radio" class="btn-check" name="quickFilter" id="filterAll" value="all" checked>
+                                <label class="btn btn-outline-primary" for="filterAll">
+                                    <i class="fas fa-list me-1"></i>Tümü
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="quickFilter" id="filterIn" value="in">
+                                <label class="btn btn-outline-success" for="filterIn">
+                                    <i class="fas fa-arrow-down me-1"></i>Giriş
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="quickFilter" id="filterOut" value="out">
+                                <label class="btn btn-outline-danger" for="filterOut">
+                                    <i class="fas fa-arrow-up me-1"></i>Çıkış
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="quickFilter" id="filterTransfer" value="transfer">
+                                <label class="btn btn-outline-warning" for="filterTransfer">
+                                    <i class="fas fa-exchange-alt me-1"></i>Transfer
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="quickFilter" id="filterCustomer" value="customer">
+                                <label class="btn btn-outline-info" for="filterCustomer">
+                                    <i class="fas fa-user me-1"></i>Müşteri Satış
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row mb-4">
                         <div class="col-md-12 d-flex justify-content-center">
                             <button class="btn btn-primary btn-lg px-5" onclick="generateReport()">

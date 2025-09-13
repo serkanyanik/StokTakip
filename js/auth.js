@@ -36,7 +36,6 @@ async function login(email, password) {
         return currentUser;
 
     } catch (error) {
-        console.error('Giriş hatası:', error);
         throw error;
     }
 }
@@ -57,7 +56,6 @@ async function getUserProfile(userId) {
         return data;
 
     } catch (error) {
-        console.error('Kullanıcı profili getirme hatası:', error);
         return null;
     }
 }
@@ -74,7 +72,6 @@ async function logout() {
         await Promise.race([logoutPromise, timeoutPromise]);
 
     } catch (error) {
-        console.error('Logout hatası:', error);
     }
 
     // Her durumda kullanıcıyı temizle ve sayfayı yenile
@@ -119,7 +116,6 @@ async function checkSession() {
 
         return null;
     } catch (error) {
-        console.error('Oturum kontrol hatası:', error);
         // Auth hatası durumunda da localStorage'ı temizle
         if (error.name === 'AuthApiError' || error.__isAuthError) {
             await supabase.auth.signOut();

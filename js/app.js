@@ -19,7 +19,6 @@ async function ensureDatabaseSetup() {
 
         return true;
     } catch (error) {
-        console.error('Database setup kontrol hatası:', error);
         return false;
     }
 }
@@ -123,6 +122,11 @@ function setupEventListeners() {
 
     // Raporlar butonu
     document.getElementById('reportsBtn').addEventListener('click', showReportsModal);
+
+    // Rapor modal'ı kapatıldığında içeriği temizle
+    document.getElementById('reportsModal').addEventListener('hidden.bs.modal', function () {
+        resetReportFilters();
+    });
 
     // İşlem türü değiştiğinde arayüzü güncelle
     document.getElementById('operationType').addEventListener('change', handleOperationTypeChange);
@@ -278,15 +282,12 @@ async function handleSaveWarehouseName() {
         updateWarehouseCards();
         updateTableHeaders(); // Tablo başlıklarını güncelle
         updateCurrentWarehouseDisplay();
-        updateStockTable(); // Transfer butonlarındaki tooltipleri güncellemek için
+        updateStockTable();
 
         // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('editWarehouseNameModal')).hide();
 
-        // Depo adı güncellendi - sessizce işle
-
     } catch (error) {
-        console.error('Ad kaydetme hatası:', error);
         alert('Ad kaydedilirken bir hata oluştu: ' + error.message);
     }
 }
@@ -296,7 +297,6 @@ function saveWarehouseNamesToStorage() {
     try {
         localStorage.setItem('warehouseNames', JSON.stringify(WAREHOUSE_NAMES));
     } catch (error) {
-        console.error('Depo adları kaydedilemedi:', error);
     }
 }
 
@@ -309,7 +309,6 @@ function loadWarehouseNamesFromStorage() {
             Object.assign(WAREHOUSE_NAMES, savedNames);
         }
     } catch (error) {
-        console.error('Depo adları yüklenemedi:', error);
     }
 }
 
@@ -783,7 +782,6 @@ async function applySearchFilter() {
             });
 
         } catch (error) {
-            console.error('Arama hatası:', error);
         }
     }
 
@@ -980,7 +978,6 @@ async function loadStockData() {
         updateWarehouseCards();
 
     } catch (error) {
-        console.error('Stok verileri yüklenirken hata:', error);
         alert('Stok verileri yüklenirken bir hata oluştu');
     }
 }
@@ -1258,7 +1255,6 @@ async function editField(productId, fieldName, currentValue, element) {
         // Başarı durumunda sessizce güncelle
 
     } catch (error) {
-        console.error('Alan güncelleme hatası:', error);
         alert('Güncelleme sırasında bir hata oluştu: ' + error.message);
     }
 }
@@ -1330,7 +1326,6 @@ async function confirmDeleteProduct() {
         // Başarı durumunda sessizce sil
 
     } catch (error) {
-        console.error('Ürün silme hatası:', error);
         alert('Ürün silinirken bir hata oluştu: ' + error.message);
     }
 }
@@ -1412,7 +1407,6 @@ async function loadLastSalePrice(stockId) {
             .limit(1);
 
         if (error) {
-            console.error('Son satış fiyatı kontrol hatası:', error);
         }
 
         let lastSalePrice = null;
@@ -1451,7 +1445,6 @@ async function loadLastSalePrice(stockId) {
             }
         }
     } catch (error) {
-        console.error('Fiyat yükleme hatası:', error);
     }
 }
 
@@ -1519,7 +1512,6 @@ function autoSelectSourceWarehouse(stockId) {
             infoDiv.textContent = 'Bu ürün hiçbir depoda stokta yok!';
         }
     } catch (error) {
-        console.error('Otomatik depo seçimi hatası:', error);
     }
 }
 
@@ -1587,11 +1579,9 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
         // Tabloyu güncelle
         await loadStockData();
 
-        // Transfer başarılı - sessizce işle
         await loadStockData();
 
     } catch (error) {
-        console.error('Hızlı transfer hatası:', error);
         alert('Transfer sırasında bir hata oluştu: ' + error.message);
     }
 }
@@ -1757,7 +1747,6 @@ async function handleAddStock() {
                 'Mevcut ürüne stok ekleme'
             );
 
-            // Mevcut ürüne stok eklendi - sessizce işle
         } else {
             // Yeni ürün ekle
             const newProduct = {
@@ -1802,14 +1791,12 @@ async function handleAddStock() {
                 );
             }
 
-            // Yeni ürün başarıyla eklendi - sessizce işle
         }
 
         bootstrap.Modal.getInstance(document.getElementById('addStockModal')).hide();
         await loadStockData();
 
     } catch (error) {
-        console.error('Stok ekleme hatası:', error);
         alert('Stok eklenirken bir hata oluştu: ' + error.message);
     }
 }
@@ -1823,6 +1810,7 @@ function handleOperationTypeChange() {
     const confirmBtn = document.getElementById('confirmRemoveBtn');
     const sourceContainer = document.getElementById('sourceWarehouseContainer');
     const salePriceContainer = document.getElementById('salePriceContainer');
+    const formInfoContainer = document.getElementById('formInfoContainer');
 
     if (operationType === 'add') {
         // Stok girişi modu
@@ -1836,6 +1824,11 @@ function handleOperationTypeChange() {
 
         // Fiyat alanını gizle (stok girişinde fiyat yok)
         salePriceContainer.style.display = 'none';
+
+        // Form bilgisi alanını gizle
+        if (formInfoContainer) {
+            formInfoContainer.style.display = 'none';
+        }
 
         // Hedef depo container'ını göster
         targetWarehouseContainer.style.display = 'block';
@@ -1861,6 +1854,11 @@ function handleOperationTypeChange() {
         // Fiyat alanını gizle (transfer işleminde fiyat yok)
         salePriceContainer.style.display = 'none';
 
+        // Form bilgisi alanını gizle
+        if (formInfoContainer) {
+            formInfoContainer.style.display = 'none';
+        }
+
         // Hedef depo container'ını göster
         targetWarehouseContainer.style.display = 'block';
 
@@ -1884,6 +1882,12 @@ function handleOperationTypeChange() {
 
         // Satış fiyatı alanını göster
         salePriceContainer.style.display = 'block';
+
+        // Form bilgisi alanını göster
+        const formInfoContainer = document.getElementById('formInfoContainer');
+        if (formInfoContainer) {
+            formInfoContainer.style.display = 'block';
+        }
 
         // Hedef depo container'ını gizle (müşteri seçimi gerekmiyor)
         targetWarehouseContainer.style.display = 'none';
@@ -2231,14 +2235,17 @@ async function handleRemoveStock() {
     const quantity = parseInt(document.getElementById('removeQuantity').value);
     const targetWarehouse = document.getElementById('targetWarehouse').value;
 
-    // Müşteri satışında fiyat bilgisini al
+    // Müşteri satışında fiyat ve form bilgisini al
     let salePrice = null;
+    let formInfo = '';
     if (operationType === 'customer_sale') {
         salePrice = parseFloat(document.getElementById('salePrice').value);
         if (!salePrice || salePrice <= 0) {
             alert('Lütfen geçerli bir satış fiyatı girin!');
             return;
         }
+        
+        formInfo = document.getElementById('formInfo').value.trim();
     }
 
     // Validation
@@ -2304,7 +2311,7 @@ async function handleRemoveStock() {
             await handleStockTransfer(item, targetWarehouse, quantity);
         } else if (operationType === 'customer_sale') {
             // Müşteri satışı işlemi - targetWarehouse gerekmiyor
-            await handleCustomerSale(item, 'customer', quantity, salePrice);
+            await handleCustomerSale(item, 'customer', quantity, salePrice, formInfo);
         }
 
         // Formu temizle
@@ -2314,6 +2321,7 @@ async function handleRemoveStock() {
         document.getElementById('targetWarehouse').value = '';
         document.getElementById('operationType').value = '';
         document.getElementById('salePrice').value = '';
+        document.getElementById('formInfo').value = '';
         if (document.getElementById('sourceWarehouse')) {
             document.getElementById('sourceWarehouse').value = '';
         }
@@ -2322,7 +2330,6 @@ async function handleRemoveStock() {
         await loadStockData();
 
     } catch (error) {
-        console.error('Stok işlemi hatası:', error);
         alert(error.message || 'İşlem gerçekleştirilirken bir hata oluştu: ' + error.message);
     } finally {
         // Modal'ı her durumda kapat
@@ -2412,7 +2419,7 @@ async function handleStockTransfer(item, targetWarehouse, quantity) {
 }
 
 // Müşteri satışı işlemi
-async function handleCustomerSale(item, targetWarehouse, quantity, salePrice) {
+async function handleCustomerSale(item, targetWarehouse, quantity, salePrice, formInfo = '') {
     // Kaynak depo belirleme
     let sourceWarehouse = currentWarehouse;
     if (currentUser.is_depo_admin && currentWarehouse === WAREHOUSE_TYPES.MAIN) {
@@ -2441,7 +2448,7 @@ async function handleCustomerSale(item, targetWarehouse, quantity, salePrice) {
     if (error) throw error;
 
     // Hareket kaydı oluştur (müşteri satışı için özel notlar)
-    const notes = `Müşteri satış - Birim fiyat: ${salePrice}₺ - Toplam: ${(salePrice * quantity).toFixed(2)}₺`;
+    const notes = `Birim fiyat: ${salePrice}₺ - Toplam: ${(salePrice * quantity).toFixed(2)}₺`;
 
     await createStockMovement(
         item.id,
@@ -2452,7 +2459,8 @@ async function handleCustomerSale(item, targetWarehouse, quantity, salePrice) {
         'customer',
         quantity,
         notes,
-        salePrice // Fiyat bilgisini ekstra parametre olarak gönder
+        salePrice, // Fiyat bilgisini ekstra parametre olarak gönder
+        formInfo   // Form bilgisini ekstra parametre olarak gönder
     );
 
 }
@@ -2604,7 +2612,6 @@ function displayLowStockProducts(lowStockProducts) {
 function showTransferToWarehouseModal(targetWarehouse) {
     const modal = document.getElementById('transferToWarehouseModal');
     if (!modal) {
-        console.error('Transfer modal bulunamadı');
         return;
     }
 
@@ -2747,15 +2754,12 @@ async function executeWarehouseTransfer() {
         bootstrap.Modal.getInstance(modal).hide();
         await loadStockData();
 
-        // Transfer başarılı - sessizce işle
-
         // Formu temizle
         document.getElementById('transferSourceWarehouse').value = '';
         document.getElementById('transferProductSelect').value = '';
         document.getElementById('transferQuantity').value = '';
 
     } catch (error) {
-        console.error('Transfer hatası:', error);
         alert('İşlem sırasında bir hata oluştu: ' + error.message);
     }
 }
@@ -2766,13 +2770,23 @@ async function executeWarehouseTransfer() {
 function showReportsModal() {
     const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
 
-    // Varsayılan tarih aralığını bu ay olarak ayarla
+    // Varsayılan tarih aralığını ayarla
     const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    let startDate, endDate;
+    
+    if (now.getDate() <= 5) {
+        // Ayın ilk 5 günündeyse son 30 gün
+        endDate = new Date(now);
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 30);
+    } else {
+        // 5. günden sonraysa bu ay
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
 
-    document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
-    document.getElementById('reportEndDate').value = lastDay.toISOString().split('T')[0];
+    document.getElementById('reportStartDate').value = startDate.toISOString().split('T')[0];
+    document.getElementById('reportEndDate').value = endDate.toISOString().split('T')[0];
 
     // Depo seçeneklerini doldur
     populateReportWarehouseOptions();
@@ -2792,6 +2806,19 @@ function showReportsModal() {
 
     // Ürün listesini yükle
     loadProductsForReport();
+
+    // Hızlı filtre event listener'ları ekle
+    document.querySelectorAll('input[name="quickFilter"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Tarih seçili ise otomatik rapor oluştur
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            
+            if (startDate && endDate) {
+                generateReport();
+            }
+        });
+    });
 
     // Filtreleri ve içeriği temizle
     resetReportFilters();
@@ -2813,7 +2840,7 @@ function populateReportWarehouseOptions() {
 }
 
 // Stok hareket kaydı oluştur
-async function createStockMovement(productId, productCode, productName, movementType, sourceWarehouse, targetWarehouse, quantity, notes = '', salePrice = null) {
+async function createStockMovement(productId, productCode, productName, movementType, sourceWarehouse, targetWarehouse, quantity, notes = '', salePrice = null, formInfo = '') {
     try {
         // Önce tabloyu kontrol et
         const { data: tableCheck, error: checkError } = await supabase
@@ -2822,7 +2849,6 @@ async function createStockMovement(productId, productCode, productName, movement
             .limit(1);
 
         if (checkError) {
-            console.error('Tablo kontrol hatası:', checkError);
             return;
         }
 
@@ -2839,6 +2865,11 @@ async function createStockMovement(productId, productCode, productName, movement
             notes: notes
         };
 
+        // Form bilgisi varsa notes'a ekle
+        if (formInfo && formInfo.trim()) {
+            movementData.notes = `Form: ${formInfo.trim()} | ${notes}`;
+        }
+
         // Müşteri satışında fiyat bilgisini ekle
         if (salePrice !== null) {
             movementData.sale_price = salePrice;
@@ -2851,11 +2882,7 @@ async function createStockMovement(productId, productCode, productName, movement
 
         if (error) throw error;
 
-        // Başarılı kayıt (sadece development için)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        }
     } catch (error) {
-        console.error('Stok hareket kaydı oluşturma hatası:', error);
     }
 }
 
@@ -2885,7 +2912,6 @@ async function loadProductsForReport() {
         if (reportDropdown) reportDropdown.style.display = 'none';
 
     } catch (error) {
-        console.error('Ürün listesi yükleme hatası:', error);
     }
 }
 
@@ -3017,6 +3043,7 @@ async function generateReport() {
     const endDate = document.getElementById('reportEndDate').value;
     const warehouse = document.getElementById('reportWarehouse').value;
     const productFilter = document.getElementById('reportProduct').value;
+    const quickFilter = document.querySelector('input[name="quickFilter"]:checked').value;
 
     if (!startDate || !endDate) {
         alert('Lütfen başlangıç ve bitiş tarihlerini seçin!');
@@ -3054,14 +3081,24 @@ async function generateReport() {
             query = query.eq('product_id', productFilter);
         }
 
+        // Hızlı filtre uygula
+        if (quickFilter !== 'all') {
+            if (quickFilter === 'customer') {
+                // Müşteri satışları (out ve target customer/external)
+                query = query.eq('movement_type', 'out').in('target_warehouse', ['customer', 'external']);
+            } else {
+                // Diğer işlem türleri
+                query = query.eq('movement_type', quickFilter);
+            }
+        }
+
         const { data: movements, error } = await query;
 
         if (error) throw error;
 
-        displayReport(movements, startDate, endDate, warehouse, productFilter);
+        displayReport(movements, startDate, endDate, warehouse, productFilter, quickFilter);
 
     } catch (error) {
-        console.error('Rapor oluşturma hatası:', error);
         content.innerHTML = `
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-triangle me-2"></i>
@@ -3072,7 +3109,7 @@ async function generateReport() {
 }
 
 // Raporu görüntüle
-function displayReport(movements, startDate, endDate, warehouse, productFilter = 'all') {
+function displayReport(movements, startDate, endDate, warehouse, productFilter = 'all', quickFilter = 'all') {
     const content = document.getElementById('reportContent');
     const exportBtn = document.getElementById('exportReportBtn');
 
@@ -3095,6 +3132,16 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
         productFilterText = searchInput.value || 'Seçili Ürün';
     }
 
+    // Hızlı filtre bilgisini al
+    const quickFilterTexts = {
+        'all': 'Tümü',
+        'in': 'Giriş',
+        'out': 'Çıkış', 
+        'transfer': 'Transfer',
+        'customer': 'Müşteri Satış'
+    };
+    const quickFilterText = quickFilterTexts[quickFilter] || 'Tümü';
+
     let html = `
         <div class="mb-3">
             <h6>
@@ -3103,13 +3150,19 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
                 ${warehouse !== 'all' ? `(${WAREHOUSE_NAMES[warehouse]})` : '(Tüm Depolar)'}
             </h6>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <small class="text-muted">
                         <i class="fas fa-box me-1"></i>
                         Ürün: ${productFilterText}
                     </small>
                 </div>
-                <div class="col-md-6 text-end">
+                <div class="col-md-4">
+                    <small class="text-muted">
+                        <i class="fas fa-filter me-1"></i>
+                        İşlem: ${quickFilterText}
+                    </small>
+                </div>
+                <div class="col-md-4 text-end">
                     <small class="text-muted">Toplam ${movements.length} hareket</small>
                 </div>
             </div>
@@ -3128,6 +3181,7 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
                         <th>Miktar</th>
                         <th>Satış Fiyatı</th>
                         <th>Kullanıcı</th>
+                        <th>Notlar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3195,6 +3249,9 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
                 <td><strong>${movement.quantity}</strong></td>
                 <td>${priceDisplay}</td>
                 <td>${movement.user_name}</td>
+                <td>
+                    <small class="text-muted">${movement.notes || '-'}</small>
+                </td>
             </tr>
         `;
     });
@@ -3207,23 +3264,20 @@ function displayReport(movements, startDate, endDate, warehouse, productFilter =
 
     content.innerHTML = html;
     exportBtn.style.display = 'inline-block';
-    
-    // Rapor oluşturulduktan sonra 3 saniye bekleyip filtreleri temizle
-    setTimeout(() => {
-        resetReportFilters();
-    }, 3000);
-}
-
-// Rapor filtrelerini temizle
+}// Rapor filtrelerini temizle
 function resetReportFilters() {
     const searchInput = document.getElementById('reportProductSearch');
     const hiddenInput = document.getElementById('reportProduct');
     const dropdown = document.getElementById('reportProductDropdown');
-    
+
     if (searchInput) searchInput.value = '';
     if (hiddenInput) hiddenInput.value = 'all';
     if (dropdown) dropdown.style.display = 'none';
-    
+
+    // Hızlı filtreyi "Tümü" olarak sıfırla
+    const allFilter = document.getElementById('filterAll');
+    if (allFilter) allFilter.checked = true;
+
     // İçerik alanını temizle ki başlangıç mesajı gösterilsin
     const reportContent = document.getElementById('reportContent');
     if (reportContent) {
@@ -3234,7 +3288,7 @@ function resetReportFilters() {
             </div>
         `;
     }
-    
+
     // Export butonunu da gizle
     const exportBtn = document.getElementById('exportReportBtn');
     if (exportBtn) exportBtn.style.display = 'none';
@@ -3355,7 +3409,6 @@ async function saveShelfAddress() {
         }
 
     } catch (error) {
-        console.error('Raf adresi kaydetme hatası:', error);
         alert('Raf adresi kaydedilirken bir hata oluştu: ' + error.message);
     }
 }

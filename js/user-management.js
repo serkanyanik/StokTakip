@@ -44,7 +44,6 @@ async function loadAllUsers() {
 
         allUsers = data || [];
     } catch (error) {
-        console.error('Kullanıcılar yüklenirken hata:', error);
         alert('Kullanıcılar yüklenirken bir hata oluştu');
     }
 }
@@ -178,12 +177,8 @@ async function handleAddUser() {
         // NOT: Yeni kullanıcının auth oturumunu kapatmıyoruz - admin oturumda kalmalı
 
         if (profileError) {
-            console.error('Profil oluşturma hatası:', profileError);
-
             alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`);
 
-        } else {
-            // Kullanıcı başarıyla oluşturuldu - sessizce işle
         }
 
         bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
@@ -194,7 +189,6 @@ async function handleAddUser() {
         clearAddUserForm();
 
     } catch (error) {
-        console.error('Kullanıcı oluşturma hatası:', error);
         alert('Kullanıcı oluşturulurken bir hata oluştu: ' + error.message);
     }
 }
@@ -250,7 +244,6 @@ async function handleUpdateUser() {
         }
 
         bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
-        // Kullanıcı başarıyla güncellendi - sessizce işle
         await loadAllUsers();
         updateUsersTable();
 
@@ -275,7 +268,6 @@ async function handleUpdateUser() {
         }
 
     } catch (error) {
-        console.error('Kullanıcı güncelleme hatası:', error);
         alert('Kullanıcı güncellenirken bir hata oluştu: ' + error.message);
     }
 }
@@ -309,12 +301,10 @@ async function handleDeleteUser(userId = null) {
             bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
         }
 
-        // Kullanıcı başarıyla silindi - sessizce işle
         await loadAllUsers();
         updateUsersTable();
 
     } catch (error) {
-        console.error('Kullanıcı silme hatası:', error);
         alert('Kullanıcı silinirken bir hata oluştu: ' + error.message);
     }
 }
@@ -416,10 +406,7 @@ async function handleChangePassword() {
         document.getElementById('changePasswordForm').reset();
         bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
 
-        // Şifre başarıyla değiştirildi - sessizce işle
-
     } catch (error) {
-        console.error('Şifre değişikliği hatası:', error);
         alert('Şifre değiştirilirken bir hata oluştu: ' + error.message);
     }
 }
