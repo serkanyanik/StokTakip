@@ -313,15 +313,40 @@ function loadWarehouseNamesFromStorage() {
 }
 
 async function handleSaveWarehouseName() {
-    document.getElementById('searchInput').addEventListener('input', async () => {
-        await applySearchFilter();
-    });
+    try {
+        const newName = document.getElementById('warehouseName').value.trim();
+        const warehouseType = document.getElementById('editingWarehouseType').value;
 
-    // Depo adı düzenleme
-    document.getElementById('editWarehouseNameBtn').addEventListener('click', showEditWarehouseNameModal);
+        const isMainWarehouse = warehouseType === WAREHOUSE_TYPES.MAIN;
+        const unitType = isMainWarehouse ? 'depo adını' : 'araç adını';
+        const unitTypeMin = isMainWarehouse ? 'Depo adı' : 'Araç adı';
 
-    // Depo adı kaydetme
-    document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
+        if (!newName) {
+            alert(`Lütfen ${unitType} girin!`);
+            return;
+        }
+
+        if (newName.length < 2) {
+            alert(`${unitTypeMin} en az 2 karakter olmalıdır!`);
+            return;
+        }
+
+        // Adı güncelle (localStorage'da sakla)
+        WAREHOUSE_NAMES[warehouseType] = newName;
+        saveWarehouseNamesToStorage();
+
+        // Görünümü güncelle
+        updateWarehouseCards();
+        updateTableHeaders(); // Tablo başlıklarını güncelle
+        updateCurrentWarehouseDisplay();
+        updateStockTable();
+
+        // Modal'ı kapat
+        bootstrap.Modal.getInstance(document.getElementById('editWarehouseNameModal')).hide();
+
+    } catch (error) {
+        alert('Ad kaydedilirken bir hata oluştu: ' + error.message);
+    }
 }
 
 // Giriş işlemi
