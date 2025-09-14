@@ -1796,6 +1796,17 @@ button[onclick*="quickTransfer"]:hover {
     vertical-align: middle !important;
     height: 50px;
     padding: 0.5rem !important;
+    text-align: left !important;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+/* İkinci sütun (Ürün Adı) için özel stil */
+#stockTable td:nth-child(2) {
+    text-align: left !important;
+    word-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
 }
 
 #stockTable tr {
