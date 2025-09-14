@@ -13,7 +13,7 @@ async function ensureDatabaseSetup() {
             .limit(1);
 
         if (error && error.code === 'PGRST106') {
-            alert('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
+            console.error('Veritabanı tabloları eksik. Lütfen Supabase Dashboard\'da database-updates.sql scriptini çalıştırın.');
             return false;
         }
 
