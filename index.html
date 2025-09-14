@@ -176,21 +176,25 @@
         <!-- İşlem Paneli -->
         <div class="row mb-2">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2"></i>Stok Listesi
-                        </h5>
-                        <div>
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3>Stok Listesi</h3>
+                            <p>Tüm ürünlerin detaylı stok durumu</p>
+                        </div>
+                        <div class="ms-auto">
                             <button class="btn btn-success btn-sm" id="addStockBtn" style="display: none;">
                                 <i class="fas fa-plus me-1"></i>Stok Ekle
                             </button>
-                            <button class="btn btn-warning btn-sm" id="removeStockBtn" style="display: none;">
+                            <button class="btn btn-warning btn-sm ms-2" id="removeStockBtn" style="display: none;">
                                 <i class="fas fa-exchange-alt me-1"></i>Stok İşlemleri
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <!-- Arama Çubuğu -->
                         <div class="row mb-3">
                             <div class="col-md-6">
