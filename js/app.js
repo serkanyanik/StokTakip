@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Depo adlarını yükle
-    loadWarehouseNamesFromStorage();
+    await loadWarehouseNamesFromDatabase();
 
     // Tablo başlıklarını güncelle (depo adları yüklendikten sonra)
     updateTableHeaders();
@@ -274,9 +274,9 @@ async function handleSaveWarehouseName() {
             return;
         }
 
-        // Adı güncelle (localStorage'da sakla)
+        // Adı güncelle (Supabase'e kaydet)
         WAREHOUSE_NAMES[warehouseType] = newName;
-        saveWarehouseNamesToStorage();
+        await saveWarehouseNamesToDatabase();
 
         // Görünümü güncelle
         updateWarehouseCards();
@@ -292,60 +292,82 @@ async function handleSaveWarehouseName() {
     }
 }
 
-// Depo adlarını localStorage'a kaydet
-function saveWarehouseNamesToStorage() {
+// Depo adlarını Supabase'e kaydet
+async function saveWarehouseNamesToDatabase() {
     try {
-        localStorage.setItem('warehouseNames', JSON.stringify(WAREHOUSE_NAMES));
+        // Mevcut ayarları kontrol et
+        const { data: existingSettings, error: fetchError } = await supabase
+            .from('app_settings')
+            .select('*')
+            .eq('setting_key', 'warehouse_names')
+            .single();
+
+        const warehouseNamesJson = JSON.stringify(WAREHOUSE_NAMES);
+
+        if (existingSettings) {
+            // Güncelle
+            const { error: updateError } = await supabase
+                .from('app_settings')
+                .update({
+                    setting_value: warehouseNamesJson,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('setting_key', 'warehouse_names');
+
+            if (updateError) throw updateError;
+        } else {
+            // Yeni kayıt oluştur
+            const { error: insertError } = await supabase
+                .from('app_settings')
+                .insert({
+                    setting_key: 'warehouse_names',
+                    setting_value: warehouseNamesJson,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
+            if (insertError) throw insertError;
+        }
     } catch (error) {
+        console.error('Depo adları kaydedilirken hata:', error);
+        // Fallback olarak localStorage kullan
+        localStorage.setItem('warehouseNames', JSON.stringify(WAREHOUSE_NAMES));
     }
 }
 
-// Depo adlarını localStorage'dan yükle
-function loadWarehouseNamesFromStorage() {
+// Depo adlarını Supabase'den yükle
+async function loadWarehouseNamesFromDatabase() {
     try {
+        const { data, error } = await supabase
+            .from('app_settings')
+            .select('setting_value')
+            .eq('setting_key', 'warehouse_names')
+            .single();
+
+        if (error) {
+            // Hata varsa localStorage'dan yükle ve Supabase'e migrate et
+            const saved = localStorage.getItem('warehouseNames');
+            if (saved) {
+                const savedNames = JSON.parse(saved);
+                Object.assign(WAREHOUSE_NAMES, savedNames);
+                // localStorage'daki veriyi Supabase'e migrate et
+                await saveWarehouseNamesToDatabase();
+            }
+            return;
+        }
+
+        if (data && data.setting_value) {
+            const savedNames = JSON.parse(data.setting_value);
+            Object.assign(WAREHOUSE_NAMES, savedNames);
+        }
+    } catch (error) {
+        console.error('Depo adları yüklenirken hata:', error);
+        // Fallback olarak localStorage'dan yükle
         const saved = localStorage.getItem('warehouseNames');
         if (saved) {
             const savedNames = JSON.parse(saved);
             Object.assign(WAREHOUSE_NAMES, savedNames);
         }
-    } catch (error) {
-    }
-}
-
-async function handleSaveWarehouseName() {
-    try {
-        const newName = document.getElementById('warehouseName').value.trim();
-        const warehouseType = document.getElementById('editingWarehouseType').value;
-
-        const isMainWarehouse = warehouseType === WAREHOUSE_TYPES.MAIN;
-        const unitType = isMainWarehouse ? 'depo adını' : 'araç adını';
-        const unitTypeMin = isMainWarehouse ? 'Depo adı' : 'Araç adı';
-
-        if (!newName) {
-            alert(`Lütfen ${unitType} girin!`);
-            return;
-        }
-
-        if (newName.length < 2) {
-            alert(`${unitTypeMin} en az 2 karakter olmalıdır!`);
-            return;
-        }
-
-        // Adı güncelle (localStorage'da sakla)
-        WAREHOUSE_NAMES[warehouseType] = newName;
-        saveWarehouseNamesToStorage();
-
-        // Görünümü güncelle
-        updateWarehouseCards();
-        updateTableHeaders(); // Tablo başlıklarını güncelle
-        updateCurrentWarehouseDisplay();
-        updateStockTable();
-
-        // Modal'ı kapat
-        bootstrap.Modal.getInstance(document.getElementById('editWarehouseNameModal')).hide();
-
-    } catch (error) {
-        alert('Ad kaydedilirken bir hata oluştu: ' + error.message);
     }
 }
 
