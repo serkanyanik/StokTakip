@@ -51,21 +51,10 @@ const LOW_STOCK_THRESHOLD = 5;
 // Yardımcı fonksiyonlar
 function capitalizeFirstLetter(string) {
     if (!string) return string;
-
+    
+    // Her kelimenin ilk harfini büyük, geri kalanını küçük yap
     return string.split(' ').map(word => {
         if (!word) return word;
-
-        // Eğer kelime tamamen büyük harfse ve 2 karakterden fazlaysa title case yap
-        if (word === word.toUpperCase() && word.length > 2) {
-            return word.charAt(0) + word.slice(1).toLowerCase();
-        }
-
-        // Eğer kelime tamamen küçük harfse ilk harfini büyük yap
-        if (word === word.toLowerCase()) {
-            return word.charAt(0).toUpperCase() + word.slice(1);
-        }
-
-        // Karışık durumda olan kelimeleri olduğu gibi bırak
-        return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }).join(' ');
 }

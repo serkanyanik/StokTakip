@@ -120,12 +120,34 @@ function setupEventListeners() {
     // Depo adı kaydetme
     document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
 
-    // Ürün adı girişinde ilk harfi büyük yap
-    document.getElementById('productName').addEventListener('input', function (e) {
-        const value = e.target.value;
-        if (value.length > 0) {
-            e.target.value = capitalizeFirstLetter(value);
+    // Ürün adı girişinde ilk harfi büyük yap (form submit anında)
+    document.getElementById('addStockForm').addEventListener('submit', function (e) {
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput.value) {
+            productNameInput.value = capitalizeFirstLetter(productNameInput.value);
         }
+    });
+
+    // Stok ekleme butonuna da event ekle (form submit olmayabilir)
+    const saveStockBtn = document.getElementById('saveStockBtn');
+    if (saveStockBtn) {
+        saveStockBtn.addEventListener('click', function() {
+            const productNameInput = document.getElementById('productName');
+            if (productNameInput && productNameInput.value) {
+                productNameInput.value = capitalizeFirstLetter(productNameInput.value);
+            }
+        });
+    }
+
+    // Alternatif: modal kapatılırken de kontrol et
+    document.getElementById('addStockModal').addEventListener('hidden.bs.modal', function() {
+        // Form temizlendiğinde de capitalize uygula
+        setTimeout(() => {
+            const productNameInput = document.getElementById('productName');
+            if (productNameInput && productNameInput.value) {
+                productNameInput.value = capitalizeFirstLetter(productNameInput.value);
+            }
+        }, 100);
     });
 
     // Raporlar butonu
@@ -1351,9 +1373,30 @@ function showDeleteProductModal(productId) {
     const confirmInput = document.getElementById('deleteConfirmText');
     const deleteBtn = document.getElementById('confirmDeleteBtn');
 
-    confirmInput.oninput = function () {
+    // Önceki event listener'ları temizle
+    confirmInput.oninput = null;
+    deleteBtn.onclick = null;
+    
+    confirmInput.addEventListener('input', function () {
         deleteBtn.disabled = this.value.toUpperCase() !== 'SİL';
-    };
+    });
+
+    // Delete button'a event listener ekle
+    deleteBtn.removeEventListener('click', confirmDeleteProduct); // Önceki listener'ı kaldır
+    deleteBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Button'ı deaktif et (çift tıklamayı önle)
+        this.disabled = true;
+        
+        try {
+            await confirmDeleteProduct();
+        } finally {
+            // İşlem bitince button'ı tekrar aktif et
+            this.disabled = false;
+        }
+    });
 
     // Modal açarken productId'yi sakla
     window.currentDeleteProductId = productId;
@@ -1363,16 +1406,33 @@ function showDeleteProductModal(productId) {
 
 // Ürün silmeyi onayla
 async function confirmDeleteProduct() {
+    if (!currentUser.is_depo_admin) {
+        alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu ürün silebilir.');
+        return;
+    }
+
     const productId = window.currentDeleteProductId;
     if (!productId) return;
 
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('stock')
             .delete()
-            .eq('id', productId);
+            .eq('id', productId)
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase delete error:', error);
+            throw error;
+        }
+
+        // Eğer hiçbir kayıt silinmediyse
+        if (!data || data.length === 0) {
+            console.error('No rows deleted, RLS policy might be blocking');
+            throw new Error('Ürün silinemedi. Yetki sorunu olabilir.');
+        }
+
+        console.log('Successfully deleted', data.length, 'record(s)');
 
         // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
@@ -1380,9 +1440,24 @@ async function confirmDeleteProduct() {
         // Tabloyu yeniden yükle
         await loadStockData();
 
-        // Başarı durumunda sessizce sil
-
     } catch (error) {
+        console.error('Delete operation error:', error);
+        
+        // Silme işlemi başarılı olsa bile hata mesajı geliyorsa kontrol et
+        const checkResult = await supabase
+            .from('stock')
+            .select('id')
+            .eq('id', productId)
+            .single();
+            
+        if (checkResult.error && checkResult.error.code === 'PGRST116') {
+            // Kayıt bulunamadı = başarıyla silindi
+            console.log('Product actually deleted successfully');
+            bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
+            await loadStockData();
+            return;
+        }
+        
         alert('Ürün silinirken bir hata oluştu: ' + error.message);
     }
 }
@@ -1723,7 +1798,9 @@ async function handleAddStock() {
     }
 
     const productCode = document.getElementById('productCode').value.trim();
-    const productName = capitalizeFirstLetter(document.getElementById('productName').value.trim());
+    const originalProductName = document.getElementById('productName').value.trim();
+    const productName = capitalizeFirstLetter(originalProductName);
+    
     const productPrice = document.getElementById('productPrice').value.trim();
     const productImageUrl = document.getElementById('productImageUrl').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value);
