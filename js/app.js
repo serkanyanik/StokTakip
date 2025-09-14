@@ -120,6 +120,14 @@ function setupEventListeners() {
     // Depo adı kaydetme
     document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
 
+    // Ürün adı girişinde ilk harfi büyük yap
+    document.getElementById('productName').addEventListener('input', function(e) {
+        const value = e.target.value;
+        if (value.length > 0) {
+            e.target.value = capitalizeFirstLetter(value);
+        }
+    });
+
     // Raporlar butonu
     document.getElementById('reportsBtn').addEventListener('click', showReportsModal);
 
@@ -1168,7 +1176,7 @@ function createStockRow(item) {
 
     row.innerHTML = `
         <td>${createEditableField('product_code', item.product_code)}</td>
-        <td>${createEditableField('product_name', item.product_name)}</td>
+        <td>${createEditableField('product_name', item.product_name, capitalizeFirstLetter(item.product_name))}</td>
         <td>${createEditableField('product_price', item.product_price, formatPrice(item.product_price))}</td>
         <td>${createImageButton(item.product_image_url)}</td>
         <td class="shelf-address-column">
@@ -1285,6 +1293,8 @@ async function editField(productId, fieldName, currentValue, element) {
         const updateData = {};
         if (fieldName === 'product_price') {
             updateData[fieldName] = newValue ? parseFloat(newValue) : null;
+        } else if (fieldName === 'product_name') {
+            updateData[fieldName] = newValue.trim() ? capitalizeFirstLetter(newValue.trim()) : null;
         } else {
             updateData[fieldName] = newValue.trim() || null;
         }
@@ -1713,7 +1723,7 @@ async function handleAddStock() {
     }
 
     const productCode = document.getElementById('productCode').value.trim();
-    const productName = document.getElementById('productName').value.trim();
+    const productName = capitalizeFirstLetter(document.getElementById('productName').value.trim());
     const productPrice = document.getElementById('productPrice').value.trim();
     const productImageUrl = document.getElementById('productImageUrl').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value);
