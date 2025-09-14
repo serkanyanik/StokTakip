@@ -1304,9 +1304,108 @@ body {
 #changePasswordModal .form-label,
 #userManagementModal .form-label,
 #addUserModal .form-label,
-#editUserModal .form-label {
+#editUserModal .form-label,
+#addStockModal .form-label,
+#transferModal .form-label,
+#editWarehouseNameModal .form-label,
+#removeStockModal .form-label,
+#lowStockModal .form-label,
+#transferToWarehouseModal .form-label,
+#reportsModal .form-label,
+#shelfManagementModal .form-label,
+#editShelfModal .form-label,
+#productImageModal .form-label,
+#deleteProductModal .form-label {
     color: #2d3748 !important;
     font-weight: 600;
+}
+
+/* Modal içindeki tüm text'leri düzelt */
+.modal-body {
+    color: #2d3748 !important;
+}
+
+.modal-body .form-text,
+.modal-body .text-muted {
+    color: #6c757d !important;
+}
+
+.modal-body select,
+.modal-body input,
+.modal-body textarea {
+    color: #2d3748 !important;
+}
+
+.modal-body input::placeholder,
+.modal-body textarea::placeholder {
+    color: #9ca3af !important;
+    opacity: 1;
+}
+
+/* Modal tablolar için renk düzeltmesi */
+.modal-body table,
+.modal-body .table {
+    color: #2d3748 !important;
+}
+
+.modal-body .table th,
+.modal-body .table td {
+    color: #2d3748 !important;
+}
+
+/* Modal'daki link'ler için */
+.modal-body a {
+    color: #3b82f6 !important;
+}
+
+.modal-body a:hover {
+    color: #1d4ed8 !important;
+}
+
+/* Modal'daki ikonlar için */
+.modal-body i,
+.modal-body .fas,
+.modal-body .far {
+    color: inherit !important;
+}
+
+/* Spinner ve loading durumları için */
+.modal-body .spinner-border {
+    color: #3b82f6 !important;
+}
+
+.modal-body .text-center p {
+    color: #2d3748 !important;
+}
+
+/* Düşük stok modal'ı için özel stiller */
+#lowStockModal .modal-body {
+    color: #2d3748 !important;
+}
+
+#lowStockModal .table-responsive {
+    color: #2d3748 !important;
+}
+
+/* Transfer modal'ı için özel stiller */
+#transferToWarehouseModal .modal-body,
+#removeStockModal .modal-body {
+    color: #2d3748 !important;
+}
+
+/* Raporlar modal'ı için özel stiller */
+#reportsModal .modal-body .form-check-label,
+#reportsModal .modal-body .col-form-label {
+    color: #2d3748 !important;
+}
+
+/* Ürün silme modal'ı için */
+#deleteProductModal .modal-body {
+    color: #2d3748 !important;
+}
+
+#deleteProductModal .modal-body .text-danger {
+    color: #dc2626 !important;
 }
 
 #userManagementModal .modal-header .btn-close,
@@ -1314,7 +1413,17 @@ body {
 #addUserModal .modal-header .btn-close,
 #editUserModal .modal-header .btn-close,
 #reportsModal .modal-header .btn-close,
-#shelfManagementModal .modal-header .btn-close {
+#shelfManagementModal .modal-header .btn-close,
+#addStockModal .modal-header .btn-close,
+#transferModal .modal-header .btn-close,
+#editWarehouseNameModal .modal-header .btn-close,
+#removeStockModal .modal-header .btn-close,
+#lowStockModal .modal-header .btn-close,
+#transferToWarehouseModal .modal-header .btn-close,
+#editShelfModal .modal-header .btn-close,
+#productImageModal .modal-header .btn-close,
+#imageModal .modal-header .btn-close,
+#deleteProductModal .modal-header .btn-close {
     filter: brightness(0) invert(1);
 }
 

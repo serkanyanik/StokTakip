@@ -121,7 +121,7 @@ function setupEventListeners() {
     document.getElementById('saveWarehouseNameBtn').addEventListener('click', handleSaveWarehouseName);
 
     // Ürün adı girişinde ilk harfi büyük yap
-    document.getElementById('productName').addEventListener('input', function(e) {
+    document.getElementById('productName').addEventListener('input', function (e) {
         const value = e.target.value;
         if (value.length > 0) {
             e.target.value = capitalizeFirstLetter(value);
