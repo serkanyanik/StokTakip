@@ -387,7 +387,7 @@ async function saveWarehouseNamesToDatabase() {
 async function loadWarehouseNamesFromDatabase() {
     try {
         console.log('Veritabanından depo adları yükleniyor...');
-        
+
         const { data, error } = await supabase
             .from('app_settings')
             .select('setting_value')
