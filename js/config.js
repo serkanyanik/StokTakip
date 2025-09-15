@@ -2,8 +2,8 @@
 // Bu dosyayı düzenleyerek kendi Supabase proje bilgilerinizi ekleyin
 
 const SUPABASE_CONFIG = {
-    url: 'https://vkeyoaoabhobmrgawsuc.supabase.co', // Supabase proje URL
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZXlvYW9hYmhvYm1yZ2F3c3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTA3NDEsImV4cCI6MjA3MjgyNjc0MX0.q7oqevdF_R7Qwg5HNmkI9WmGQjiBkr-YhmyzJajqWQ4' // Supabase anon key
+    url: 'https://nvgjncpzywrjfkoxgjpi.supabase.co', // Supabase proje URL
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2puY3B6eXdyamZrb3hnanBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzIyMjAsImV4cCI6MjA3MzUwODIyMH0.oVCbLflMd7-emwlPGFVarZne7bF_y8EEAghRqcxDn30' // Supabase anon key
 };
 
 // Supabase client oluştur
@@ -49,12 +49,47 @@ const WAREHOUSE_TO_PERMISSION = {
 const LOW_STOCK_THRESHOLD = 5;
 
 // Yardımcı fonksiyonlar
+
+// Türkçe karakterleri doğru şekilde dönüştüren yardımcı fonksiyonlar
+function toTurkishLowerCase(str) {
+    if (!str) return str;
+    
+    // Tamamen manuel karakter dönüşümü - JavaScript'in toLowerCase() metodunu güvenli kullan
+    const upperToLower = {
+        'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd', 'E': 'e', 'F': 'f', 'G': 'g', 'H': 'h',
+        'İ': 'i', 'I': 'ı', 'J': 'j', 'K': 'k', 'L': 'l', 'M': 'm', 'N': 'n', 'O': 'o',
+        'P': 'p', 'Q': 'q', 'R': 'r', 'S': 's', 'T': 't', 'U': 'u', 'V': 'v', 'W': 'w',
+        'X': 'x', 'Y': 'y', 'Z': 'z', 'Ğ': 'ğ', 'Ü': 'ü', 'Ş': 'ş', 'Ö': 'ö', 'Ç': 'ç'
+    };
+    
+    return str.split('').map(char => upperToLower[char] || char).join('');
+}
+
+function toTurkishUpperCase(str) {
+    if (!str) return str;
+    
+    // Tamamen manuel karakter dönüşümü - JavaScript'in toUpperCase() metodunu güvenli kullan
+    const lowerToUpper = {
+        'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H',
+        'i': 'İ', 'ı': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O',
+        'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W',
+        'x': 'X', 'y': 'Y', 'z': 'Z', 'ğ': 'Ğ', 'ü': 'Ü', 'ş': 'Ş', 'ö': 'Ö', 'ç': 'Ç'
+    };
+    
+    return str.split('').map(char => lowerToUpper[char] || char).join('');
+}
+
 function capitalizeFirstLetter(string) {
     if (!string) return string;
 
-    // Her kelimenin ilk harfini büyük, geri kalanını küçük yap
+    // Her kelimenin ilk harfini büyük, geri kalanını küçük yap (Türkçe karakterler için doğru dönüşüm)
     return string.split(' ').map(word => {
         if (!word) return word;
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        // İlk karakteri Türkçe büyük harfe çevir
+        const firstChar = word.charAt(0);
+        const upperFirstChar = toTurkishUpperCase(firstChar);
+        // Geri kalan karakterleri Türkçe küçük harfe çevir  
+        const restChars = toTurkishLowerCase(word.slice(1));
+        return upperFirstChar + restChars;
     }).join(' ');
 }

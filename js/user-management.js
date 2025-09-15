@@ -128,7 +128,7 @@ async function handleAddUser() {
     try {
         // Mevcut kullanıcının oturumunu kaydet
         // Current session'ı kaydet
-        const currentSession = await supabaseClient.auth.getSession();
+        const currentSession = await supabase.auth.getSession();
 
         // Yeni kullanıcı oluştur
         const { data: authData, error: authError } = await supabase.auth.signUp({

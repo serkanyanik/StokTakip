@@ -339,12 +339,6 @@ body {
 }
 
 /* Modern Dashboard Container */
-.modern-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-}
 
 /* Dashboard Header */
 .dashboard-header {
@@ -451,15 +445,7 @@ body {
 }
 
 /* Section Cards */
-.section-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-}
+/* Section Cards */
 
 .section-header {
     display: flex;
@@ -500,9 +486,6 @@ body {
     font-size: 0.95rem;
 }
 
-.section-body {
-    padding: 2rem 2.5rem;
-}
 
 /* Warehouse Grid */
 .warehouse-grid {
@@ -2113,6 +2096,41 @@ td .btn-sm {
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     padding: 0.5rem 0;
+    z-index: 1060;
+}
+
+/* Dropdown Görünürlük Çözümü: Container overflow ayarları */
+.modern-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: visible !important;
+}
+
+.section-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: visible !important;
+}
+
+.section-body {
+    padding: 2rem 2.5rem;
+    overflow: visible !important;
+}
+
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Sadece modal'lardaki tablolar scroll'lanabilir kalsın */
+.modal .table-responsive {
+    overflow-y: auto !important;
+    max-height: 400px;
 }
 
 .actions-column .dropdown-header {
