@@ -51,7 +51,7 @@ const LOW_STOCK_THRESHOLD = 5;
 // Yardımcı fonksiyonlar
 function capitalizeFirstLetter(string) {
     if (!string) return string;
-    
+
     // Her kelimenin ilk harfini büyük, geri kalanını küçük yap
     return string.split(' ').map(word => {
         if (!word) return word;

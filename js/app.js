@@ -131,7 +131,7 @@ function setupEventListeners() {
     // Stok ekleme butonuna da event ekle (form submit olmayabilir)
     const saveStockBtn = document.getElementById('saveStockBtn');
     if (saveStockBtn) {
-        saveStockBtn.addEventListener('click', function() {
+        saveStockBtn.addEventListener('click', function () {
             const productNameInput = document.getElementById('productName');
             if (productNameInput && productNameInput.value) {
                 productNameInput.value = capitalizeFirstLetter(productNameInput.value);
@@ -140,7 +140,7 @@ function setupEventListeners() {
     }
 
     // Alternatif: modal kapatılırken de kontrol et
-    document.getElementById('addStockModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('addStockModal').addEventListener('hidden.bs.modal', function () {
         // Form temizlendiğinde de capitalize uygula
         setTimeout(() => {
             const productNameInput = document.getElementById('productName');
@@ -185,6 +185,11 @@ function setupEventListeners() {
         const productInfo = document.getElementById('selectedProductInfo');
         const productSelectContainer = productSelect.closest('.mb-3');
         const hiddenProductId = document.getElementById('selectedProductId');
+
+        // Select2'yi temizle
+        if ($(productSelect).hasClass("select2-hidden-accessible")) {
+            $(productSelect).select2('destroy');
+        }
 
         productSelect.disabled = false;
         productSelect.value = '';
@@ -1376,20 +1381,20 @@ function showDeleteProductModal(productId) {
     // Önceki event listener'ları temizle
     confirmInput.oninput = null;
     deleteBtn.onclick = null;
-    
+
     confirmInput.addEventListener('input', function () {
         deleteBtn.disabled = this.value.toUpperCase() !== 'SİL';
     });
 
     // Delete button'a event listener ekle
     deleteBtn.removeEventListener('click', confirmDeleteProduct); // Önceki listener'ı kaldır
-    deleteBtn.addEventListener('click', async function(e) {
+    deleteBtn.addEventListener('click', async function (e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Button'ı deaktif et (çift tıklamayı önle)
         this.disabled = true;
-        
+
         try {
             await confirmDeleteProduct();
         } finally {
@@ -1442,14 +1447,14 @@ async function confirmDeleteProduct() {
 
     } catch (error) {
         console.error('Delete operation error:', error);
-        
+
         // Silme işlemi başarılı olsa bile hata mesajı geliyorsa kontrol et
         const checkResult = await supabase
             .from('stock')
             .select('id')
             .eq('id', productId)
             .single();
-            
+
         if (checkResult.error && checkResult.error.code === 'PGRST116') {
             // Kayıt bulunamadı = başarıyla silindi
             console.log('Product actually deleted successfully');
@@ -1457,7 +1462,7 @@ async function confirmDeleteProduct() {
             await loadStockData();
             return;
         }
-        
+
         alert('Ürün silinirken bir hata oluştu: ' + error.message);
     }
 }
@@ -1800,7 +1805,7 @@ async function handleAddStock() {
     const productCode = document.getElementById('productCode').value.trim();
     const originalProductName = document.getElementById('productName').value.trim();
     const productName = capitalizeFirstLetter(originalProductName);
-    
+
     const productPrice = document.getElementById('productPrice').value.trim();
     const productImageUrl = document.getElementById('productImageUrl').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value);
@@ -2114,6 +2119,12 @@ async function showRemoveStockModal() {
 }// Ürün seçeneklerini doldur
 function populateProductOptions() {
     const select = document.getElementById('selectProduct');
+    
+    // Mevcut Select2'yi yok et
+    if ($(select).hasClass("select2-hidden-accessible")) {
+        $(select).select2('destroy');
+    }
+    
     select.innerHTML = '<option value="">Ürün seçiniz...</option>';
 
     let availableProducts = [];
@@ -2135,23 +2146,22 @@ function populateProductOptions() {
             option.textContent = "Hiçbir depoda stok bulunmuyor";
             option.disabled = true;
             select.appendChild(option);
-            return;
+        } else {
+            // Ana depo için detaylı stok bilgisi göster
+            availableProducts.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+
+                // Tüm depolardaki stok durumunu göster
+                const stockInfo = Object.values(WAREHOUSE_TYPES).map(warehouseType => {
+                    const stock = getCurrentWarehouseStock(item, warehouseType);
+                    return `${WAREHOUSE_NAMES[warehouseType]}: ${stock}`;
+                }).join(' | ');
+
+                option.textContent = `${item.product_code} - ${item.product_name} (${stockInfo})`;
+                select.appendChild(option);
+            });
         }
-
-        // Ana depo için detaylı stok bilgisi göster
-        availableProducts.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.id;
-
-            // Tüm depolardaki stok durumunu göster
-            const stockInfo = Object.values(WAREHOUSE_TYPES).map(warehouseType => {
-                const stock = getCurrentWarehouseStock(item, warehouseType);
-                return `${WAREHOUSE_NAMES[warehouseType]}: ${stock}`;
-            }).join(' | ');
-
-            option.textContent = `${item.product_code} - ${item.product_name} (${stockInfo})`;
-            select.appendChild(option);
-        });
     } else {
         // Diğer durumlar için sadece mevcut depodaki ürünleri listele
         availableProducts = stockData.filter(item => {
@@ -2165,17 +2175,45 @@ function populateProductOptions() {
             option.textContent = "Bu depoda stok bulunmuyor";
             option.disabled = true;
             select.appendChild(option);
-            return;
+        } else {
+            availableProducts.forEach(item => {
+                const currentStock = getCurrentWarehouseStock(item, currentWarehouse);
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.product_code} - ${item.product_name} (${currentStock} adet)`;
+                select.appendChild(option);
+            });
         }
-
-        availableProducts.forEach(item => {
-            const currentStock = getCurrentWarehouseStock(item, currentWarehouse);
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = `${item.product_code} - ${item.product_name} (${currentStock} adet)`;
-            select.appendChild(option);
-        });
     }
+
+    // Select2'yi aranabilir olarak başlat
+    $(select).select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Ürün ara veya seç...',
+        allowClear: true,
+        dropdownParent: $('#removeStockModal'),
+        selectOnClose: false,
+        language: {
+            noResults: function() {
+                return 'Sonuç bulunamadı';
+            },
+            searching: function() {
+                return 'Aranıyor...';
+            },
+            inputTooShort: function() {
+                return 'En az 1 karakter girin';
+            }
+        }
+    }).on('select2:open', function() {
+        // Modal açıldığında otomatik olarak arama kutusuna focus yap
+        setTimeout(function() {
+            const container = $('.select2-container--open');
+            const searchField = container.find('.select2-search__field');
+            if (searchField.length > 0) {
+                searchField[0].focus();
+            }
+        }, 10);
+    });
 }
 
 // Kaynak depo seçeneklerini doldur (Ana depo sorumlusu için)
