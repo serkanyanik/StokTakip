@@ -2119,12 +2119,12 @@ async function showRemoveStockModal() {
 }// Ürün seçeneklerini doldur
 function populateProductOptions() {
     const select = document.getElementById('selectProduct');
-    
+
     // Mevcut Select2'yi yok et
     if ($(select).hasClass("select2-hidden-accessible")) {
         $(select).select2('destroy');
     }
-    
+
     select.innerHTML = '<option value="">Ürün seçiniz...</option>';
 
     let availableProducts = [];
@@ -2194,19 +2194,19 @@ function populateProductOptions() {
         dropdownParent: $('#removeStockModal'),
         selectOnClose: false,
         language: {
-            noResults: function() {
+            noResults: function () {
                 return 'Sonuç bulunamadı';
             },
-            searching: function() {
+            searching: function () {
                 return 'Aranıyor...';
             },
-            inputTooShort: function() {
+            inputTooShort: function () {
                 return 'En az 1 karakter girin';
             }
         }
-    }).on('select2:open', function() {
+    }).on('select2:open', function () {
         // Modal açıldığında otomatik olarak arama kutusuna focus yap
-        setTimeout(function() {
+        setTimeout(function () {
             const container = $('.select2-container--open');
             const searchField = container.find('.select2-search__field');
             if (searchField.length > 0) {
