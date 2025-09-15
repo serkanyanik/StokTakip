@@ -185,7 +185,7 @@ function setupEventListeners() {
         const operationType = document.getElementById('operationType').value;
         const selectedProductId = document.getElementById('selectProduct').value;
         const selectedSource = document.getElementById('sourceWarehouse').value;
-        
+
         // Transfer işleminde kaynak ve hedef farklı olmalı, ürün de transfer edildiğinde hedef depoda görünmemeli
         if (operationType === 'transfer' && selectedSource && selectedProductId) {
             updateProductListForTransfer();
@@ -386,33 +386,47 @@ async function saveWarehouseNamesToDatabase() {
 // Depo adlarını Supabase'den yükle
 async function loadWarehouseNamesFromDatabase() {
     try {
+        console.log('Veritabanından depo adları yükleniyor...');
+        
         const { data, error } = await supabase
             .from('app_settings')
             .select('setting_value')
             .eq('setting_key', 'warehouse_names')
             .single();
 
+        console.log('Veritabanı sorgu sonucu:', { data, error });
+
         if (error) {
+            console.log('Veritabanı hatası, localStorage kontrol ediliyor...');
             // Hata varsa localStorage'dan yükle ve Supabase'e migrate et
             const saved = localStorage.getItem('warehouseNames');
             if (saved) {
+                console.log('localStorage verisi bulundu:', saved);
                 const savedNames = JSON.parse(saved);
                 Object.assign(WAREHOUSE_NAMES, savedNames);
                 // localStorage'daki veriyi Supabase'e migrate et
                 await saveWarehouseNamesToDatabase();
+            } else {
+                console.log('localStorage verisi bulunamadı');
             }
             return;
         }
 
         if (data && data.setting_value) {
+            console.log('Veritabanından veri yüklendi:', data.setting_value);
             const savedNames = JSON.parse(data.setting_value);
+            console.log('Parse edilmiş veriler:', savedNames);
             Object.assign(WAREHOUSE_NAMES, savedNames);
+            console.log('WAREHOUSE_NAMES güncellendi:', WAREHOUSE_NAMES);
+        } else {
+            console.log('Veritabanında veri bulunamadı');
         }
     } catch (error) {
         console.error('Depo adları yüklenirken hata:', error);
         // Fallback olarak localStorage'dan yükle
         const saved = localStorage.getItem('warehouseNames');
         if (saved) {
+            console.log('Fallback: localStorage kullanılıyor:', saved);
             const savedNames = JSON.parse(saved);
             Object.assign(WAREHOUSE_NAMES, savedNames);
         }
@@ -1443,11 +1457,11 @@ async function confirmDeleteProduct() {
     try {
         // Supabase RPC fonksiyonu kullanarak cascade silme işlemi yap
         // Eğer RPC fonksiyonu yoksa, manuel cascade silme yapalım
-        
+
         // Önce RPC ile deneme
         const { data: rpcResult, error: rpcError } = await supabase
-            .rpc('delete_product_with_movements', { 
-                product_id_param: productId 
+            .rpc('delete_product_with_movements', {
+                product_id_param: productId
             });
 
         if (!rpcError) {
@@ -1480,7 +1494,7 @@ async function confirmDeleteProduct() {
                     .from('stock_movements')
                     .delete()
                     .eq('id', movement.id);
-                
+
                 if (singleDeleteError) {
                     console.error('Single movement delete error:', singleDeleteError);
                     throw new Error('Hareket kaydı silinemedi: ' + singleDeleteError.message);
@@ -2142,12 +2156,12 @@ function handleOperationTypeChange() {
         targetWarehouseContainer.style.display = 'none';
         salePriceContainer.style.display = 'none';
         sourceContainer.style.display = 'none';
-        
+
         // Form bilgisi alanını gizle
         if (formInfoContainer) {
             formInfoContainer.style.display = 'none';
         }
-        
+
         confirmBtn.textContent = 'İşlemi Gerçekleştir';
         confirmBtn.className = 'btn btn-primary';
     }
@@ -2425,7 +2439,7 @@ function populateWarehouseOptions() {
                 // TRANSFER/ÇIKIŞ İŞLEMİNDE ANA DEPOYA TRANSFERİ KALDIRDIK
                 // Sadece araç depolarına transfer edebilir (Ana Depo hariç)
                 Object.entries(WAREHOUSE_TYPES).forEach(([key, warehouseType]) => {
-                    if (warehouseType !== selectedSource && warehouseType !== WAREHOUSE_TYPES.MAIN) { 
+                    if (warehouseType !== selectedSource && warehouseType !== WAREHOUSE_TYPES.MAIN) {
                         const option = document.createElement('option');
                         option.value = warehouseType;
                         option.textContent = `${WAREHOUSE_NAMES[warehouseType]}'na Transfer`;
@@ -3738,7 +3752,7 @@ function exportReport() {
 async function handleStockCorrection(item, targetWarehouse, quantity) {
     // Hedef depodaki mevcut stok kontrolü
     const currentStock = getCurrentWarehouseStock(item, targetWarehouse);
-    
+
     if (currentStock < quantity) {
         alert(`${WAREHOUSE_NAMES[targetWarehouse]}'da yeterli stok yok!\nMevcut: ${currentStock} adet\nTalep edilen: ${quantity} adet`);
         return;
@@ -3831,14 +3845,14 @@ function updateProductListForTransfer() {
     const sourceWarehouse = document.getElementById('sourceWarehouse').value;
     const targetWarehouse = document.getElementById('targetWarehouse').value;
     const currentSelectedProduct = document.getElementById('selectProduct').value;
-    
+
     if (!sourceWarehouse || !targetWarehouse || sourceWarehouse === targetWarehouse) {
         return;
     }
-    
+
     // Kaynak depo için ürün listesini yeniden oluştur
     populateProductOptionsForWarehouse(sourceWarehouse);
-    
+
     // Eğer önceden seçili ürün varsa ve kaynak depoda bulunuyorsa yeniden seç
     if (currentSelectedProduct) {
         const selectedProduct = stockData.find(item => item.id === currentSelectedProduct);

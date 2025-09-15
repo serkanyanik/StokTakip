@@ -53,7 +53,7 @@ const LOW_STOCK_THRESHOLD = 5;
 // Türkçe karakterleri doğru şekilde dönüştüren yardımcı fonksiyonlar
 function toTurkishLowerCase(str) {
     if (!str) return str;
-    
+
     // Tamamen manuel karakter dönüşümü - JavaScript'in toLowerCase() metodunu güvenli kullan
     const upperToLower = {
         'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd', 'E': 'e', 'F': 'f', 'G': 'g', 'H': 'h',
@@ -61,13 +61,13 @@ function toTurkishLowerCase(str) {
         'P': 'p', 'Q': 'q', 'R': 'r', 'S': 's', 'T': 't', 'U': 'u', 'V': 'v', 'W': 'w',
         'X': 'x', 'Y': 'y', 'Z': 'z', 'Ğ': 'ğ', 'Ü': 'ü', 'Ş': 'ş', 'Ö': 'ö', 'Ç': 'ç'
     };
-    
+
     return str.split('').map(char => upperToLower[char] || char).join('');
 }
 
 function toTurkishUpperCase(str) {
     if (!str) return str;
-    
+
     // Tamamen manuel karakter dönüşümü - JavaScript'in toUpperCase() metodunu güvenli kullan
     const lowerToUpper = {
         'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H',
@@ -75,7 +75,7 @@ function toTurkishUpperCase(str) {
         'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W',
         'x': 'X', 'y': 'Y', 'z': 'Z', 'ğ': 'Ğ', 'ü': 'Ü', 'ş': 'Ş', 'ö': 'Ö', 'ç': 'Ç'
     };
-    
+
     return str.split('').map(char => lowerToUpper[char] || char).join('');
 }
 
