@@ -386,33 +386,47 @@ async function saveWarehouseNamesToDatabase() {
 // Depo adlarını Supabase'den yükle
 async function loadWarehouseNamesFromDatabase() {
     try {
+        console.log('Veritabanından depo adları yükleniyor...');
+
         const { data, error } = await supabase
             .from('app_settings')
             .select('setting_value')
             .eq('setting_key', 'warehouse_names')
             .single();
 
+        console.log('Veritabanı sorgu sonucu:', { data, error });
+
         if (error) {
+            console.log('Veritabanı hatası, localStorage kontrol ediliyor...');
             // Hata varsa localStorage'dan yükle ve Supabase'e migrate et
             const saved = localStorage.getItem('warehouseNames');
             if (saved) {
+                console.log('localStorage verisi bulundu:', saved);
                 const savedNames = JSON.parse(saved);
                 Object.assign(WAREHOUSE_NAMES, savedNames);
                 // localStorage'daki veriyi Supabase'e migrate et
                 await saveWarehouseNamesToDatabase();
+            } else {
+                console.log('localStorage verisi bulunamadı');
             }
             return;
         }
 
         if (data && data.setting_value) {
+            console.log('Veritabanından veri yüklendi:', data.setting_value);
             const savedNames = JSON.parse(data.setting_value);
+            console.log('Parse edilmiş veriler:', savedNames);
             Object.assign(WAREHOUSE_NAMES, savedNames);
+            console.log('WAREHOUSE_NAMES güncellendi:', WAREHOUSE_NAMES);
+        } else {
+            console.log('Veritabanında veri bulunamadı');
         }
     } catch (error) {
         console.error('Depo adları yüklenirken hata:', error);
         // Fallback olarak localStorage'dan yükle
         const saved = localStorage.getItem('warehouseNames');
         if (saved) {
+            console.log('Fallback: localStorage kullanılıyor:', saved);
             const savedNames = JSON.parse(saved);
             Object.assign(WAREHOUSE_NAMES, savedNames);
         }
