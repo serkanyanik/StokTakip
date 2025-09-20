@@ -133,9 +133,9 @@ async function checkSession() {
 function hasWarehouseAccess(warehouseType) {
     if (!currentUser || !currentUser.is_active) return false;
 
-    // Sekreter sadece ana depoyu görüntüleyebilir, hiçbir yetki yok
+    // Sekreter tüm depoları görüntüleyebilir ama hiçbir yetki yok
     if (currentUser.is_secretary) {
-        return warehouseType === 'main';
+        return true; // Tüm depoları görüntüleyebilir
     }
 
     switch (warehouseType) {
