@@ -30,6 +30,7 @@ async function login(email, password) {
             is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
             is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
             is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+            is_secretary: userProfile.is_secretary || false,
             is_active: userProfile.is_active
         };
 
@@ -107,6 +108,7 @@ async function checkSession() {
                     is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
                     is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
                     is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+                    is_secretary: userProfile.is_secretary || false,
                     is_active: userProfile.is_active
                 };
 
@@ -131,6 +133,11 @@ async function checkSession() {
 function hasWarehouseAccess(warehouseType) {
     if (!currentUser || !currentUser.is_active) return false;
 
+    // Sekreter tüm depoları görüntüleyebilir ama hiçbir yetki yok
+    if (currentUser.is_secretary) {
+        return true; // Tüm depoları görüntüleyebilir
+    }
+
     switch (warehouseType) {
         case 'main':
             return currentUser.is_depo_admin;
@@ -147,29 +154,29 @@ function hasWarehouseAccess(warehouseType) {
     }
 }
 
-// Stok çıkarma/transfer yetkisi - SADECE ana depo sorumlusu
+// Stok çıkarma/transfer yetkisi - SADECE ana depo sorumlusu (sekreter yapamaz)
 function canRemoveStock(warehouseType) {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Stok ekleme yetkisi - sadece ana depo sorumlusu
+// Stok ekleme yetkisi - sadece ana depo sorumlusu (sekreter yapamaz)
 function canAddStock() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Transfer yetkisi - sadece ana depo sorumlusu
+// Transfer yetkisi - sadece ana depo sorumlusu (sekreter yapamaz)
 function canTransferStock() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Kullanıcı yönetimi yetkisi
+// Kullanıcı yönetimi yetkisi - sekreter yapamaz
 function canManageUsers() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Diğer depoları görüntüleme yetkisi
+// Diğer depoları görüntüleme yetkisi - sadece admin görebilir
 function canViewOtherWarehouses() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_active && currentUser.is_depo_admin && !currentUser.is_secretary;
 }
 
 // Kullanıcı rolü açıklaması
@@ -177,6 +184,9 @@ function getUserRoleDescription() {
     if (!currentUser) return 'Yetkisiz';
 
     if (!currentUser.is_active) return 'Pasif Kullanıcı';
+
+    // Sekreter öncelikli kontrol
+    if (currentUser.is_secretary) return 'Sekreter (Salt Okunur)';
 
     const roles = [];
     if (currentUser.is_depo_admin) roles.push('Ana Depo');
