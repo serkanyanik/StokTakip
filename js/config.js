@@ -1,5 +1,4 @@
 // Supabase konfigürasyonu
-// Bu dosyayı düzenleyerek kendi Supabase proje bilgilerinizi ekleyin
 
 const SUPABASE_CONFIG = {
     url: 'https://nvgjncpzywrjfkoxgjpi.supabase.co', // Supabase proje URL

@@ -101,6 +101,7 @@ function getUserPermissionsList(user) {
     if (user.is_depo_sorumlu2) permissions.push('2. Depo');
     if (user.is_depo_sorumlu3) permissions.push('3. Depo');
     if (user.is_depo_sorumlu4) permissions.push('4. Depo');
+    if (user.is_secretary) permissions.push('Sekreter');
 
     return permissions.length > 0 ?
         permissions.map(p => `<span class="badge bg-info me-1">${p}</span>`).join('') :
@@ -124,6 +125,7 @@ async function handleAddUser() {
     const is_depo_sorumlu2 = document.getElementById('newUserSub2').checked;
     const is_depo_sorumlu3 = document.getElementById('newUserSub3').checked;
     const is_depo_sorumlu4 = document.getElementById('newUserSub4').checked;
+    const is_secretary = document.getElementById('newUserSecretary').checked;
 
     try {
         // Mevcut kullanıcının oturumunu kaydet
@@ -170,6 +172,7 @@ async function handleAddUser() {
                 is_depo_sorumlu2: is_depo_sorumlu2,
                 is_depo_sorumlu3: is_depo_sorumlu3,
                 is_depo_sorumlu4: is_depo_sorumlu4,
+                is_secretary: is_secretary,
                 is_active: true,
                 created_by: currentUser.id
             });
@@ -177,7 +180,7 @@ async function handleAddUser() {
         // NOT: Yeni kullanıcının auth oturumunu kapatmıyoruz - admin oturumda kalmalı
 
         if (profileError) {
-            alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, true, '${currentUser.id}');`);
+            alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_secretary, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, ${is_secretary}, true, '${currentUser.id}');`);
 
         }
 
@@ -206,6 +209,7 @@ function showEditUserModal(userId) {
     document.getElementById('editUserSub2').checked = user.is_depo_sorumlu2;
     document.getElementById('editUserSub3').checked = user.is_depo_sorumlu3;
     document.getElementById('editUserSub4').checked = user.is_depo_sorumlu4;
+    document.getElementById('editUserSecretary').checked = user.is_secretary || false;
     document.getElementById('editUserActive').checked = user.is_active;
 
     new bootstrap.Modal(document.getElementById('editUserModal')).show();
@@ -222,6 +226,7 @@ async function handleUpdateUser() {
     const is_depo_sorumlu2 = document.getElementById('editUserSub2').checked;
     const is_depo_sorumlu3 = document.getElementById('editUserSub3').checked;
     const is_depo_sorumlu4 = document.getElementById('editUserSub4').checked;
+    const is_secretary = document.getElementById('editUserSecretary').checked;
     const is_active = document.getElementById('editUserActive').checked;
 
     try {
@@ -235,6 +240,7 @@ async function handleUpdateUser() {
                 is_depo_sorumlu2: is_depo_sorumlu2,
                 is_depo_sorumlu3: is_depo_sorumlu3,
                 is_depo_sorumlu4: is_depo_sorumlu4,
+                is_secretary: is_secretary,
                 is_active: is_active
             })
             .eq('id', userId);
@@ -260,6 +266,7 @@ async function handleUpdateUser() {
                     is_depo_sorumlu2: updatedUser.is_depo_sorumlu2,
                     is_depo_sorumlu3: updatedUser.is_depo_sorumlu3,
                     is_depo_sorumlu4: updatedUser.is_depo_sorumlu4,
+                    is_secretary: updatedUser.is_secretary,
                     is_active: updatedUser.is_active
                 };
                 updateUserInfo();
@@ -319,6 +326,7 @@ function clearAddUserForm() {
     document.getElementById('newUserSub2').checked = false;
     document.getElementById('newUserSub3').checked = false;
     document.getElementById('newUserSub4').checked = false;
+    document.getElementById('newUserSecretary').checked = false;
 
     // Hata mesajlarını temizle
     const alertDiv = document.getElementById('addUserAlert');

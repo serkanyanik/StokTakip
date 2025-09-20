@@ -30,6 +30,7 @@ async function login(email, password) {
             is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
             is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
             is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+            is_secretary: userProfile.is_secretary || false,
             is_active: userProfile.is_active
         };
 
@@ -107,6 +108,7 @@ async function checkSession() {
                     is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
                     is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
                     is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+                    is_secretary: userProfile.is_secretary || false,
                     is_active: userProfile.is_active
                 };
 

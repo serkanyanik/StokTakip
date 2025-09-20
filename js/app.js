@@ -246,6 +246,12 @@ function setupEventListeners() {
 
 // Depo/araç adı düzenleme modalını göster
 function showEditWarehouseNameModal() {
+    // Sekreter kontrolü
+    if (currentUser.is_secretary) {
+        alert('Sekreter hesabı ile bu işlemi yapamazsınız!');
+        return;
+    }
+
     if (!currentUser.is_depo_admin) {
         alert('Bu işlem için yetkiniz yok!');
         return;
@@ -302,8 +308,14 @@ function editWarehouseName(warehouseType) {
     modal.show();
 }
 
-// Depo adını kaydet
+// Depo/araç adını kaydet
 async function handleSaveWarehouseName() {
+    // Sekreter kontrolü
+    if (currentUser.is_secretary) {
+        alert('Sekreter hesabı ile bu işlemi yapamazsınız!');
+        return;
+    }
+
     try {
         const newName = document.getElementById('warehouseName').value.trim();
         const warehouseType = document.getElementById('editingWarehouseType').value;
@@ -479,6 +491,13 @@ async function showDashboard() {
 // Kullanıcının varsayılan deposunu ayarla
 function setDefaultWarehouseForUser() {
     if (!currentUser) return;
+
+    // Sekreter ise read-only mod aktif et
+    if (currentUser.is_secretary) {
+        enableReadOnlyMode();
+        currentWarehouse = WAREHOUSE_TYPES.MAIN; // Ana depoyu görsün
+        return;
+    }
 
     // Ana depo sorumlusu ise ana depoda başlat
     if (currentUser.is_depo_admin) {
@@ -1446,7 +1465,7 @@ function showDeleteProductModal(productId) {
 
 // Ürün silmeyi onayla
 async function confirmDeleteProduct() {
-    if (!currentUser.is_depo_admin) {
+    if (!currentUser.is_depo_admin || currentUser.is_secretary) {
         alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu ürün silebilir.');
         return;
     }
@@ -1873,8 +1892,8 @@ function showAddStockModal() {
 
 // Stok ekleme işlemi
 async function handleAddStock() {
-    // Yetki kontrolü - Sadece ana depo sorumlusu stok ekleyebilir
-    if (!currentUser.is_depo_admin) {
+    // Yetki kontrolü - Sadece ana depo sorumlusu stok ekleyebilir, sekreter yapamaz
+    if (!currentUser.is_depo_admin || currentUser.is_secretary) {
         alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu stok ekleyebilir.');
         return;
     }
@@ -2490,8 +2509,8 @@ function getCurrentWarehouseStock(item, warehouseType) {
 
 // Stok çıkarma işlemi
 async function handleRemoveStock() {
-    // Yetki kontrolü - Sadece ana depo sorumlusu stok işlemi yapabilir
-    if (!currentUser.is_depo_admin) {
+    // Yetki kontrolü - Sadece ana depo sorumlusu stok işlemi yapabilir, sekreter yapamaz
+    if (!currentUser.is_depo_admin || currentUser.is_secretary) {
         alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu stok işlemleri yapabilir.');
         return;
     }
@@ -3871,6 +3890,55 @@ function openImageModal(imageUrl, productName) {
     const modalImage = document.getElementById('modalImage');
     const modalTitle = document.getElementById('imageModalTitle');
 
+    modalImage.src = imageUrl;
+    modalTitle.textContent = productName;
+    modal.show();
+}
+
+// Sekreter için read-only mod aktif et
+function enableReadOnlyMode() {
+    // Butun form butonlarını ve input alanlarını devre dışı bırak
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tüm butonları devre dışı bırak (görüntüleme hariç)
+        const buttonsToDisable = document.querySelectorAll('button:not([data-bs-target="#imageModal"]):not(.btn-close):not(.view-only)');
+        buttonsToDisable.forEach(btn => {
+            if (!btn.textContent.includes('Görüntüle') && !btn.textContent.includes('İndir')) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.title = 'Sekreter hesabı ile değişiklik yapamazsınız';
+            }
+        });
+
+        // Tüm form alanlarını devre dışı bırak
+        const formElements = document.querySelectorAll('input, select, textarea');
+        formElements.forEach(element => {
+            if (element.type !== 'search') { // Arama kutusunu aktif bırak
+                element.disabled = true;
+                element.style.opacity = '0.7';
+            }
+        });
+
+        // Dropdown menüleri devre dışı bırak
+        const dropdownButtons = document.querySelectorAll('.dropdown-toggle');
+        dropdownButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+
+        // Kullanıcı türü bilgisini görünür yap
+        showSecretaryBadge();
+    });
+}
+
+// Sekreter rozeti göster
+function showSecretaryBadge() {
+    const userInfo = document.querySelector('.user-info');
+    if (userInfo && currentUser.is_secretary) {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary ms-2';
+        badge.textContent = 'Sekreter (Salt Okunur)';
+        userInfo.appendChild(badge);
+    }
     modalImage.src = imageUrl;
     modalImage.alt = productName;
     modalTitle.textContent = productName;
