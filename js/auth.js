@@ -133,6 +133,9 @@ async function checkSession() {
 function hasWarehouseAccess(warehouseType) {
     if (!currentUser || !currentUser.is_active) return false;
 
+    // Sekreter tüm depoları görebilir
+    if (currentUser.is_secretary) return true;
+
     switch (warehouseType) {
         case 'main':
             return currentUser.is_depo_admin;
@@ -149,29 +152,29 @@ function hasWarehouseAccess(warehouseType) {
     }
 }
 
-// Stok çıkarma/transfer yetkisi - SADECE ana depo sorumlusu
+// Stok çıkarma/transfer yetkisi - SADECE ana depo sorumlusu (sekreter yapamaz)
 function canRemoveStock(warehouseType) {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Stok ekleme yetkisi - sadece ana depo sorumlusu
+// Stok ekleme yetkisi - sadece ana depo sorumlusu (sekreter yapamaz)
 function canAddStock() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Transfer yetkisi - sadece ana depo sorumlusu
+// Transfer yetkisi - sadece ana depo sorumlusu (sekreter yapamaz)
 function canTransferStock() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Kullanıcı yönetimi yetkisi
+// Kullanıcı yönetimi yetkisi - sekreter yapamaz
 function canManageUsers() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Diğer depoları görüntüleme yetkisi
+// Diğer depoları görüntüleme yetkisi - sekreter de görebilir
 function canViewOtherWarehouses() {
-    return currentUser && currentUser.is_depo_admin && currentUser.is_active;
+    return currentUser && currentUser.is_active && (currentUser.is_depo_admin || currentUser.is_secretary);
 }
 
 // Kullanıcı rolü açıklaması
@@ -186,6 +189,7 @@ function getUserRoleDescription() {
     if (currentUser.is_depo_sorumlu2) roles.push('2. Araç');
     if (currentUser.is_depo_sorumlu3) roles.push('3. Araç');
     if (currentUser.is_depo_sorumlu4) roles.push('4. Araç');
+    if (currentUser.is_secretary) roles.push('Sekreter');
 
     return roles.length > 0 ? roles.join(', ') : 'Yetkisiz';
 }

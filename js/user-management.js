@@ -128,32 +128,18 @@ async function handleAddUser() {
     const is_secretary = document.getElementById('newUserSecretary').checked;
 
     try {
-        // Mevcut kullanıcının oturumunu kaydet
-        // Current session'ı kaydet
-        const currentSession = await supabase.auth.getSession();
-
-        // Yeni kullanıcı oluştur
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        // Admin API kullanarak kullanıcı oluştur - oturum değişmez
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: email,
             password: password,
-            options: {
-                data: {
-                    name: name
-                }
+            email_confirm: true, // E-posta onayını atla
+            user_metadata: {
+                name: name
             }
         });
 
         if (authError) {
             throw authError;
-        }
-
-        if (!authData.user) {
-            throw new Error('Kullanıcı oluşturulamadı');
-        }
-
-        // Hemen mevcut admin oturumunu geri yükle
-        if (currentSession?.session) {
-            await supabase.auth.setSession(currentSession.session);
         }
 
         if (!authData.user) {

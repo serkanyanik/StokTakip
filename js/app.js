@@ -398,47 +398,33 @@ async function saveWarehouseNamesToDatabase() {
 // Depo adlarını Supabase'den yükle
 async function loadWarehouseNamesFromDatabase() {
     try {
-        console.log('Veritabanından depo adları yükleniyor...');
-
         const { data, error } = await supabase
             .from('app_settings')
             .select('setting_value')
             .eq('setting_key', 'warehouse_names')
             .single();
 
-        console.log('Veritabanı sorgu sonucu:', { data, error });
-
         if (error) {
-            console.log('Veritabanı hatası, localStorage kontrol ediliyor...');
             // Hata varsa localStorage'dan yükle ve Supabase'e migrate et
             const saved = localStorage.getItem('warehouseNames');
             if (saved) {
-                console.log('localStorage verisi bulundu:', saved);
                 const savedNames = JSON.parse(saved);
                 Object.assign(WAREHOUSE_NAMES, savedNames);
                 // localStorage'daki veriyi Supabase'e migrate et
                 await saveWarehouseNamesToDatabase();
-            } else {
-                console.log('localStorage verisi bulunamadı');
             }
             return;
         }
 
         if (data && data.setting_value) {
-            console.log('Veritabanından veri yüklendi:', data.setting_value);
             const savedNames = JSON.parse(data.setting_value);
-            console.log('Parse edilmiş veriler:', savedNames);
             Object.assign(WAREHOUSE_NAMES, savedNames);
-            console.log('WAREHOUSE_NAMES güncellendi:', WAREHOUSE_NAMES);
-        } else {
-            console.log('Veritabanında veri bulunamadı');
         }
     } catch (error) {
         console.error('Depo adları yüklenirken hata:', error);
         // Fallback olarak localStorage'dan yükle
         const saved = localStorage.getItem('warehouseNames');
         if (saved) {
-            console.log('Fallback: localStorage kullanılıyor:', saved);
             const savedNames = JSON.parse(saved);
             Object.assign(WAREHOUSE_NAMES, savedNames);
         }
@@ -533,33 +519,33 @@ function updateUserInfo() {
         userMgmtBtn.style.display = 'none';
     }
 
-    // Raf yönetimi butonunu göster/gizle (sadece ana depo sorumlusu)
+    // Raf yönetimi butonunu göster/gizle (sadece ana depo sorumlusu, sekreter göremez)
     const shelfMgmtBtn = document.getElementById('shelfManagementBtn');
-    if (currentUser.is_depo_admin) {
+    if (currentUser.is_depo_admin && !currentUser.is_secretary) {
         shelfMgmtBtn.style.display = 'inline-block';
     } else {
         shelfMgmtBtn.style.display = 'none';
     }
 
-    // Rapor butonunu göster/gizle (sadece ana depo sorumlusu)
+    // Rapor butonunu göster/gizle (ana depo sorumlusu ve sekreter görebilir)
     const reportsBtn = document.getElementById('reportsBtn');
-    if (currentUser.is_depo_admin) {
+    if (currentUser.is_depo_admin || currentUser.is_secretary) {
         reportsBtn.style.display = 'inline-block';
     } else {
         reportsBtn.style.display = 'none';
     }
 
-    // İstatistik kartlarını göster/gizle (sadece ana depo sorumlusu)
+    // İstatistik kartlarını göster/gizle (ana depo sorumlusu ve sekreter görebilir)
     const statisticsCards = document.getElementById('statisticsCards');
-    if (currentUser.is_depo_admin) {
+    if (currentUser.is_depo_admin || currentUser.is_secretary) {
         statisticsCards.style.display = 'block';
     } else {
         statisticsCards.style.display = 'none';
     }
 
-    // Dashboard header'ı göster/gizle (araç sorumlularına gösterme)
+    // Dashboard header'ı göster/gizle (ana depo sorumlusu ve sekreter görebilir)
     const dashboardHeader = document.querySelector('.dashboard-header');
-    if (currentUser.is_depo_admin) {
+    if (currentUser.is_depo_admin || currentUser.is_secretary) {
         dashboardHeader.style.display = 'block';
     } else {
         dashboardHeader.style.display = 'none';
@@ -603,16 +589,16 @@ function createWarehouseCard(warehouseType) {
     // Stok sayısını hesapla
     const warehouseStock = getWarehouseStockSummary(warehouseType);
 
-    // Edit butonu sadece ana depo sorumlusu için
-    const editButton = currentUser && currentUser.is_depo_admin ?
+    // Edit butonu sadece ana depo sorumlusu için (sekreter yapamaz)
+    const editButton = currentUser && currentUser.is_depo_admin && !currentUser.is_secretary ?
         `<button class="btn btn-outline-light btn-sm position-absolute top-0 end-0 m-2" 
                 onclick="event.stopPropagation(); editWarehouseName('${warehouseType}')" 
                 title="${isMainWarehouse ? 'Ana Depo Adını Düzenle' : 'Araç Adını Düzenle'}">
             <i class="fas fa-edit"></i>
         </button>` : '';
 
-    // Transfer butonu sadece ana depo sorumlusu için
-    const transferButton = currentUser && currentUser.is_depo_admin ?
+    // Transfer butonu sadece ana depo sorumlusu için (sekreter yapamaz)
+    const transferButton = currentUser && currentUser.is_depo_admin && !currentUser.is_secretary ?
         `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-2" 
                 onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
                 title="${WAREHOUSE_NAMES[warehouseType]}${isMainWarehouse ? ' için Transfer İşlemleri' : ' Aracına Transfer'}">
@@ -1484,13 +1470,10 @@ async function confirmDeleteProduct() {
             });
 
         if (!rpcError) {
-            console.log('Product deleted successfully using RPC');
             bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
             await loadStockData();
             return;
         }
-
-        console.log('RPC not available, falling back to manual deletion');
 
         // RPC yoksa manuel silme işlemi
         // İlk önce kaç tane stock_movements kaydı olduğunu kontrol et
@@ -1503,8 +1486,6 @@ async function confirmDeleteProduct() {
             console.error('Movements check error:', checkError);
             throw new Error('Ürün hareketleri kontrol edilirken hata oluştu: ' + checkError.message);
         }
-
-        console.log(`Found ${movementsCheck?.length || 0} stock movements for product ${productId}`);
 
         // Stock movements kayıtlarını tek tek sil
         if (movementsCheck && movementsCheck.length > 0) {
@@ -1519,7 +1500,6 @@ async function confirmDeleteProduct() {
                     throw new Error('Hareket kaydı silinemedi: ' + singleDeleteError.message);
                 }
             }
-            console.log(`Successfully deleted ${movementsCheck.length} stock movements one by one`);
         }
 
         // Kısa bir bekleme süresi ekle
@@ -1534,8 +1514,6 @@ async function confirmDeleteProduct() {
         if (finalCheck && finalCheck.length > 0) {
             throw new Error(`Hala ${finalCheck.length} adet hareket kaydı mevcut, silme işlemi tamamlanamadı.`);
         }
-
-        console.log('All stock movements deleted, now deleting product...');
 
         // Şimdi stock tablosundaki ürünü sil
         const { data, error } = await supabase
@@ -1555,8 +1533,6 @@ async function confirmDeleteProduct() {
             throw new Error('Ürün silinemedi. Yetki sorunu olabilir.');
         }
 
-        console.log('Successfully deleted', data.length, 'product record(s)');
-
         // Modal'ı kapat
         bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
 
@@ -1575,7 +1551,6 @@ async function confirmDeleteProduct() {
 
         if (checkResult.error && checkResult.error.code === 'PGRST116') {
             // Kayıt bulunamadı = başarıyla silindi
-            console.log('Product actually deleted successfully');
             bootstrap.Modal.getInstance(document.getElementById('deleteProductModal')).hide();
             await loadStockData();
             return;
@@ -3897,37 +3872,59 @@ function openImageModal(imageUrl, productName) {
 
 // Sekreter için read-only mod aktif et
 function enableReadOnlyMode() {
-    // Butun form butonlarını ve input alanlarını devre dışı bırak
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tüm butonları devre dışı bırak (görüntüleme hariç)
-        const buttonsToDisable = document.querySelectorAll('button:not([data-bs-target="#imageModal"]):not(.btn-close):not(.view-only)');
-        buttonsToDisable.forEach(btn => {
-            if (!btn.textContent.includes('Görüntüle') && !btn.textContent.includes('İndir')) {
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.title = 'Sekreter hesabı ile değişiklik yapamazsınız';
-            }
-        });
+    // Sayfa yüklendikten sonra çalışsın
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyReadOnlyMode);
+    } else {
+        applyReadOnlyMode();
+    }
+}
 
-        // Tüm form alanlarını devre dışı bırak
-        const formElements = document.querySelectorAll('input, select, textarea');
-        formElements.forEach(element => {
-            if (element.type !== 'search') { // Arama kutusunu aktif bırak
-                element.disabled = true;
-                element.style.opacity = '0.7';
-            }
-        });
+function applyReadOnlyMode() {
+    // Belirli butonları devre dışı bırak
+    const restrictedButtons = [
+        '#addStockBtn', '#removeStockBtn', '#addProductBtn', 
+        '#userManagementBtn', '#shelfManagementBtn', 
+        'button[onclick*="handleAddStock"]', 'button[onclick*="handleRemoveStock"]',
+        'button[onclick*="confirmDeleteProduct"]', 'button[onclick*="editWarehouseName"]',
+        'button[onclick*="showTransferToWarehouseModal"]'
+    ];
 
-        // Dropdown menüleri devre dışı bırak
-        const dropdownButtons = document.querySelectorAll('.dropdown-toggle');
-        dropdownButtons.forEach(btn => {
+    restrictedButtons.forEach(selector => {
+        const buttons = document.querySelectorAll(selector);
+        buttons.forEach(btn => {
             btn.disabled = true;
             btn.style.opacity = '0.5';
+            btn.title = 'Sekreter hesabı ile değişiklik yapamazsınız';
         });
-
-        // Kullanıcı türü bilgisini görünür yap
-        showSecretaryBadge();
     });
+
+    // Modal form alanlarını devre dışı bırak
+    const modalSelectors = [
+        '#addStockModal', '#removeStockModal', '#addProductModal', 
+        '#editProductModal', '#transferModal'
+    ];
+
+    modalSelectors.forEach(modalSelector => {
+        const modal = document.querySelector(modalSelector);
+        if (modal) {
+            const inputs = modal.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.disabled = true;
+                input.style.opacity = '0.7';
+            });
+        }
+    });
+
+    // Arama ve görüntüleme özelliklerini aktif bırak
+    const allowedElements = document.querySelectorAll('input[type="search"], input[id*="search"], .view-only');
+    allowedElements.forEach(element => {
+        element.disabled = false;
+        element.style.opacity = '1';
+    });
+
+    // Sekreter rozeti göster
+    showSecretaryBadge();
 }
 
 // Sekreter rozeti göster
