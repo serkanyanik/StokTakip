@@ -189,7 +189,7 @@ function getUserRoleDescription() {
     if (currentUser.is_depo_sorumlu2) roles.push('2. Araç');
     if (currentUser.is_depo_sorumlu3) roles.push('3. Araç');
     if (currentUser.is_depo_sorumlu4) roles.push('4. Araç');
-    if (currentUser.is_secretary) roles.push('Sekreter');
+    if (currentUser.is_secretary) roles.push('Ana Depo'); // Sekreter ana depo sorumlusu gibi görünsün
 
     return roles.length > 0 ? roles.join(', ') : 'Yetkisiz';
 }

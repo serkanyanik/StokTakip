@@ -101,7 +101,7 @@ function getUserPermissionsList(user) {
     if (user.is_depo_sorumlu2) permissions.push('2. Depo');
     if (user.is_depo_sorumlu3) permissions.push('3. Depo');
     if (user.is_depo_sorumlu4) permissions.push('4. Depo');
-    if (user.is_secretary) permissions.push('Sekreter');
+    if (user.is_secretary) permissions.push('Ana Depo (Sekreter)'); // Sekreter olduğunu belirt ama ana depo yetkisi var gibi göster
 
     return permissions.length > 0 ?
         permissions.map(p => `<span class="badge bg-info me-1">${p}</span>`).join('') :

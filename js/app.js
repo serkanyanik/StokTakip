@@ -478,9 +478,8 @@ async function showDashboard() {
 function setDefaultWarehouseForUser() {
     if (!currentUser) return;
 
-    // Sekreter ise read-only mod aktif et
+    // Sekreter ana depo sorumlusu gibi davransın ama değişiklik yapmasın
     if (currentUser.is_secretary) {
-        enableReadOnlyMode();
         currentWarehouse = WAREHOUSE_TYPES.MAIN; // Ana depoyu görsün
         return;
     }
@@ -589,7 +588,7 @@ function createWarehouseCard(warehouseType) {
     // Stok sayısını hesapla
     const warehouseStock = getWarehouseStockSummary(warehouseType);
 
-    // Edit butonu sadece ana depo sorumlusu için (sekreter yapamaz)
+    // Edit butonu sadece ana depo sorumlusu için (sekreter göremez)
     const editButton = currentUser && currentUser.is_depo_admin && !currentUser.is_secretary ?
         `<button class="btn btn-outline-light btn-sm position-absolute top-0 end-0 m-2" 
                 onclick="event.stopPropagation(); editWarehouseName('${warehouseType}')" 
@@ -597,7 +596,7 @@ function createWarehouseCard(warehouseType) {
             <i class="fas fa-edit"></i>
         </button>` : '';
 
-    // Transfer butonu sadece ana depo sorumlusu için (sekreter yapamaz)
+    // Transfer butonu sadece ana depo sorumlusu için (sekreter göremez)
     const transferButton = currentUser && currentUser.is_depo_admin && !currentUser.is_secretary ?
         `<button class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-2" 
                 onclick="event.stopPropagation(); showTransferToWarehouseModal('${warehouseType}')" 
@@ -707,8 +706,8 @@ function updateCurrentWarehouseDisplay() {
     // Tablo başlıklarını güncelle
     updateTableHeadersForUserType();
 
-    // Ana depo sorumlusu ad düzenleyebilir
-    if (editBtn && currentUser.is_depo_admin) {
+    // Ana depo sorumlusu ad düzenleyebilir (sekreter yapamaz)
+    if (editBtn && currentUser.is_depo_admin && !currentUser.is_secretary) {
         editBtn.style.display = 'inline-block';
     } else if (editBtn) {
         editBtn.style.display = 'none';
@@ -1050,15 +1049,15 @@ function updateButtonVisibility() {
     const addBtn = document.getElementById('addStockBtn');
     const removeBtn = document.getElementById('removeStockBtn');
 
-    // Stok ekleme butonu sadece ana depo sorumlusu için görünür
-    if (canAddStock()) {
+    // Stok ekleme butonu ana depo sorumlusu ve sekreter için görünür
+    if (canAddStock() || currentUser.is_secretary) {
         addBtn.style.display = 'inline-block';
     } else {
         addBtn.style.display = 'none';
     }
 
     // Stok çıkarma/transfer butonu yetkili olduğu depolar için
-    if (canRemoveStock(currentWarehouse)) {
+    if (canRemoveStock(currentWarehouse) || currentUser.is_secretary) {
         removeBtn.style.display = 'inline-block';
 
         // Buton yazısını kullanıcı türüne göre güncelle
@@ -1162,7 +1161,7 @@ function createStockRow(item) {
 
     // Ana depodan transfer için buton oluşturma fonksiyonu
     const createTransferDropdown = () => {
-        if (!currentUser.is_depo_admin || (item.main_stock || 0) <= 0) {
+        if ((!currentUser.is_depo_admin && !currentUser.is_secretary) || (item.main_stock || 0) <= 0) {
             return '';
         }
 
@@ -1271,17 +1270,17 @@ function createStockRow(item) {
         <td class="actions-column">
             <div class="d-flex flex-wrap gap-1">
                 ${createTransferDropdown()}
-                ${canRemoveStock(currentWarehouse) ?
+                ${(canRemoveStock(currentWarehouse) || currentUser.is_secretary) ?
             `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
                         <i class="fas fa-minus"></i>
                     </button>` : ''
         }
-                ${currentUser.is_depo_admin ?
+                ${(currentUser.is_depo_admin || currentUser.is_secretary) ?
             `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
                         <i class="fas fa-trash"></i>
                     </button>` : ''
         }
-                ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin &&
+                ${!canRemoveStock(currentWarehouse) && !currentUser.is_depo_admin && !currentUser.is_secretary &&
             currentWarehouse !== 'main' ?
             '<span class="text-muted">-</span>' : ''
         }
@@ -1394,6 +1393,12 @@ function showProductImage(imageUrl, productName) {
 
 // Ürün silme modalını göster
 function showDeleteProductModal(productId) {
+    // Sekreter kontrolü
+    if (currentUser.is_secretary) {
+        alert('Sekreter hesabı ile ürün silemezsiniz!');
+        return;
+    }
+
     const item = stockData.find(s => s.id === productId);
     if (!item) {
         alert('Ürün bulunamadı!');
@@ -1755,8 +1760,8 @@ async function quickTransfer(stockId, sourceWarehouse, targetWarehouse) {
         }
 
         // Yetki kontrolü
-        if (!currentUser.is_depo_admin) {
-            alert('Bu işlem için yetkiniz yok!');
+        if (!currentUser.is_depo_admin || currentUser.is_secretary) {
+            alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu transfer yapabilir.');
             return;
         }
 
@@ -1861,6 +1866,12 @@ function getWarehouseStockCount(warehouseType) {
 
 // Stok ekleme modalını göster
 function showAddStockModal() {
+    // Sekreter kontrolü
+    if (currentUser.is_secretary) {
+        alert('Sekreter hesabı ile stok ekleyemezsiniz!');
+        return;
+    }
+
     document.getElementById('addStockForm').reset();
     new bootstrap.Modal(document.getElementById('addStockModal')).show();
 }
@@ -2950,8 +2961,8 @@ function updateTransferProductOptions(sourceWarehouse) {
 }
 
 async function executeWarehouseTransfer() {
-    // Yetki kontrolü - Sadece ana depo sorumlusu transfer yapabilir
-    if (!currentUser.is_depo_admin) {
+    // Yetki kontrolü - Sadece ana depo sorumlusu transfer yapabilir, sekreter yapamaz
+    if (!currentUser.is_depo_admin || currentUser.is_secretary) {
         alert('Bu işlem için yetkiniz yok! Sadece ana depo sorumlusu transfer işlemleri yapabilir.');
         return;
     }
@@ -3870,80 +3881,7 @@ function openImageModal(imageUrl, productName) {
     modal.show();
 }
 
-// Sekreter için read-only mod aktif et
-function enableReadOnlyMode() {
-    // Sayfa yüklendikten sonra çalışsın
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', applyReadOnlyMode);
-    } else {
-        applyReadOnlyMode();
-    }
-}
-
-function applyReadOnlyMode() {
-    // Belirli butonları devre dışı bırak
-    const restrictedButtons = [
-        '#addStockBtn', '#removeStockBtn', '#addProductBtn', 
-        '#userManagementBtn', '#shelfManagementBtn', 
-        'button[onclick*="handleAddStock"]', 'button[onclick*="handleRemoveStock"]',
-        'button[onclick*="confirmDeleteProduct"]', 'button[onclick*="editWarehouseName"]',
-        'button[onclick*="showTransferToWarehouseModal"]'
-    ];
-
-    restrictedButtons.forEach(selector => {
-        const buttons = document.querySelectorAll(selector);
-        buttons.forEach(btn => {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.title = 'Sekreter hesabı ile değişiklik yapamazsınız';
-        });
-    });
-
-    // Modal form alanlarını devre dışı bırak
-    const modalSelectors = [
-        '#addStockModal', '#removeStockModal', '#addProductModal', 
-        '#editProductModal', '#transferModal'
-    ];
-
-    modalSelectors.forEach(modalSelector => {
-        const modal = document.querySelector(modalSelector);
-        if (modal) {
-            const inputs = modal.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.disabled = true;
-                input.style.opacity = '0.7';
-            });
-        }
-    });
-
-    // Arama ve görüntüleme özelliklerini aktif bırak
-    const allowedElements = document.querySelectorAll('input[type="search"], input[id*="search"], .view-only');
-    allowedElements.forEach(element => {
-        element.disabled = false;
-        element.style.opacity = '1';
-    });
-
-    // Sekreter rozeti göster
-    showSecretaryBadge();
-}
-
-// Sekreter rozeti göster
-function showSecretaryBadge() {
-    const userInfo = document.querySelector('.user-info');
-    if (userInfo && currentUser.is_secretary) {
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-secondary ms-2';
-        badge.textContent = 'Sekreter (Salt Okunur)';
-        userInfo.appendChild(badge);
-    }
-    modalImage.src = imageUrl;
-    modalImage.alt = productName;
-    modalTitle.textContent = productName;
-
-    modal.show();
-}
-
-// Ürün resmi göster (ana tabloda kullanılır)
+// Ürün resmi göster (ana tabloda kullanılır)  
 function showProductImage(imageUrl, productName) {
     openImageModal(imageUrl, productName);
 }
