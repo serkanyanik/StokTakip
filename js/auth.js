@@ -133,8 +133,10 @@ async function checkSession() {
 function hasWarehouseAccess(warehouseType) {
     if (!currentUser || !currentUser.is_active) return false;
 
-    // Sekreter tüm depoları görebilir
-    if (currentUser.is_secretary) return true;
+    // Sekreter sadece ana depoyu görüntüleyebilir, hiçbir yetki yok
+    if (currentUser.is_secretary) {
+        return warehouseType === 'main';
+    }
 
     switch (warehouseType) {
         case 'main':
@@ -172,9 +174,9 @@ function canManageUsers() {
     return currentUser && currentUser.is_depo_admin && currentUser.is_active && !currentUser.is_secretary;
 }
 
-// Diğer depoları görüntüleme yetkisi - sekreter de görebilir
+// Diğer depoları görüntüleme yetkisi - sadece admin görebilir
 function canViewOtherWarehouses() {
-    return currentUser && currentUser.is_active && (currentUser.is_depo_admin || currentUser.is_secretary);
+    return currentUser && currentUser.is_active && currentUser.is_depo_admin && !currentUser.is_secretary;
 }
 
 // Kullanıcı rolü açıklaması
@@ -183,13 +185,15 @@ function getUserRoleDescription() {
 
     if (!currentUser.is_active) return 'Pasif Kullanıcı';
 
+    // Sekreter öncelikli kontrol
+    if (currentUser.is_secretary) return 'Sekreter (Salt Okunur)';
+
     const roles = [];
     if (currentUser.is_depo_admin) roles.push('Ana Depo');
     if (currentUser.is_depo_sorumlu1) roles.push('1. Araç');
     if (currentUser.is_depo_sorumlu2) roles.push('2. Araç');
     if (currentUser.is_depo_sorumlu3) roles.push('3. Araç');
     if (currentUser.is_depo_sorumlu4) roles.push('4. Araç');
-    if (currentUser.is_secretary) roles.push('Ana Depo'); // Sekreter ana depo sorumlusu gibi görünsün
 
     return roles.length > 0 ? roles.join(', ') : 'Yetkisiz';
 }

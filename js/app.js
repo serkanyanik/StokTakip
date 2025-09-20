@@ -526,9 +526,9 @@ function updateUserInfo() {
         shelfMgmtBtn.style.display = 'none';
     }
 
-    // Rapor butonunu göster/gizle (ana depo sorumlusu ve sekreter görebilir)
+    // Rapor butonunu göster/gizle (sadece ana depo sorumlusu, sekreter göremez)
     const reportsBtn = document.getElementById('reportsBtn');
-    if (currentUser.is_depo_admin || currentUser.is_secretary) {
+    if (currentUser.is_depo_admin && !currentUser.is_secretary) {
         reportsBtn.style.display = 'inline-block';
     } else {
         reportsBtn.style.display = 'none';
@@ -1049,15 +1049,22 @@ function updateButtonVisibility() {
     const addBtn = document.getElementById('addStockBtn');
     const removeBtn = document.getElementById('removeStockBtn');
 
-    // Stok ekleme butonu ana depo sorumlusu ve sekreter için görünür
-    if (canAddStock() || currentUser.is_secretary) {
+    // Sekreter hiçbir butonu göremesin
+    if (currentUser.is_secretary) {
+        addBtn.style.display = 'none';
+        removeBtn.style.display = 'none';
+        return;
+    }
+
+    // Stok ekleme butonu ana depo sorumlusu için görünür
+    if (canAddStock()) {
         addBtn.style.display = 'inline-block';
     } else {
         addBtn.style.display = 'none';
     }
 
     // Stok çıkarma/transfer butonu yetkili olduğu depolar için
-    if (canRemoveStock(currentWarehouse) || currentUser.is_secretary) {
+    if (canRemoveStock(currentWarehouse)) {
         removeBtn.style.display = 'inline-block';
 
         // Buton yazısını kullanıcı türüne göre güncelle
@@ -1161,7 +1168,7 @@ function createStockRow(item) {
 
     // Ana depodan transfer için buton oluşturma fonksiyonu
     const createTransferDropdown = () => {
-        if ((!currentUser.is_depo_admin && !currentUser.is_secretary) || (item.main_stock || 0) <= 0) {
+        if (!currentUser.is_depo_admin || currentUser.is_secretary || (item.main_stock || 0) <= 0) {
             return '';
         }
 
@@ -1270,12 +1277,12 @@ function createStockRow(item) {
         <td class="actions-column">
             <div class="d-flex flex-wrap gap-1">
                 ${createTransferDropdown()}
-                ${(canRemoveStock(currentWarehouse) || currentUser.is_secretary) ?
+                ${canRemoveStock(currentWarehouse) && !currentUser.is_secretary ?
             `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
                         <i class="fas fa-minus"></i>
                     </button>` : ''
         }
-                ${(currentUser.is_depo_admin || currentUser.is_secretary) ?
+                ${currentUser.is_depo_admin && !currentUser.is_secretary ?
             `<button class="btn btn-danger btn-sm" onclick="showDeleteProductModal('${item.id}')" title="Ürünü sil">
                         <i class="fas fa-trash"></i>
                     </button>` : ''
