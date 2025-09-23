@@ -1659,14 +1659,42 @@ button[onclick="showLowStockModal()"]:focus {
     overflow-y: auto;
 }
 
+/* Düşük stok modalı tablo başlıkları */
+#lowStockModal .table thead th {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 8px;
+}
+
+/* Düşük stok modalı tablo satırları */
+#lowStockModal .table tbody td {
+    background-color: #ffffff !important;
+    color: #2d3748 !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 10px 8px;
+    text-align: center;
+}
+
+/* EN DÜŞÜK badge'i için */
+#lowStockModal .table tbody td .badge {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
 #lowStockModal .badge.bg-danger.fs-6 {
     font-size: 0.9rem !important;
     padding: 0.4rem 0.6rem;
+    background-color: #dc3545 !important;
 }
 
 #lowStockModal .badge.bg-warning.fs-6 {
     font-size: 0.9rem !important;
     padding: 0.4rem 0.6rem;
+    background-color: #ffc107 !important;
+    color: #000000 !important;
 }
 
 #lowStockModal .table-danger {
@@ -1830,6 +1858,101 @@ button[onclick*="quickTransfer"]:hover {
 #shelfProductsList .list-group-item:hover {
     background-color: #f8f9fa;
     transform: translateX(4px);
+}
+
+/* Raf yönetimi modalı tablo başlıkları */
+#shelfManagementModal .table thead th {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 8px;
+}
+
+/* Raf yönetimi modalı tablo satırları */
+#shelfManagementModal .table tbody td {
+    background-color: #ffffff !important;
+    color: #2d3748 !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 10px 8px;
+    text-align: center;
+}
+
+/* Raf yönetimi modalı badge'ler */
+#shelfManagementModal .badge {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Raf yönetimi modalı butonlar */
+#shelfManagementModal .btn {
+    color: #ffffff !important;
+}
+
+#shelfManagementModal .btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+#shelfManagementModal .btn-outline-primary:hover {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+}
+
+/* Raf yönetimi modalı buton renkleri düzeltme */
+#shelfManagementModal .btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    background-color: #ffffff !important;
+}
+
+#shelfManagementModal .btn-outline-warning {
+    color: #f57c00 !important;
+    border-color: #f57c00 !important;
+    background-color: #ffffff !important;
+}
+
+#shelfManagementModal .btn-outline-warning:hover {
+    color: #ffffff !important;
+    background-color: #f57c00 !important;
+}
+
+#shelfManagementModal .btn-primary {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+#shelfManagementModal .btn-warning {
+    color: #000000 !important;
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+/* Raf yönetimi modalı sayfalama stilleri */
+#shelfManagementModal .pagination .page-link {
+    color: #495057 !important;
+    background-color: #ffffff !important;
+    border-color: #dee2e6 !important;
+}
+
+#shelfManagementModal .pagination .page-item.active .page-link {
+    color: #ffffff !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+#shelfManagementModal .pagination .page-item.disabled .page-link {
+    color: #6c757d !important;
+    background-color: #ffffff !important;
+    border-color: #dee2e6 !important;
+}
+
+#shelfManagementModal .pagination .page-link:hover {
+    color: #0d6efd !important;
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
 }
 
 /* Inline düzenleme stilleri */
@@ -2389,4 +2512,25 @@ body.vehicle-user .total-column {
 .select2-container--bootstrap-5 .select2-results__option {
     padding: 8px 12px;
     font-size: 14px;
+}
+
+/* Clickable shelf addresses styling */
+.shelf-clickable {
+    transition: all 0.2s ease-in-out;
+}
+
+.shelf-clickable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.shelf-clickable[title*="Raf adresi eklemek"] {
+    border: 1px dashed #ffc107;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.shelf-clickable[title*="Raf adresi eklemek"]:hover {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-style: solid;
 }

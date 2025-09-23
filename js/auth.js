@@ -186,7 +186,7 @@ function getUserRoleDescription() {
     if (!currentUser.is_active) return 'Pasif Kullanıcı';
 
     // Sekreter öncelikli kontrol
-    if (currentUser.is_secretary) return 'Sekreter (Salt Okunur)';
+    if (currentUser.is_secretary) return 'Sekreter';
 
     const roles = [];
     if (currentUser.is_depo_admin) roles.push('Ana Depo');
