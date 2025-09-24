@@ -51,7 +51,7 @@ const LOW_STOCK_THRESHOLD = 5;
 
 // Türkçe karakterleri doğru şekilde dönüştüren yardımcı fonksiyonlar
 function toTurkishLowerCase(str) {
-    if (!str) return str;
+    if (!str || typeof str !== 'string') return '';
 
     // Tamamen manuel karakter dönüşümü - JavaScript'in toLowerCase() metodunu güvenli kullan
     const upperToLower = {

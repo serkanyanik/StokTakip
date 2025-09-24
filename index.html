@@ -251,6 +251,11 @@
                                 </tbody>
                             </table>
 
+                            <!-- Sayfalama Kontrolü -->
+                            <nav aria-label="Stok Tablosu Sayfalama" class="mt-2">
+                                <ul class="pagination justify-content-center" id="stockTablePagination"></ul>
+                            </nav>
+
                             <!-- Diğer Lokasyonlardaki Stoklar -->
                             <div id="otherLocationsContainer" style="display: none;">
                                 <div class="alert alert-warning mt-3">
@@ -818,12 +823,23 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Ürün Arama -->
+
+                    <!-- Ürün Arama ve Rafsız Filtre Butonu -->
                     <div class="row mb-3">
-                        <div class="col-12">
+                        <div class="col-6">
                             <input type="text" class="form-control" id="shelfProductSearch"
                                 placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..."
                                 onkeyup="filterShelfProducts()">
+                        </div>
+                        <div class="col-6 d-flex align-items-center justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="filterNoShelfBtn"
+                                onclick="toggleNoShelfFilter()">
+                                <i class="fas fa-filter me-1"></i> Rafsız Ürünler
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="showAllShelfProductsBtn"
+                                onclick="showAllShelfProducts()">
+                                <i class="fas fa-list me-1"></i> Tüm Ürünleri Göster
+                            </button>
                         </div>
                     </div>
 
@@ -836,18 +852,21 @@
                                     <th>Ürün Adı</th>
                                     <th>Mevcut Raf</th>
                                     <th>Ana Depo Stok</th>
-                                    <th>İşlem</th>
                                 </tr>
                             </thead>
                             <tbody id="shelfProductsList">
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
+                                    <td colspan="4" class="text-center text-muted py-4">
                                         <i class="fas fa-box fa-2x mb-3"></i>
                                         <p>Ürünler yükleniyor...</p>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- Sayfalama Kontrolü -->
+                        <nav aria-label="Raf Yönetimi Sayfalama" class="mt-2">
+                            <ul class="pagination justify-content-center" id="shelfTablePagination"></ul>
+                        </nav>
                     </div>
                 </div>
                 <div class="modal-footer">
