@@ -232,16 +232,11 @@
                                         <th>Fiyat</th>
                                         <th>Görsel</th>
                                         <th class="shelf-address-column">Raf Adresi</th>
-                                        <th id="mainWarehouseHeader" class="warehouse-column main-warehouse">Ana Depo
-                                        </th>
-                                        <th id="sub1WarehouseHeader" class="warehouse-column sub1-warehouse">1. Araç
-                                        </th>
-                                        <th id="sub2WarehouseHeader" class="warehouse-column sub2-warehouse">2. Araç
-                                        </th>
-                                        <th id="sub3WarehouseHeader" class="warehouse-column sub3-warehouse">3. Araç
-                                        </th>
-                                        <th id="sub4WarehouseHeader" class="warehouse-column sub4-warehouse">4. Araç
-                                        </th>
+                                        <th id="mainWarehouseHeader" class="warehouse-column main-warehouse">Ana Depo</th>
+                                        <th id="sub1WarehouseHeader" class="warehouse-column sub1-warehouse">1. Araç</th>
+                                        <th id="sub2WarehouseHeader" class="warehouse-column sub2-warehouse">2. Araç</th>
+                                        <th id="sub3WarehouseHeader" class="warehouse-column sub3-warehouse">3. Araç</th>
+                                        <th id="sub4WarehouseHeader" class="warehouse-column sub4-warehouse">4. Araç</th>
                                         <th class="warehouse-column total-column">Toplam</th>
                                         <th class="actions-column">İşlemler</th>
                                     </tr>
@@ -250,6 +245,11 @@
                                     <!-- Stok verileri dinamik olarak yüklenecek -->
                                 </tbody>
                             </table>
+
+                            <!-- Sayfalama Kontrolü -->
+                            <nav aria-label="Stok Tablosu Sayfalama" class="mt-2">
+                                <ul class="pagination justify-content-center" id="stockTablePagination"></ul>
+                            </nav>
 
                             <!-- Diğer Lokasyonlardaki Stoklar -->
                             <div id="otherLocationsContainer" style="display: none;">
@@ -821,14 +821,19 @@
 
                     <!-- Ürün Arama ve Rafsız Filtre Butonu -->
                     <div class="row mb-3">
-                        <div class="col-8">
+                        <div class="col-6">
                             <input type="text" class="form-control" id="shelfProductSearch"
                                 placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..."
                                 onkeyup="filterShelfProducts()">
                         </div>
-                        <div class="col-4 d-flex align-items-center justify-content-end">
-                            <button type="button" class="btn btn-outline-secondary" id="filterNoShelfBtn" onclick="toggleNoShelfFilter()">
+                        <div class="col-6 d-flex align-items-center justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="filterNoShelfBtn"
+                                onclick="toggleNoShelfFilter()">
                                 <i class="fas fa-filter me-1"></i> Rafsız Ürünler
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="showAllShelfProductsBtn"
+                                onclick="showAllShelfProducts()">
+                                <i class="fas fa-list me-1"></i> Tüm Ürünleri Göster
                             </button>
                         </div>
                     </div>
@@ -853,6 +858,10 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <!-- Sayfalama Kontrolü -->
+                        <nav aria-label="Raf Yönetimi Sayfalama" class="mt-2">
+                            <ul class="pagination justify-content-center" id="shelfTablePagination"></ul>
+                        </nav>
                     </div>
                 </div>
                 <div class="modal-footer">

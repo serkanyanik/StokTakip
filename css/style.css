@@ -1,7 +1,15 @@
+/* Raf yönetimi modalı sayfalama aktif sayfa numarası */
+#shelfTablePagination .page-item.active .page-link {
+    background: #fff !important;
+    color: #667eea !important;
+    border-color: #667eea !important;
+    font-weight: bold;
+}
 /* Raf Yönetimi modalındaki tablo başlığı için beyaz yazı rengi */
 #shelfManagementModal .modal-body .table th {
     color: #fff !important;
 }
+
 /* Ana Stiller - Modern UI */
 body {
     font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
