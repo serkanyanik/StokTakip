@@ -251,23 +251,6 @@
                                 </tbody>
                             </table>
 
-                            <!-- Sayfalama Kontrolleri -->
-                            <div class="d-flex justify-content-between align-items-center mt-3"
-                                id="paginationContainer">
-                                <div class="pagination-info">
-                                    <small class="text-muted">
-                                        <span id="currentPageInfo">Sayfa 1 / 1</span>
-                                        <span class="mx-2">|</span>
-                                        <span id="totalItemsInfo">Toplam 0 ürün</span>
-                                    </small>
-                                </div>
-                                <nav aria-label="Sayfalama">
-                                    <ul class="pagination pagination-sm mb-0" id="paginationControls">
-                                        <!-- Sayfalama butonları dinamik olarak oluşturulacak -->
-                                    </ul>
-                                </nav>
-                            </div>
-
                             <!-- Diğer Lokasyonlardaki Stoklar -->
                             <div id="otherLocationsContainer" style="display: none;">
                                 <div class="alert alert-warning mt-3">
@@ -826,7 +809,7 @@
 
     <!-- Raf Yönetimi Modal -->
     <div class="modal fade" id="shelfManagementModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -835,26 +818,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Ürün Arama ve Filtreler -->
+                    <!-- Ürün Arama -->
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <input type="text" class="form-control" id="shelfProductSearch"
                                 placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..."
                                 onkeyup="filterShelfProducts()">
-                        </div>
-                    </div>
-
-                    <!-- Filtre Butonları -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-outline-primary me-2" id="showAllProductsBtn"
-                                onclick="showAllShelfProducts()" title="Tüm ürünleri göster">
-                                <i class="fas fa-list me-1"></i>Tüm Ürünler
-                            </button>
-                            <button type="button" class="btn btn-outline-warning" id="showUnassignedShelfBtn"
-                                onclick="showUnassignedShelfProducts()" title="Raf adresi olmayan ürünleri göster">
-                                <i class="fas fa-exclamation-triangle me-1"></i>Raf Adresi Olmayanlar
-                            </button>
                         </div>
                     </div>
 
@@ -865,36 +834,20 @@
                                 <tr>
                                     <th>Ürün Kodu</th>
                                     <th>Ürün Adı</th>
-                                    <th style="cursor: pointer;">Mevcut Raf <small class="text-muted">(tıklayın)</small>
-                                    </th>
+                                    <th>Mevcut Raf</th>
                                     <th>Ana Depo Stok</th>
+                                    <th>İşlem</th>
                                 </tr>
                             </thead>
                             <tbody id="shelfProductsList">
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
+                                    <td colspan="5" class="text-center text-muted py-4">
                                         <i class="fas fa-box fa-2x mb-3"></i>
                                         <p>Ürünler yükleniyor...</p>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- Sayfalama Kontrolleri -->
-                    <div class="d-flex justify-content-between align-items-center mt-3" id="shelfPaginationContainer">
-                        <div class="pagination-info">
-                            <small class="text-muted">
-                                <span id="shelfCurrentPageInfo">Sayfa 1 / 1</span>
-                                <span class="mx-2">|</span>
-                                <span id="shelfTotalItemsInfo">Toplam 0 ürün</span>
-                            </small>
-                        </div>
-                        <nav aria-label="Raf Sayfalama">
-                            <ul class="pagination pagination-sm mb-0" id="shelfPaginationControls">
-                                <!-- Sayfalama butonları dinamik olarak oluşturulacak -->
-                            </ul>
-                        </nav>
                     </div>
                 </div>
                 <div class="modal-footer">

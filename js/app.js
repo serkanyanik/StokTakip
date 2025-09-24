@@ -4,19 +4,6 @@ let currentWarehouse;
 let stockData = [];
 let stockDataLoaded = false; // Stok verilerinin yüklenip yüklenmediğini takip eder
 
-// Sayfalama değişkenleri
-let currentPage = 1;
-const itemsPerPage = 20;
-let totalPages = 1;
-let filteredStockData = [];
-
-// Raf yönetimi sayfalama değişkenleri
-let shelfCurrentPage = 1;
-const shelfItemsPerPage = 20;
-let shelfTotalPages = 1;
-let shelfFilteredData = [];
-let shelfFilterMode = 'all'; // 'all', 'unassigned'
-
 // Database setup kontrol fonksiyonu
 async function ensureDatabaseSetup() {
     try {
@@ -125,7 +112,6 @@ function setupEventListeners() {
 
     // Arama çubuğu
     document.getElementById('searchInput').addEventListener('input', async () => {
-        resetPagination(); // Arama yapıldığında sayfayı sıfırla
         await applySearchFilter();
     });
 
@@ -1136,45 +1122,23 @@ function updateStockTable() {
             row.innerHTML = '<td colspan="9" class="text-center text-muted"><i class="fas fa-box-open me-2"></i>Stoğunuzda ürün bulunmamaktadır</td>';
         }
         tbody.appendChild(row);
-        updatePagination();
         return;
     }
 
     // Seçili depoya göre filtrele
-    filteredStockData = getFilteredStockData();
+    const filteredData = getFilteredStockData();
 
-    if (filteredStockData.length === 0) {
+    if (filteredData.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="9" class="text-center text-muted">Bu depoda stok bulunmuyor</td>';
         tbody.appendChild(row);
-        updatePagination();
         return;
     }
 
-    // Sayfalama hesaplamaları
-    totalPages = Math.ceil(filteredStockData.length / itemsPerPage);
-
-    // Geçersiz sayfa kontrolü
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-    }
-    if (currentPage < 1) {
-        currentPage = 1;
-    }
-
-    // Mevcut sayfadaki öğeleri al
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredStockData.slice(startIndex, endIndex);
-
-    // Tabloyu güncelle
-    pageData.forEach(item => {
+    filteredData.forEach(item => {
         const row = createStockRow(item);
         tbody.appendChild(row);
     });
-
-    // Sayfalama kontrollerini güncelle
-    updatePagination();
 
     // Arama çubuğu varsa filtreleme uygula
     applySearchFilter();
@@ -1332,116 +1296,6 @@ function createStockRow(item) {
     `;
 
     return row;
-}
-
-// Sayfalama kontrollerini güncelle
-function updatePagination() {
-    const paginationContainer = document.getElementById('paginationContainer');
-    const currentPageInfo = document.getElementById('currentPageInfo');
-    const totalItemsInfo = document.getElementById('totalItemsInfo');
-    const paginationControls = document.getElementById('paginationControls');
-
-    if (!paginationContainer || !currentPageInfo || !totalItemsInfo || !paginationControls) {
-        return;
-    }
-
-    // Bilgi güncelle
-    currentPageInfo.textContent = `Sayfa ${currentPage} / ${totalPages}`;
-    totalItemsInfo.textContent = `Toplam ${filteredStockData.length} ürün`;
-
-    // Sayfalama kontrollerini temizle
-    paginationControls.innerHTML = '';
-
-    // Eğer tek sayfa varsa sayfalama kontrollerini gizle
-    if (totalPages <= 1) {
-        paginationContainer.style.display = 'none';
-        return;
-    }
-
-    paginationContainer.style.display = 'flex';
-
-    // Önceki buton
-    const prevLi = document.createElement('li');
-    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-    prevLi.innerHTML = `
-        <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
-            <i class="fas fa-chevron-left"></i>
-        </a>
-    `;
-    paginationControls.appendChild(prevLi);
-
-    // Sayfa numaraları
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    // Başlangıç sayfasını ayarla
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // İlk sayfa (eğer görünmüyorsa)
-    if (startPage > 1) {
-        const firstLi = document.createElement('li');
-        firstLi.className = 'page-item';
-        firstLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(1); return false;">1</a>`;
-        paginationControls.appendChild(firstLi);
-
-        if (startPage > 2) {
-            const dotsLi = document.createElement('li');
-            dotsLi.className = 'page-item disabled';
-            dotsLi.innerHTML = '<span class="page-link">...</span>';
-            paginationControls.appendChild(dotsLi);
-        }
-    }
-
-    // Sayfa numaraları
-    for (let i = startPage; i <= endPage; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
-        paginationControls.appendChild(li);
-    }
-
-    // Son sayfa (eğer görünmüyorsa)
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-            const dotsLi = document.createElement('li');
-            dotsLi.className = 'page-item disabled';
-            dotsLi.innerHTML = '<span class="page-link">...</span>';
-            paginationControls.appendChild(dotsLi);
-        }
-
-        const lastLi = document.createElement('li');
-        lastLi.className = 'page-item';
-        lastLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>`;
-        paginationControls.appendChild(lastLi);
-    }
-
-    // Sonraki buton
-    const nextLi = document.createElement('li');
-    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-    nextLi.innerHTML = `
-        <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
-            <i class="fas fa-chevron-right"></i>
-        </a>
-    `;
-    paginationControls.appendChild(nextLi);
-}
-
-// Sayfa değiştir
-function changePage(page) {
-    if (page < 1 || page > totalPages || page === currentPage) {
-        return;
-    }
-
-    currentPage = page;
-    updateStockTable();
-}
-
-// Arama yapıldığında sayfayı sıfırla
-function resetPagination() {
-    currentPage = 1;
 }
 
 // Stok miktarına göre CSS sınıfı döndür
@@ -3741,85 +3595,32 @@ function showShelfManagementModal() {
     modal.show();
 
     // Modalı açtığımızda tüm ürünleri listele
-    resetShelfPagination();
     loadAllProductsForShelf();
 }
 
 // Tüm ürünleri raf yönetimi için yükle
 function loadAllProductsForShelf() {
-    shelfFilterMode = 'all';
-    updateShelfFilterButtons();
-    updateShelfProductDisplay();
-}
-
-// Raf adresi olmayan ürünleri göster
-function showUnassignedShelfProducts() {
-    shelfFilterMode = 'unassigned';
-    resetShelfPagination();
-    updateShelfFilterButtons();
-    updateShelfProductDisplay();
-}
-
-// Tüm ürünleri göster
-function showAllShelfProducts() {
-    shelfFilterMode = 'all';
-    resetShelfPagination();
-    updateShelfFilterButtons();
-    updateShelfProductDisplay();
-}
-
-// Filtre butonlarının görünümünü güncelle
-function updateShelfFilterButtons() {
-    const allBtn = document.getElementById('showAllProductsBtn');
-    const unassignedBtn = document.getElementById('showUnassignedShelfBtn');
-
-    // Tüm butonları normal yap
-    allBtn.className = 'btn btn-outline-primary';
-    unassignedBtn.className = 'btn btn-outline-warning';
-
-    // Aktif butonu vurgula
-    if (shelfFilterMode === 'all') {
-        allBtn.className = 'btn btn-primary';
-    } else if (shelfFilterMode === 'unassigned') {
-        unassignedBtn.className = 'btn btn-warning';
-    }
-}
-
-// Raf ürün görüntülemesini güncelle
-function updateShelfProductDisplay() {
-    // Önce filtreleme uygula
-    let filteredProducts = stockData;
-
-    // Mod filtresi
-    if (shelfFilterMode === 'unassigned') {
-        filteredProducts = stockData.filter(item => !item.shelf_address || item.shelf_address.trim() === '');
-    }
-
-    // Arama filtresi
-    const searchTerm = toTurkishLowerCase(document.getElementById('shelfProductSearch').value.trim());
-    if (searchTerm) {
-        filteredProducts = filteredProducts.filter(item =>
-            toTurkishLowerCase(item.product_code).includes(searchTerm) ||
-            toTurkishLowerCase(item.product_name).includes(searchTerm) ||
-            (item.shelf_address && toTurkishLowerCase(item.shelf_address).includes(searchTerm))
-        );
-    }
-
-    shelfFilteredData = filteredProducts;
-    displayShelfProducts();
+    displayShelfProducts(stockData);
 }
 
 // Raf ürünlerini filtrele (klavyeden yazdıkça)
 function filterShelfProducts() {
-    resetShelfPagination();
-    updateShelfProductDisplay();
+    const searchTerm = toTurkishLowerCase(document.getElementById('shelfProductSearch').value.trim());
+
+    const filteredProducts = stockData.filter(item =>
+        toTurkishLowerCase(item.product_code).includes(searchTerm) ||
+        toTurkishLowerCase(item.product_name).includes(searchTerm) ||
+        (item.shelf_address && toTurkishLowerCase(item.shelf_address).includes(searchTerm))
+    );
+
+    displayShelfProducts(filteredProducts);
 }
 
 // Raf ürünlerini görüntüle
-function displayShelfProducts() {
+function displayShelfProducts(products) {
     const container = document.getElementById('shelfProductsList');
 
-    if (shelfFilteredData.length === 0) {
+    if (products.length === 0) {
         container.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center text-muted py-4">
@@ -3827,27 +3628,10 @@ function displayShelfProducts() {
                     <p>Arama kriterlerine uygun ürün bulunamadı.</p>
                 </td>
             </tr>`;
-        updateShelfPagination();
         return;
     }
 
-    // Sayfalama hesaplamaları
-    shelfTotalPages = Math.ceil(shelfFilteredData.length / shelfItemsPerPage);
-
-    // Geçersiz sayfa kontrolü
-    if (shelfCurrentPage > shelfTotalPages) {
-        shelfCurrentPage = shelfTotalPages;
-    }
-    if (shelfCurrentPage < 1) {
-        shelfCurrentPage = 1;
-    }
-
-    // Mevcut sayfadaki öğeleri al
-    const startIndex = (shelfCurrentPage - 1) * shelfItemsPerPage;
-    const endIndex = startIndex + shelfItemsPerPage;
-    const pageData = shelfFilteredData.slice(startIndex, endIndex);
-
-    container.innerHTML = pageData.map(item => {
+    container.innerHTML = products.map(item => {
         const shelfDisplay = item.shelf_address ?
             `<span class="badge bg-success">${item.shelf_address}</span>` :
             '<span class="text-muted">Atanmamış</span>';
@@ -3867,118 +3651,6 @@ function displayShelfProducts() {
                 </td>
             </tr>`;
     }).join('');
-
-    updateShelfPagination();
-}
-
-// Raf sayfalama kontrollerini güncelle
-function updateShelfPagination() {
-    const paginationContainer = document.getElementById('shelfPaginationContainer');
-    const currentPageInfo = document.getElementById('shelfCurrentPageInfo');
-    const totalItemsInfo = document.getElementById('shelfTotalItemsInfo');
-    const paginationControls = document.getElementById('shelfPaginationControls');
-
-    if (!paginationContainer || !currentPageInfo || !totalItemsInfo || !paginationControls) {
-        return;
-    }
-
-    // Bilgi güncelle
-    currentPageInfo.textContent = `Sayfa ${shelfCurrentPage} / ${shelfTotalPages}`;
-    totalItemsInfo.textContent = `Toplam ${shelfFilteredData.length} ürün`;
-
-    // Sayfalama kontrollerini temizle
-    paginationControls.innerHTML = '';
-
-    // Eğer tek sayfa varsa sayfalama kontrollerini gizle
-    if (shelfTotalPages <= 1) {
-        paginationContainer.style.display = 'none';
-        return;
-    }
-
-    paginationContainer.style.display = 'flex';
-
-    // Önceki buton
-    const prevLi = document.createElement('li');
-    prevLi.className = `page-item ${shelfCurrentPage === 1 ? 'disabled' : ''}`;
-    prevLi.innerHTML = `
-        <a class="page-link" href="#" onclick="changeShelfPage(${shelfCurrentPage - 1}); return false;">
-            <i class="fas fa-chevron-left"></i>
-        </a>
-    `;
-    paginationControls.appendChild(prevLi);
-
-    // Sayfa numaraları
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, shelfCurrentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(shelfTotalPages, startPage + maxVisiblePages - 1);
-
-    // Başlangıç sayfasını ayarla
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // İlk sayfa (eğer görünmüyorsa)
-    if (startPage > 1) {
-        const firstLi = document.createElement('li');
-        firstLi.className = 'page-item';
-        firstLi.innerHTML = `<a class="page-link" href="#" onclick="changeShelfPage(1); return false;">1</a>`;
-        paginationControls.appendChild(firstLi);
-
-        if (startPage > 2) {
-            const dotsLi = document.createElement('li');
-            dotsLi.className = 'page-item disabled';
-            dotsLi.innerHTML = '<span class="page-link">...</span>';
-            paginationControls.appendChild(dotsLi);
-        }
-    }
-
-    // Sayfa numaraları
-    for (let i = startPage; i <= endPage; i++) {
-        const li = document.createElement('li');
-        li.className = `page-item ${i === shelfCurrentPage ? 'active' : ''}`;
-        li.innerHTML = `<a class="page-link" href="#" onclick="changeShelfPage(${i}); return false;">${i}</a>`;
-        paginationControls.appendChild(li);
-    }
-
-    // Son sayfa (eğer görünmüyorsa)
-    if (endPage < shelfTotalPages) {
-        if (endPage < shelfTotalPages - 1) {
-            const dotsLi = document.createElement('li');
-            dotsLi.className = 'page-item disabled';
-            dotsLi.innerHTML = '<span class="page-link">...</span>';
-            paginationControls.appendChild(dotsLi);
-        }
-
-        const lastLi = document.createElement('li');
-        lastLi.className = 'page-item';
-        lastLi.innerHTML = `<a class="page-link" href="#" onclick="changeShelfPage(${shelfTotalPages}); return false;">${shelfTotalPages}</a>`;
-        paginationControls.appendChild(lastLi);
-    }
-
-    // Sonraki buton
-    const nextLi = document.createElement('li');
-    nextLi.className = `page-item ${shelfCurrentPage === shelfTotalPages ? 'disabled' : ''}`;
-    nextLi.innerHTML = `
-        <a class="page-link" href="#" onclick="changeShelfPage(${shelfCurrentPage + 1}); return false;">
-            <i class="fas fa-chevron-right"></i>
-        </a>
-    `;
-    paginationControls.appendChild(nextLi);
-}
-
-// Raf sayfasını değiştir
-function changeShelfPage(page) {
-    if (page < 1 || page > shelfTotalPages || page === shelfCurrentPage) {
-        return;
-    }
-
-    shelfCurrentPage = page;
-    displayShelfProducts();
-}
-
-// Raf sayfalamayı sıfırla
-function resetShelfPagination() {
-    shelfCurrentPage = 1;
 }
 
 // Raf adresi düzenleme modalını aç
