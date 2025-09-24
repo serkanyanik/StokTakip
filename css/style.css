@@ -5,6 +5,7 @@
     border-color: #667eea !important;
     font-weight: bold;
 }
+
 /* Raf Yönetimi modalındaki tablo başlığı için beyaz yazı rengi */
 #shelfManagementModal .modal-body .table th {
     color: #fff !important;

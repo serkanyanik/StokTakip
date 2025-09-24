@@ -1,5 +1,5 @@
 // ESC tuşu ile arama kutularını temizle
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' || e.key === 'Esc') {
         // Stok yönetimi arama
         const stockSearch = document.getElementById('searchInput');
