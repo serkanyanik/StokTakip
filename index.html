@@ -818,12 +818,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Ürün Arama -->
+
+                    <!-- Ürün Arama ve Rafsız Filtre Butonu -->
                     <div class="row mb-3">
-                        <div class="col-12">
+                        <div class="col-8">
                             <input type="text" class="form-control" id="shelfProductSearch"
                                 placeholder="Ürün kodu, adı veya raf adresi ile arama yapın..."
                                 onkeyup="filterShelfProducts()">
+                        </div>
+                        <div class="col-4 d-flex align-items-center justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" id="filterNoShelfBtn" onclick="toggleNoShelfFilter()">
+                                <i class="fas fa-filter me-1"></i> Rafsız Ürünler
+                            </button>
                         </div>
                     </div>
 
@@ -836,12 +842,11 @@
                                     <th>Ürün Adı</th>
                                     <th>Mevcut Raf</th>
                                     <th>Ana Depo Stok</th>
-                                    <th>İşlem</th>
                                 </tr>
                             </thead>
                             <tbody id="shelfProductsList">
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
+                                    <td colspan="4" class="text-center text-muted py-4">
                                         <i class="fas fa-box fa-2x mb-3"></i>
                                         <p>Ürünler yükleniyor...</p>
                                     </td>

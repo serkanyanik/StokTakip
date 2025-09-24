@@ -3613,16 +3613,37 @@ function loadAllProductsForShelf() {
 }
 
 // Raf ürünlerini filtrele (klavyeden yazdıkça)
+
+let noShelfFilterActive = false;
+
 function filterShelfProducts() {
     const searchTerm = toTurkishLowerCase(document.getElementById('shelfProductSearch').value.trim());
-
-    const filteredProducts = stockData.filter(item =>
+    let filteredProducts = stockData.filter(item =>
         toTurkishLowerCase(item.product_code).includes(searchTerm) ||
         toTurkishLowerCase(item.product_name).includes(searchTerm) ||
         (item.shelf_address && toTurkishLowerCase(item.shelf_address).includes(searchTerm))
     );
-
+    if (noShelfFilterActive) {
+        filteredProducts = filteredProducts.filter(item => !item.shelf_address);
+    }
     displayShelfProducts(filteredProducts);
+}
+
+function toggleNoShelfFilter() {
+    noShelfFilterActive = !noShelfFilterActive;
+    const btn = document.getElementById('filterNoShelfBtn');
+    if (noShelfFilterActive) {
+        btn.classList.add('active');
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-secondary');
+        btn.innerHTML = '<i class="fas fa-filter me-1"></i> Rafsızlar Aktif';
+    } else {
+        btn.classList.remove('active');
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-outline-secondary');
+        btn.innerHTML = '<i class="fas fa-filter me-1"></i> Rafsız Ürünler';
+    }
+    filterShelfProducts();
 }
 
 // Raf ürünlerini görüntüle
@@ -3641,9 +3662,8 @@ function displayShelfProducts(products) {
     }
 
     container.innerHTML = products.map(item => {
-        const shelfDisplay = item.shelf_address ?
-            `<span class="badge bg-success">${item.shelf_address}</span>` :
-            '<span class="text-muted">Atanmamış</span>';
+        // Raf adresi tıklanabilir badge
+        const shelfDisplay = `<span class="badge ${item.shelf_address ? 'bg-success' : 'bg-secondary'} shelf-address-clickable" style="cursor:pointer" onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')" title="Raf ekle/değiştir">${item.shelf_address ? item.shelf_address : 'Raf Atanmamış'}</span>`;
 
         return `
             <tr>
@@ -3651,13 +3671,6 @@ function displayShelfProducts(products) {
                 <td>${item.product_name}</td>
                 <td>${shelfDisplay}</td>
                 <td><span class="badge bg-primary">${item.main_stock || 0}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" 
-                            onclick="editShelfAddress('${item.id}', '${String(item.product_code || '').replace(/'/g, '&#39;')}', '${String(item.product_name || '').replace(/'/g, '&#39;')}', '${String(item.shelf_address || '').replace(/'/g, '&#39;')}')"
-                            title="Raf adresi düzenle">
-                        <i class="fas fa-edit"></i> Düzenle
-                    </button>
-                </td>
             </tr>`;
     }).join('');
 }
