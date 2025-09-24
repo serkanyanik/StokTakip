@@ -1,11 +1,15 @@
 /* Düşük stok modalı tablo başlığı beyaz */
-#lowStockModal .table thead th, #lowStockModal .table thead td, #lowStockModal .table thead tr {
+#lowStockModal .table thead th,
+#lowStockModal .table thead td,
+#lowStockModal .table thead tr {
     color: #fff !important;
 }
+
 /* Düşük stok uyarı kutusu yazı rengi beyaz */
 .low-stock-warning {
     color: #fff !important;
 }
+
 /* Raf yönetimi modalı sayfalama aktif sayfa numarası */
 #shelfTablePagination .page-item.active .page-link {
     background: #fff !important;
