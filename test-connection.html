@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Bağlantı Test</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .warning {
+            color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Supabase Bağlantı Test</h1>
+    <div id="result">Yükleniyor...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_CONFIG = {
+            url: 'https://nvgjncpzywrjfkoxgjpi.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2puY3B6eXdyamZrb3hnanBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzIyMjAsImV4cCI6MjA3MzUwODIyMH0.oVCbLflMd7-emwlPGFVarZne7bF_y8EEAghRqcxDn30'
+        };
+
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        const resultDiv = document.getElementById('result');
+
+        async function testConnection() {
+            try {
+                resultDiv.innerHTML = '<p>Test ediliyor...</p>';
+
+                // 1. Supabase client test
+                console.log('Supabase client oluşturuldu:', supabase);
+                resultDiv.innerHTML += '<p>✅ Supabase client başarıyla oluşturuldu</p>';
+
+                // 2. Session kontrolü
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) {
+                    console.error('Session hatası:', sessionError);
+                    resultDiv.innerHTML += '<p>❌ Session hatası: ' + sessionError.message + '</p>';
+                } else {
+                    console.log('Session durumu:', sessionData);
+                    resultDiv.innerHTML += '<p>✅ Session kontrolü başarılı</p>';
+                }
+
+                // 3. Users tablosu kontrolü
+                const { data: usersData, error: usersError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .limit(1);
+
+                if (usersError) {
+                    console.error('Users tablo hatası:', usersError);
+                    resultDiv.innerHTML += '<p>❌ Users tablosu hatası: ' + usersError.message + '</p>';
+                    resultDiv.innerHTML += '<p>Detay: ' + JSON.stringify(usersError) + '</p>';
+                } else {
+                    console.log('Users tablosu:', usersData);
+                    resultDiv.innerHTML += '<p>✅ Users tablosuna erişim başarılı</p>';
+                    if (usersData && usersData.length > 0) {
+                        resultDiv.innerHTML += '<p>İlk kullanıcı bilgisi: ' + JSON.stringify(usersData[0], null, 2) + '</p>';
+                    }
+                }
+
+                // 4. Test login denemesi (gerçek credential'lar olmadan)
+                resultDiv.innerHTML += '<hr><p><strong>Login testi için lütfen email ve şifre girin:</strong></p>';
+                resultDiv.innerHTML += `
+                    <input type="email" id="testEmail" placeholder="Email" style="margin: 5px; padding: 5px; width: 300px;">
+                    <br>
+                    <input type="password" id="testPassword" placeholder="Şifre" style="margin: 5px; padding: 5px; width: 300px;">
+                    <br>
+                    <button onclick="testLogin()" style="margin: 5px; padding: 10px;">Login Test Et</button>
+                    <div id="loginResult"></div>
+                `;
+
+            } catch (error) {
+                console.error('Genel hata:', error);
+                resultDiv.innerHTML += '<p>❌ Genel hata: ' + error.message + '</p>';
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const loginResultDiv = document.getElementById('loginResult');
+
+            if (!email || !password) {
+                loginResultDiv.innerHTML = '<p style="color: red;">Email ve şifre gerekli!</p>';
+                return;
+            }
+
+            try {
+                loginResultDiv.innerHTML = '<p>Login test ediliyor...</p>';
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    console.error('Login hatası:', error);
+                    loginResultDiv.innerHTML = '<p style="color: red;">❌ Login hatası: ' + error.message + '</p>';
+                    loginResultDiv.innerHTML += '<p>Detay: ' + JSON.stringify(error) + '</p>';
+                } else {
+                    console.log('Login başarılı:', data);
+                    loginResultDiv.innerHTML = '<p style="color: green;">✅ Login başarılı!</p>';
+                    loginResultDiv.innerHTML += '<p>User ID: ' + data.user.id + '</p>';
+                    loginResultDiv.innerHTML += '<p>Email: ' + data.user.email + '</p>';
+
+                    // User profile kontrol
+                    const { data: profile, error: profileError } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('id', data.user.id)
+                        .single();
+
+                    if (profileError) {
+                        loginResultDiv.innerHTML += '<p style="color: orange;">⚠️ Profile hatası: ' + profileError.message + '</p>';
+                    } else {
+                        loginResultDiv.innerHTML += '<p>Profile: ' + JSON.stringify(profile, null, 2) + '</p>';
+                    }
+                }
+
+            } catch (error) {
+                console.error('Login test hatası:', error);
+                loginResultDiv.innerHTML = '<p style="color: red;">❌ Login test hatası: ' + error.message + '</p>';
+            }
+        }
+
+        // Sayfa yüklendiğinde test et
+        testConnection();
+    </script>
+</body>
+
+</html>

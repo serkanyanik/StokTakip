@@ -1,15 +1,25 @@
 // Supabase konfigürasyonu
 
-const SUPABASE_CONFIG = {
+var SUPABASE_CONFIG = {
     url: 'https://nvgjncpzywrjfkoxgjpi.supabase.co', // Supabase proje URL
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2puY3B6eXdyamZrb3hnanBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzIyMjAsImV4cCI6MjA3MzUwODIyMH0.oVCbLflMd7-emwlPGFVarZne7bF_y8EEAghRqcxDn30' // Supabase anon key
 };
 
-// Supabase client oluştur
-const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+// Supabase client oluştur - global scope
+var supabase;
+if (!window.supabase) {
+    console.error('❌ Supabase library yüklenmedi!');
+} else {
+    try {
+        supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log('✅ Supabase client oluşturuldu');
+    } catch (e) {
+        console.error('❌ Supabase client oluşturma hatası:', e);
+    }
+}
 
-// Depo türleri
-const WAREHOUSE_TYPES = {
+// Depo türleri - global
+var WAREHOUSE_TYPES = {
     MAIN: 'main',
     SUB1: 'sub1',
     SUB2: 'sub2',
@@ -18,7 +28,7 @@ const WAREHOUSE_TYPES = {
 };
 
 // Depo isimleri (düzenlenebilir)
-let WAREHOUSE_NAMES = {
+var WAREHOUSE_NAMES = {
     [WAREHOUSE_TYPES.MAIN]: 'Ana Depo',
     [WAREHOUSE_TYPES.SUB1]: '1. Araç',
     [WAREHOUSE_TYPES.SUB2]: '2. Araç',
@@ -27,7 +37,7 @@ let WAREHOUSE_NAMES = {
 };
 
 // Yetkiler için kolay erişim
-const USER_PERMISSIONS = {
+var USER_PERMISSIONS = {
     ADMIN: 'is_depo_admin',
     SUB1: 'is_depo_sorumlu1',
     SUB2: 'is_depo_sorumlu2',
@@ -36,7 +46,7 @@ const USER_PERMISSIONS = {
 };
 
 // Depo türü ile yetki eşleştirmesi
-const WAREHOUSE_TO_PERMISSION = {
+var WAREHOUSE_TO_PERMISSION = {
     [WAREHOUSE_TYPES.MAIN]: USER_PERMISSIONS.ADMIN,
     [WAREHOUSE_TYPES.SUB1]: USER_PERMISSIONS.SUB1,
     [WAREHOUSE_TYPES.SUB2]: USER_PERMISSIONS.SUB2,
@@ -45,7 +55,7 @@ const WAREHOUSE_TO_PERMISSION = {
 };
 
 // Düşük stok uyarı seviyesi
-const LOW_STOCK_THRESHOLD = 5;
+var LOW_STOCK_THRESHOLD = 5;
 
 // Yardımcı fonksiyonlar
 

@@ -5,19 +5,25 @@ let currentUser = null;
 // Giriş yapma
 async function login(email, password) {
     try {
+        console.log('🔐 Login deneniyor...', email);
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (error) {
+            console.error('❌ Auth hatası:', error);
             throw error;
         }
+        console.log('✅ Auth başarılı, user:', data.user.id);
 
         // Kullanıcı bilgilerini al
+        console.log('📋 Kullanıcı profili getiriliyor...');
         const userProfile = await getUserProfile(data.user.id);
+        console.log('📋 Profil sonucu:', userProfile);
 
         if (!userProfile) {
+            console.error('❌ Kullanıcı profili bulunamadı!');
             throw new Error('Kullanıcı profili bulunamadı');
         }
 
@@ -25,15 +31,16 @@ async function login(email, password) {
             id: data.user.id,
             email: data.user.email,
             name: userProfile.name,
-            is_depo_admin: userProfile.is_depo_admin,
-            is_depo_sorumlu1: userProfile.is_depo_sorumlu1,
-            is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
-            is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
-            is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+            is_depo_admin: userProfile.is_depo_admin || false,
+            is_depo_sorumlu1: userProfile.is_depo_sorumlu1 || false,
+            is_depo_sorumlu2: userProfile.is_depo_sorumlu2 || false,
+            is_depo_sorumlu3: userProfile.is_depo_sorumlu3 || false,
+            is_depo_sorumlu4: userProfile.is_depo_sorumlu4 || false,
             is_secretary: userProfile.is_secretary || false,
-            is_active: userProfile.is_active
+            is_active: userProfile.is_active !== false
         };
 
+        console.log('✅ Login başarılı, currentUser:', currentUser);
         return currentUser;
 
     } catch (error) {
@@ -44,6 +51,7 @@ async function login(email, password) {
 // Kullanıcı profilini getir
 async function getUserProfile(userId) {
     try {
+        console.log('🔍 getUserProfile çağrıldı, userId:', userId);
         const { data, error } = await supabase
             .from('users')
             .select('*')
@@ -51,12 +59,15 @@ async function getUserProfile(userId) {
             .single();
 
         if (error) {
+            console.error('❌ getUserProfile hatası:', error);
             throw error;
         }
 
+        console.log('✅ getUserProfile başarılı:', data);
         return data;
 
     } catch (error) {
+        console.error('❌ getUserProfile catch bloğu:', error);
         return null;
     }
 }
@@ -85,9 +96,11 @@ async function logout() {
 // Oturum kontrolü
 async function checkSession() {
     try {
+        console.log('🔍 checkSession çağrıldı');
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
+            console.error('❌ Session hatası:', error);
             // Auth hatası varsa localStorage'ı temizle
             if (error.message && error.message.includes('Invalid Refresh Token')) {
                 await supabase.auth.signOut();
@@ -97,27 +110,34 @@ async function checkSession() {
         }
 
         if (session) {
+            console.log('✅ Session var, profil getiriliyor...');
             const userProfile = await getUserProfile(session.user.id);
             if (userProfile) {
                 currentUser = {
                     id: session.user.id,
                     email: session.user.email,
                     name: userProfile.name,
-                    is_depo_admin: userProfile.is_depo_admin,
-                    is_depo_sorumlu1: userProfile.is_depo_sorumlu1,
-                    is_depo_sorumlu2: userProfile.is_depo_sorumlu2,
-                    is_depo_sorumlu3: userProfile.is_depo_sorumlu3,
-                    is_depo_sorumlu4: userProfile.is_depo_sorumlu4,
+                    is_depo_admin: userProfile.is_depo_admin || false,
+                    is_depo_sorumlu1: userProfile.is_depo_sorumlu1 || false,
+                    is_depo_sorumlu2: userProfile.is_depo_sorumlu2 || false,
+                    is_depo_sorumlu3: userProfile.is_depo_sorumlu3 || false,
+                    is_depo_sorumlu4: userProfile.is_depo_sorumlu4 || false,
                     is_secretary: userProfile.is_secretary || false,
-                    is_active: userProfile.is_active
+                    is_active: userProfile.is_active !== false
                 };
 
+                console.log('✅ checkSession başarılı, currentUser:', currentUser);
                 return currentUser;
+            } else {
+                console.warn('⚠️ Session var ama profile bulunamadı');
             }
+        } else {
+            console.log('ℹ️ Session yok');
         }
 
         return null;
     } catch (error) {
+        console.error('❌ checkSession catch bloğu:', error);
         // Auth hatası durumunda da localStorage'ı temizle
         if (error.name === 'AuthApiError' || error.__isAuthError) {
             await supabase.auth.signOut();

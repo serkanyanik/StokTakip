@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Test</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 300px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>MS Teknik Servis - Login Test</h1>
+
+    <div>
+        <h3>1. Supabase Bağlantı Durumu:</h3>
+        <div id="connectionStatus">Kontrol ediliyor...</div>
+    </div>
+
+    <hr>
+
+    <div>
+        <h3>2. Login Test:</h3>
+        <input type="email" id="email" placeholder="Email" value=""><br>
+        <input type="password" id="password" placeholder="Şifre"><br>
+        <button onclick="testLogin()">GİRİŞ TEST ET</button>
+        <div id="loginResult" class="result" style="display:none;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_CONFIG = {
+            url: 'https://nvgjncpzywrjfkoxgjpi.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52Z2puY3B6eXdyamZrb3hnanBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MzIyMjAsImV4cCI6MjA3MzUwODIyMH0.oVCbLflMd7-emwlPGFVarZne7bF_y8EEAghRqcxDn30'
+        };
+
+        let supabase;
+
+        // Sayfa yüklenince bağlantıyı test et
+        window.onload = function () {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+                document.getElementById('connectionStatus').innerHTML =
+                    '<span class="success">✅ Supabase bağlantısı başarılı!</span>';
+                checkUsersTable();
+            } catch (e) {
+                document.getElementById('connectionStatus').innerHTML =
+                    '<span class="error">❌ Bağlantı hatası: ' + e.message + '</span>';
+            }
+        };
+
+        async function checkUsersTable() {
+            try {
+                const { data, error } = await supabase.from('users').select('id').limit(1);
+                if (error) {
+                    document.getElementById('connectionStatus').innerHTML +=
+                        '<br><span class="error">❌ Users tablosu hatası: ' + error.message + '</span>';
+                } else {
+                    document.getElementById('connectionStatus').innerHTML +=
+                        '<br><span class="success">✅ Users tablosuna erişim var</span>';
+                }
+            } catch (e) {
+                document.getElementById('connectionStatus').innerHTML +=
+                    '<br><span class="error">❌ Tablo kontrolü hatası: ' + e.message + '</span>';
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            if (!email || !password) {
+                alert('Email ve şifre gerekli!');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Giriş deneniyor...</p>';
+
+            try {
+                // 1. Auth ile giriş dene
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    resultDiv.innerHTML =
+                        '<span class="error">❌ LOGIN HATASI: ' + error.message + '</span>' +
+                        '<br><br>Hata detayı: ' + JSON.stringify(error, null, 2);
+                    return;
+                }
+
+                resultDiv.innerHTML = '<span class="success">✅ AUTH GİRİŞİ BAŞARILI!</span><br><br>';
+                resultDiv.innerHTML += 'User ID: ' + data.user.id + '<br>';
+                resultDiv.innerHTML += 'Email: ' + data.user.email + '<br><br>';
+
+                // 2. User profile çek
+                const { data: profile, error: profileError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError) {
+                    resultDiv.innerHTML +=
+                        '<span class="error">❌ PROFILE HATASI: ' + profileError.message + '</span>' +
+                        '<br><br>Detay: ' + JSON.stringify(profileError, null, 2);
+
+                    // Bu hata çok önemli - kullanıcı auth'da var ama users tablosunda yok!
+                    if (profileError.code === 'PGRST116') {
+                        resultDiv.innerHTML += '<br><br><strong>SORUN: Auth sisteminde kullanıcı var ama users tablosunda profil YOK!</strong>';
+                        resultDiv.innerHTML += '<br>Çözüm: Users tablosuna bu kullanıcı için kayıt eklenmeli.';
+                    }
+                    return;
+                }
+
+                resultDiv.innerHTML += '<span class="success">✅ USER PROFILE BULUNDU!</span><br><br>';
+                resultDiv.innerHTML += '<pre>' + JSON.stringify(profile, null, 2) + '</pre>';
+
+                // 3. Eksik kolonları kontrol et
+                if (profile.is_secretary === undefined) {
+                    resultDiv.innerHTML += '<br><span class="error">❌ SORUN: is_secretary kolonu eksik!</span>';
+                }
+                if (profile.is_active === undefined) {
+                    resultDiv.innerHTML += '<br><span class="error">❌ SORUN: is_active kolonu eksik!</span>';
+                }
+
+            } catch (e) {
+                resultDiv.innerHTML =
+                    '<span class="error">❌ GENEL HATA: ' + e.message + '</span>' +
+                    '<br><br>' + e.stack;
+            }
+        }
+    </script>
+</body>
+
+</html>
