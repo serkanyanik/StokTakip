@@ -20,7 +20,7 @@ serve(async (req) => {
     )
 
     // Get request body
-    const { email, password, name, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, created_by } = await req.json()
+    const { email, password, name, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_secretary, created_by } = await req.json()
 
     // Create user in Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -48,6 +48,7 @@ serve(async (req) => {
         is_depo_sorumlu2: is_depo_sorumlu2 || false,
         is_depo_sorumlu3: is_depo_sorumlu3 || false,
         is_depo_sorumlu4: is_depo_sorumlu4 || false,
+        is_secretary: is_secretary || false,
         is_active: true,
         created_by
       })
@@ -59,9 +60,9 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         user: authData.user,
-        message: 'User created successfully' 
+        message: 'User created successfully'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

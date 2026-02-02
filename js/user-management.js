@@ -128,47 +128,27 @@ async function handleAddUser() {
     const is_secretary = document.getElementById('newUserSecretary').checked;
 
     try {
-        // Admin API kullanarak kullanıcı oluştur - oturum değişmez
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true, // E-posta onayını atla
-            user_metadata: {
-                name: name
-            }
-        });
-
-        if (authError) {
-            throw authError;
-        }
-
-        if (!authData.user) {
-            throw new Error('Kullanıcı oluşturulamadı');
-        }
-
-        // Kullanıcı profilini users tablosuna ekle
-        const { error: profileError } = await supabase
-            .from('users')
-            .insert({
-                id: authData.user.id,
-                name: name,
+        // Edge Function kullanarak kullanıcı oluştur
+        const { data, error } = await supabase.functions.invoke('create-user', {
+            body: {
                 email: email,
+                password: password,
+                name: name,
                 is_depo_admin: is_depo_admin,
                 is_depo_sorumlu1: is_depo_sorumlu1,
                 is_depo_sorumlu2: is_depo_sorumlu2,
                 is_depo_sorumlu3: is_depo_sorumlu3,
                 is_depo_sorumlu4: is_depo_sorumlu4,
                 is_secretary: is_secretary,
-                is_active: true,
                 created_by: currentUser.id
-            });
+            }
+        });
 
-        // NOT: Yeni kullanıcının auth oturumunu kapatmıyoruz - admin oturumda kalmalı
-
-        if (profileError) {
-            alert(`✅ Kullanıcı Auth'da oluşturuldu!\n\n📧 E-posta: ${email}\n🔑 Şifre: ${password}\n\n⚠️ Ancak profil oluşturulamadı. Aşağıdaki SQL komutunu Supabase SQL Editor'da çalıştırın:\n\nINSERT INTO users (id, name, email, is_depo_admin, is_depo_sorumlu1, is_depo_sorumlu2, is_depo_sorumlu3, is_depo_sorumlu4, is_secretary, is_active, created_by) VALUES ('${authData.user.id}', '${name}', '${email}', ${is_depo_admin}, ${is_depo_sorumlu1}, ${is_depo_sorumlu2}, ${is_depo_sorumlu3}, ${is_depo_sorumlu4}, ${is_secretary}, true, '${currentUser.id}');`);
-
+        if (error) {
+            throw error;
         }
+
+        alert('✅ Kullanıcı başarıyla oluşturuldu!');
 
         bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
         await loadAllUsers();
