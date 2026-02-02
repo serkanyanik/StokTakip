@@ -1113,10 +1113,25 @@ body {
 }
 
 .table td {
-    padding: 9px 8px !important;
+    padding: 6px 4px !important;
     vertical-align: middle !important;
     line-height: 1 !important;
-    height: 50px !important;
+}
+
+#stockTable tbody tr {
+    height: 46px !important;
+    max-height: 46px !important;
+    min-height: 46px !important;
+}
+
+#stockTable tbody td {
+    height: 46px !important;
+    max-height: 46px !important;
+    min-height: 46px !important;
+    padding: 6px 4px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
 }
 
 .stock-count {
@@ -1815,12 +1830,16 @@ button[onclick*="quickTransfer"]:hover {
 /* Raf Adresi Stilleri */
 .shelf-address {
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 4px 8px;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     transition: all 0.3s ease;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     border: 1px solid transparent;
+    max-height: 32px;
+    line-height: 1 !important;
+    white-space: nowrap;
 }
 
 .shelf-address:hover {
@@ -1865,9 +1884,12 @@ button[onclick*="quickTransfer"]:hover {
     transition: all 0.2s ease;
     background: rgba(0, 123, 255, 0.05);
     border: 1px solid transparent;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 40px;
-    text-align: center;
+    max-height: 32px;
+    line-height: 1 !important;
 }
 
 .editable-field:hover {
@@ -1879,6 +1901,23 @@ button[onclick*="quickTransfer"]:hover {
 
 .editable-field:active {
     transform: scale(0.98);
+}
+
+/* Görsel sütunu butonları */
+#stockTable tbody td:nth-child(4) {
+    white-space: nowrap !important;
+}
+
+#stockTable tbody td:nth-child(4) .btn {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+    margin: 0 1px !important;
 }
 
 /* Ürün görseli modal stilleri */
@@ -2042,34 +2081,41 @@ td .btn-sm {
 /* Actions Column Styles */
 .actions-column {
     white-space: nowrap;
-    width: 130px;
-    min-width: 130px;
-    padding: 0.5rem !important;
-    vertical-align: middle;
+    width: 110px;
+    min-width: 110px;
+    padding: 6px 2px !important;
+    vertical-align: middle !important;
+    height: 46px !important;
+    max-height: 46px !important;
+    min-height: 46px !important;
+    overflow: visible !important;
 }
 
 .actions-column .d-flex {
     flex-wrap: nowrap !important;
-    gap: 3px !important;
+    gap: 2px !important;
     justify-content: center !important;
     align-items: center !important;
-    min-width: max-content;
-    height: 32px !important;
+    height: 34px !important;
+    max-height: 34px !important;
+    min-height: 34px !important;
     display: flex !important;
     margin: 0 auto !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 /* Transfer button styles in actions column */
 .actions-column .btn {
-    font-size: 10px !important;
+    font-size: 9px !important;
     padding: 0 !important;
     margin: 0 !important;
-    width: 24px !important;
-    height: 24px !important;
-    min-width: 24px !important;
-    max-width: 24px !important;
-    min-height: 24px !important;
-    max-height: 24px !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
     border-radius: 4px;
     display: inline-flex !important;
     align-items: center !important;
@@ -2086,6 +2132,24 @@ td .btn-sm {
     padding: 0 !important;
     line-height: 1 !important;
     display: block !important;
+}
+
+.actions-column .dropdown {
+    height: 26px !important;
+    max-height: 26px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+.actions-column .dropdown .btn {
+    height: 26px !important;
+    max-height: 26px !important;
+    width: 26px !important;
+    max-width: 26px !important;
 }
 
 /* Transfer button colors for different vehicles */
@@ -2149,7 +2213,8 @@ td .btn-sm {
 }
 
 .table-responsive {
-    overflow: visible !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
 }
 
 /* Sadece modal'lardaki tablolar scroll'lanabilir kalsın */

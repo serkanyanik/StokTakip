@@ -1344,7 +1344,7 @@ function createStockRow(item) {
         </td>
         <td class="warehouse-column total-column"><strong>${total}</strong></td>
         <td class="actions-column">
-            <div class="d-flex flex-wrap gap-1">
+            <div class="d-flex">
                 ${createTransferDropdown()}
                 ${canRemoveStock(currentWarehouse) && !currentUser.is_secretary ?
             `<button class="btn btn-warning btn-sm" onclick="quickRemoveStock('${item.id}')" title="Stok işlemleri">
